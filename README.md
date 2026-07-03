@@ -136,8 +136,6 @@ http://localhost:3000/api-docs
 
 ```
 ien-back/
-├── scripts/
-│   └── backfill-usuarios.js   # Migración de usuarios existentes
 ├── src/
 │   ├── app.js                 # Configuración Express
 │   ├── server.js              # Conexión MongoDB + listen
@@ -173,16 +171,6 @@ ien-back/
 | **Jobs** | | | |
 | POST | `/api/jobs/reset-streaks` | API Key | Resetear rachas vencidas |
 | POST | `/api/jobs/send-reminders` | API Key | Enviar recordatorios |
-
-## Backfill (migración)
-
-Si ya existen usuarios registrados antes de este esquema, ejecutar:
-
-```bash
-node scripts/backfill-usuarios.js
-```
-
-Asigna a cada usuario su tienda basándose en el `codigo_utilizado` de su `PlanProgreso`. Es **idempotente**: solo actualiza usuarios sin `codigo_activacion`.
 
 ## Formato de errores
 
