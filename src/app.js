@@ -5,6 +5,9 @@ const authRoutes = require('./routes/authRoutes');
 const planRoutes = require('./routes/planRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const jobRoutes = require('./routes/jobRoutes');
+const sucursalRoutes = require('./routes/sucursalRoutes');
+const productoRoutes = require('./routes/productoRoutes');
+const codigoRoutes = require('./routes/codigoRoutes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 const { errorHandler } = require('./middlewares/errorHandler');
@@ -33,6 +36,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/plan', planRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/jobs', jobRoutes);
+app.use('/api/admin/sucursales', sucursalRoutes);
+app.use('/api/admin/productos', productoRoutes);
+app.use('/api/admin/codigos', codigoRoutes);
 
 app.use(errorHandler);
 

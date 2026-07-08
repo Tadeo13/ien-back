@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const rateLimit = require('express-rate-limit');
-const { validateCode, register, login, refresh, logout } = require('../controllers/authController');
+const { validateCode, register, login, refresh, logout, profile } = require('../controllers/authController');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 const router = Router();
 
@@ -222,5 +223,57 @@ router.post('/refresh', refresh);
  *         description: Refresh token requerido
  */
 router.post('/logout', logout);
+
+/**
+ * @swagger
+ * /api/auth/profile:
+ *   get:
+ *     summary: Obtener el perfil del usuario autenticado
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Datos de perfil del usuario logueado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 nombre:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 rol:
+ *                   type: string
+ *                 fecha_registro:
+ *                   type: string
+ *                   format: date-time
+ *                 tienda:
+ *                   type: object
+ *                   nullable: true
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     nombre_tienda:
+ *                       type: string
+ *                     ciudad:
+ *                       type: string
+ *                 producto:
+ *                   type: object
+ *                   nullable: true
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     nombre:
+ *                       type: string
+ *                     descripcion:
+ *                       type: string
+ *       401:
+ *         description: Token no provisto o inválido
+ *       404:
+ *         description: Usuario no encontrado
+ */
+router.get('/profile', authMiddleware, profile);
 
 module.exports = router;

@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const Usuario = require('../models/Usuario');
 const Tienda = require('../models/Tienda');
+const Codigo = require('../models/Codigo');
 const RefreshToken = require('../models/RefreshToken');
 const AppError = require('../utils/AppError');
 
@@ -25,11 +26,18 @@ exports.validateCode = async (codigo_activacion) => {
     throw new AppError(400, 'Código de activación inválido');
   }
 
-  const tienda = await Tienda.findOne({ codigo_activacion });
-  if (!tienda) {
-    throw new AppError(404, 'Código inválido');
+  const codDoc = await Codigo.findOne({ codigo: codigo_activacion, activo: true })
+    .populate('tienda_id')
+    .populate('producto_id');
+
+  if (!codDoc) {
+    throw new AppError(404, 'Código inválido o ya utilizado');
   }
-  return tienda;
+
+  return {
+    tienda: codDoc.tienda_id,
+    producto: codDoc.producto_id
+  };
 };
 
 exports.register = async ({ nombre, email, password, codigo_activacion }) => {
@@ -37,9 +45,9 @@ exports.register = async ({ nombre, email, password, codigo_activacion }) => {
     throw new AppError(400, 'Todos los campos son requeridos');
   }
 
-  const tienda = await Tienda.findOne({ codigo_activacion });
-  if (!tienda) {
-    throw new AppError(404, 'Código de activación inválido');
+  const codDoc = await Codigo.findOne({ codigo: codigo_activacion, activo: true });
+  if (!codDoc) {
+    throw new AppError(404, 'Código de activación inválido o ya utilizado');
   }
 
   const existe = await Usuario.findOne({ email });
@@ -47,8 +55,20 @@ exports.register = async ({ nombre, email, password, codigo_activacion }) => {
     throw new AppError(409, 'El email ya está registrado');
   }
 
+  // Consumir el código
+  codDoc.activo = false;
+  codDoc.fecha_activacion = new Date();
+  await codDoc.save();
+
   const password_hash = await bcrypt.hash(password, 10);
-  const usuario = await Usuario.create({ nombre, email, password_hash, tienda_id: tienda._id, codigo_activacion });
+  const usuario = await Usuario.create({
+    nombre,
+    email,
+    password_hash,
+    tienda_id: codDoc.tienda_id,
+    producto_id: codDoc.producto_id,
+    codigo_activacion
+  });
 
   const access_token = generarAccessToken(usuario);
   const refresh_token = await generarRefreshToken(usuario._id);
