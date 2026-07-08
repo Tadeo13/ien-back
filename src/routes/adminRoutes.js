@@ -23,7 +23,7 @@ router.use(authMiddleware, adminMiddleware, scopeTiendaMiddleware);
  * /api/admin/dashboard/metrics:
  *   get:
  *     summary: "[ADMIN] Métricas del panel de administración"
- *     tags: [Admin]
+ *     tags: [Admin - Reportes]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -42,7 +42,7 @@ router.get('/dashboard/metrics', metrics);
  * /api/admin/pacientes:
  *   get:
  *     summary: "[ADMIN] Listar pacientes (con scoping de tienda)"
- *     tags: [Admin]
+ *     tags: [Admin - Reportes]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -109,7 +109,7 @@ router.get('/pacientes', listarPacientes);
  * /api/admin/pacientes/{usuarioId}/perfil:
  *   get:
  *     summary: "[ADMIN] Perfil del paciente (con scoping de tienda)"
- *     tags: [Admin]
+ *     tags: [Admin - Reportes]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -131,7 +131,7 @@ router.get('/pacientes/:usuarioId/perfil', perfilPaciente);
  * /api/admin/pacientes/{usuarioId}/progreso:
  *   get:
  *     summary: "[ADMIN] Plan de progreso del paciente (con scoping de tienda)"
- *     tags: [Admin]
+ *     tags: [Admin - Reportes]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -154,7 +154,7 @@ router.get('/pacientes/:usuarioId/progreso', progresoPaciente);
  * /api/admin/reportes/usuarios:
  *   get:
  *     summary: "[ADMIN] Conteos de usuarios registrados y planes activos"
- *     tags: [Admin]
+ *     tags: [Admin - Reportes]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -168,7 +168,7 @@ router.get('/reportes/usuarios', reporteUsuarios);
  * /api/admin/reportes/usuarios/grafica-semanal:
  *   get:
  *     summary: "[ADMIN] Actividad diaria de usuarios en los últimos 7 días"
- *     tags: [Admin]
+ *     tags: [Admin - Reportes]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -184,7 +184,7 @@ router.get('/reportes/usuarios/grafica-semanal', graficaSemanal);
  * /api/admin/usuarios/admin-negocio:
  *   post:
  *     summary: "[ADMIN GENERAL] Crear administrador de negocio"
- *     tags: [Admin]
+ *     tags: [Admin - Reportes]
  *     security:
  *       - bearerAuth: []
  *     requestBody:

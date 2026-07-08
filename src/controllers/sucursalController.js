@@ -49,7 +49,7 @@ exports.actualizar = tryCatch(async (req, res) => {
 
   const campos = req.usuario.rol === 'admin_general'
     ? req.body
-    : (({ nombre_tienda, ciudad }) => ({ nombre_tienda, ciudad }))(req.body);
+    : { nombre_tienda: req.body.nombre_tienda, ciudad: req.body.ciudad };
 
   const tienda = await Tienda.findByIdAndUpdate(id, campos, { new: true, runValidators: true });
   if (!tienda) throw new AppError(404, 'Sucursal no encontrada');

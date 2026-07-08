@@ -357,15 +357,17 @@ exports.getDays = async (usuarioId, soloCompletados = false) => {
       completado: d.completado,
       fecha_completado: d.fecha_completado,
       respuesta_usuario: d.respuesta_usuario || null,
-      leccion: contenidoMap.get(d.dia_numero)
-        ? {
-            titulo: contenidoMap.get(d.dia_numero).titulo_modulo,
-            tipo: contenidoMap.get(d.dia_numero).tipo_contenido,
-            emociones_objetivo: contenidoMap.get(d.dia_numero).emociones_objetivo,
-            respuesta_tipo: contenidoMap.get(d.dia_numero).respuesta_tipo,
-            datos_leccion: contenidoMap.get(d.dia_numero).datos_leccion
-          }
-        : null
+      leccion: (() => {
+        const c = contenidoMap.get(d.dia_numero);
+        if (!c) return null;
+        return {
+          titulo: c.titulo_modulo,
+          tipo: c.tipo_contenido,
+          emociones_objetivo: c.emociones_objetivo,
+          respuesta_tipo: c.respuesta_tipo,
+          datos_leccion: c.datos_leccion
+        };
+      })()
     }))
   };
 };

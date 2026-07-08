@@ -12,7 +12,7 @@ router.use(authMiddleware, adminMiddleware, scopeTiendaMiddleware);
  * /api/admin/codigos:
  *   get:
  *     summary: "[ADMIN] Listar códigos de activación (con scoping)"
- *     tags: [Admin]
+ *     tags: [Admin - Códigos]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -59,7 +59,7 @@ router.get('/', codigoCtrl.listar);
  * /api/admin/codigos:
  *   post:
  *     summary: "[ADMIN] Crear un nuevo código de activación"
- *     tags: [Admin]
+ *     tags: [Admin - Códigos]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -97,7 +97,7 @@ router.post('/', codigoCtrl.crear);
  * /api/admin/codigos/{id}/activar:
  *   patch:
  *     summary: "[ADMIN] Activar un código de activación"
- *     tags: [Admin]
+ *     tags: [Admin - Códigos]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -121,7 +121,7 @@ router.patch('/:id/activar', codigoCtrl.activar);
  * /api/admin/codigos/{id}/desactivar:
  *   patch:
  *     summary: "[ADMIN] Desactivar un código de activación"
- *     tags: [Admin]
+ *     tags: [Admin - Códigos]
  *     security:
  *       - bearerAuth: []
  *     parameters:

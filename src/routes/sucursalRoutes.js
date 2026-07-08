@@ -12,7 +12,7 @@ router.use(authMiddleware, adminMiddleware, scopeTiendaMiddleware);
  * /api/admin/sucursales:
  *   get:
  *     summary: "[ADMIN] Listar sucursales (con scoping)"
- *     tags: [Admin]
+ *     tags: [Admin - Tiendas]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -43,7 +43,7 @@ router.get('/', sucursalCtrl.listar);
  * /api/admin/sucursales:
  *   post:
  *     summary: "[ADMIN GENERAL] Crear una nueva sucursal"
- *     tags: [Admin]
+ *     tags: [Admin - Tiendas]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -75,7 +75,7 @@ router.post('/', sucursalCtrl.crear);
  * /api/admin/sucursales/{id}:
  *   put:
  *     summary: "[ADMIN] Actualizar sucursal en scope"
- *     tags: [Admin]
+ *     tags: [Admin - Tiendas]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -110,7 +110,7 @@ router.put('/:id', sucursalCtrl.actualizar);
  * /api/admin/sucursales/{id}:
  *   delete:
  *     summary: "[ADMIN GENERAL] Eliminar sucursal"
- *     tags: [Admin]
+ *     tags: [Admin - Tiendas]
  *     security:
  *       - bearerAuth: []
  *     parameters:

@@ -5,9 +5,8 @@ const mongoose = require('mongoose');
 const Usuario = require('../models/Usuario');
 const PlanProgreso = require('../models/PlanProgreso');
 const { getInicioDeDiaDeHoy } = require('../utils/fechas');
-// Registrar schemas referenciados para populate
-require('../models/Tienda');
-require('../models/Producto');
+const Tienda = require('../models/Tienda');
+const Producto = require('../models/Producto');
 
 // ─── Existente ────────────────────────────────────────────────────────────────
 

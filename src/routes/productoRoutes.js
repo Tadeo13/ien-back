@@ -12,7 +12,7 @@ router.use(authMiddleware, adminMiddleware, scopeTiendaMiddleware);
  * /api/admin/productos:
  *   get:
  *     summary: "[ADMIN] Listar productos (con scoping)"
- *     tags: [Admin]
+ *     tags: [Admin - Productos]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -50,7 +50,7 @@ router.get('/', productoCtrl.listar);
  * /api/admin/productos:
  *   post:
  *     summary: "[ADMIN] Crear un nuevo producto"
- *     tags: [Admin]
+ *     tags: [Admin - Productos]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -86,7 +86,7 @@ router.post('/', productoCtrl.crear);
  * /api/admin/productos/{id}:
  *   put:
  *     summary: "[ADMIN] Actualizar un producto"
- *     tags: [Admin]
+ *     tags: [Admin - Productos]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -125,7 +125,7 @@ router.put('/:id', productoCtrl.actualizar);
  * /api/admin/productos/{id}:
  *   delete:
  *     summary: "[ADMIN] Eliminar un producto"
- *     tags: [Admin]
+ *     tags: [Admin - Productos]
  *     security:
  *       - bearerAuth: []
  *     parameters:
