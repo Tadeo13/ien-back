@@ -2,6 +2,7 @@ const Usuario = require('../models/Usuario');
 const Tienda = require('../models/Tienda');
 const PlanProgreso = require('../models/PlanProgreso');
 const ContenidoDiario = require('../models/ContenidoDiario');
+const TestPregunta = require('../models/TestPregunta');
 const AppError = require('../utils/AppError');
 const { esMismoDiaCalendarioUTC } = require('../utils/fechas');
 
@@ -36,7 +37,7 @@ function detectarHito(racha_dias, hitos_alcanzados = []) {
  * Devuelve { plan, hito_alcanzado } donde hito_alcanzado es el hito de racha
  * alcanzado en este completado, o null si no se alcanzó ninguno nuevo.
  */
-async function marcarDiaCompletado(planId) {
+async function marcarDiaCompletado(planId, respuestaUsuario, skipValidation = false) {
   const plan = await PlanProgreso.findById(planId)
     .select('dia_actual ultima_fecha_actividad progreso_diario estado racha_dias racha_maxima hitos_alcanzados')
     .lean();
@@ -45,7 +46,7 @@ async function marcarDiaCompletado(planId) {
   const ahora = new Date();
 
   // LIMITACIÓN CONOCIDA: Comparación de día calendario en UTC.
-  if (yaCompletoActividadHoy(plan, ahora)) {
+  if (!skipValidation && yaCompletoActividadHoy(plan, ahora)) {
     throw new AppError(409, 'Ya completaste la actividad de hoy');
   }
 
@@ -73,7 +74,7 @@ async function marcarDiaCompletado(planId) {
               in: {
                 $cond: {
                   if: { $eq: ['$$dia.dia_numero', plan.dia_actual] },
-                  then: { $mergeObjects: ['$$dia', { completado: true, fecha_completado: ahora }] },
+                  then: { $mergeObjects: ['$$dia', { completado: true, fecha_completado: ahora, respuesta_usuario: respuestaUsuario || null }] },
                   else: '$$dia'
                 }
               }
@@ -117,7 +118,7 @@ async function marcarDiaCompletado(planId) {
 /**
  * Crea el plan inicial de un usuario con los resultados del test.
  */
-exports.setupTest = async ({ respuestas, emociones_a_mejorar, usuarioId }) => {
+exports.setupTest = async ({ respuestas, usuarioId }) => {
   const usuario = await Usuario.findById(usuarioId).select('tienda_id codigo_activacion');
   if (!usuario || !usuario.tienda_id) {
     throw new AppError(400, 'Usuario sin tienda asociada — no se puede iniciar el plan');
@@ -133,21 +134,94 @@ exports.setupTest = async ({ respuestas, emociones_a_mejorar, usuarioId }) => {
     throw new AppError(409, 'El usuario ya tiene un plan');
   }
 
-  // DECISIÓN DE DISEÑO / REGLA DE NEGOCIO:
-  // Se opta por inicializar el PlanProgreso aquí y no en el registro de usuario (register)
-  // para garantizar que el plan solo se marque como "activo" una vez que el usuario complete
-  // efectivamente el test inicial. Esto evita registrar planes activos "fantasma" sin datos
-  // de base de diagnóstico, optimizando la precisión de las métricas de participación y racha.
-  return PlanProgreso.create({
+  const totalPreguntas = await TestPregunta.countDocuments();
+  if (!respuestas || !Array.isArray(respuestas)) {
+    throw new AppError(400, 'Formato de respuestas inválido');
+  }
+  if (respuestas.length !== totalPreguntas) {
+    throw new AppError(400, `Se requieren exactamente ${totalPreguntas} respuestas`);
+  }
+
+  const preguntasDb = await TestPregunta.find().lean();
+  const preguntasMap = new Map(preguntasDb.map(p => [p.numero, p]));
+
+  const numerosVistos = new Set();
+  const respuestasProcesadas = [];
+
+  for (const r of respuestas) {
+    const num = r.numero;
+    const score = r.score;
+
+    if (num === undefined || score === undefined) {
+      throw new AppError(400, 'Cada respuesta debe contener numero y score');
+    }
+    if (numerosVistos.has(num)) {
+      throw new AppError(400, `Número de pregunta duplicado: ${num}`);
+    }
+    numerosVistos.add(num);
+
+    const pregInfo = preguntasMap.get(num);
+    if (!pregInfo) {
+      throw new AppError(400, `La pregunta con número ${num} no existe en la base de datos`);
+    }
+
+    if (!Number.isInteger(score) || score < 1 || score > 5) {
+      throw new AppError(400, `El score para la pregunta ${num} debe ser un entero entre 1 y 5`);
+    }
+
+    respuestasProcesadas.push({
+      pregunta_numero: num,
+      competencia: pregInfo.competencia,
+      score: score
+    });
+  }
+
+  if (numerosVistos.size !== totalPreguntas) {
+    throw new AppError(400, 'Faltan preguntas por responder o hay números inválidos');
+  }
+
+  // Agrupamiento y cálculo del resultado server-side
+  const sumasPorCompetencia = {};
+  const competenciaLabelsMap = {};
+  
+  for (const p of preguntasDb) {
+    sumasPorCompetencia[p.competencia] = 0;
+    competenciaLabelsMap[p.competencia] = p.competencia_label;
+  }
+
+  for (const rp of respuestasProcesadas) {
+    sumasPorCompetencia[rp.competencia] += rp.score;
+  }
+
+  const puntuaciones_por_competencia = [];
+  const competencias_a_mejorar = [];
+
+  for (const comp in sumasPorCompetencia) {
+    const puntuacion = sumasPorCompetencia[comp];
+    const label = competenciaLabelsMap[comp];
+    puntuaciones_por_competencia.push({
+      competencia: comp,
+      competencia_label: label,
+      puntuacion: puntuacion
+    });
+    if (puntuacion < 20) {
+      competencias_a_mejorar.push(label);
+    }
+  }
+
+  const nuevoPlan = await PlanProgreso.create({
     usuario_id: usuarioId,
     tienda_id: tienda._id,
     codigo_utilizado: usuario.codigo_activacion,
     test_inicial: {
       fecha_completado: new Date(),
-      respuestas,
-      emociones_a_mejorar: emociones_a_mejorar || []
+      respuestas: respuestasProcesadas,
+      puntuaciones_por_competencia,
+      competencias_a_mejorar
     }
   });
+
+  return nuevoPlan;
 };
 
 /**
@@ -156,21 +230,14 @@ exports.setupTest = async ({ respuestas, emociones_a_mejorar, usuarioId }) => {
 exports.getToday = async (usuarioId) => {
   const plan = await PlanProgreso
     .findOne({ usuario_id: usuarioId, estado: 'activo' })
-    .select('dia_actual ultima_fecha_actividad progreso_diario racha_dias racha_maxima estado');
+    .select('dia_actual ultima_fecha_actividad progreso_diario');
   if (!plan) {
     throw new AppError(404, 'No hay un plan activo');
   }
 
   const ahora = new Date();
   if (yaCompletoActividadHoy(plan, ahora)) {
-    return {
-      actividad_completada_hoy: true,
-      mensaje: "Ya completaste tu actividad de hoy, volvé mañana",
-      dia_actual: plan.dia_actual,
-      racha_dias: plan.racha_dias,
-      racha_maxima: plan.racha_maxima,
-      estado: plan.estado
-    };
+    return { leccion: null };
   }
 
   const contenido = await ContenidoDiario.findOne({ dia_numero: plan.dia_actual });
@@ -179,22 +246,44 @@ exports.getToday = async (usuarioId) => {
   }
 
   return {
+    leccion: {
+      dia_actual: plan.dia_actual,
+      titulo: contenido.titulo_modulo,
+      tipo: contenido.tipo_contenido,
+      emociones_objetivo: contenido.emociones_objetivo,
+      respuesta_tipo: contenido.respuesta_tipo,
+      datos_leccion: contenido.datos_leccion
+    }
+  };
+};
+
+/**
+ * Devuelve el estado completo del progreso del plan activo del usuario.
+ */
+exports.getProfile = async (usuarioId) => {
+  const plan = await PlanProgreso
+    .findOne({ usuario_id: usuarioId, estado: 'activo' })
+    .select('dia_actual racha_dias racha_maxima estado fecha_inicio ultima_fecha_actividad progreso_diario');
+  if (!plan) {
+    throw new AppError(404, 'No hay un plan activo');
+  }
+
+  return {
     dia_actual: plan.dia_actual,
-    titulo: contenido.titulo_modulo,
-    tipo: contenido.tipo_contenido,
-    emociones_objetivo: contenido.emociones_objetivo,
-    datos_leccion: contenido.datos_leccion,
     racha_dias: plan.racha_dias,
     racha_maxima: plan.racha_maxima,
     estado: plan.estado,
-    actividad_completada_hoy: false
+    actividad_completada_hoy: yaCompletoActividadHoy(plan, new Date()),
+    fecha_inicio: plan.fecha_inicio,
+    dias_completados: plan.progreso_diario.filter(d => d.completado).length,
+    dias_totales: 30
   };
 };
 
 /**
  * Completa el día actual y avanza el plan.
  */
-exports.completeDay = async (usuarioId) => {
+exports.completeDay = async (usuarioId, respuestaUsuario) => {
   const plan = await PlanProgreso
     .findOne({ usuario_id: usuarioId, estado: 'activo' })
     .select('_id');
@@ -202,7 +291,7 @@ exports.completeDay = async (usuarioId) => {
     throw new AppError(404, 'No hay un plan activo');
   }
 
-  const { plan: planActualizado, hito_alcanzado } = await marcarDiaCompletado(plan._id);
+  const { plan: planActualizado, hito_alcanzado } = await marcarDiaCompletado(plan._id, respuestaUsuario);
 
   return {
     // BUG-01 Fix: Usar el valor incrementado (planActualizado) y restarle 1,
@@ -215,6 +304,77 @@ exports.completeDay = async (usuarioId) => {
     estado: planActualizado.estado,
     hito_alcanzado
   };
+};
+
+/**
+ * Avanza al siguiente día sin validar actividad completada hoy (dev-only).
+ */
+exports.advanceDay = async (usuarioId) => {
+  const plan = await PlanProgreso
+    .findOne({ usuario_id: usuarioId, estado: 'activo' })
+    .select('_id');
+  if (!plan) throw new AppError(404, 'No hay un plan activo');
+
+  const { plan: planActualizado, hito_alcanzado } = await marcarDiaCompletado(plan._id, undefined, true);
+
+  await PlanProgreso.updateOne(
+    { _id: plan._id },
+    { $set: { ultima_fecha_actividad: new Date(0) } }
+  );
+
+  return {
+    dia_completado: planActualizado.dia_actual - 1,
+    dia_actual: planActualizado.dia_actual,
+    racha_dias: planActualizado.racha_dias,
+    racha_maxima: planActualizado.racha_maxima,
+    estado: planActualizado.estado,
+    hito_alcanzado
+  };
+};
+
+/**
+ * Devuelve los días del plan con su contenido y respuesta del usuario.
+ * @param {boolean} soloCompletados - Si true, solo devuelve días completados.
+ */
+exports.getDays = async (usuarioId, soloCompletados = false) => {
+  const plan = await PlanProgreso
+    .findOne({ usuario_id: usuarioId, estado: 'activo' })
+    .select('progreso_diario');
+  if (!plan) throw new AppError(404, 'No hay un plan activo');
+
+  let dias = plan.progreso_diario;
+  if (soloCompletados) dias = dias.filter(d => d.completado);
+  if (dias.length === 0) return { dias: [] };
+
+  const contenidos = await ContenidoDiario
+    .find({ dia_numero: { $in: dias.map(d => d.dia_numero) } })
+    .lean();
+  const contenidoMap = new Map(contenidos.map(c => [c.dia_numero, c]));
+
+  return {
+    dias: dias.map(d => ({
+      dia_numero: d.dia_numero,
+      completado: d.completado,
+      fecha_completado: d.fecha_completado,
+      respuesta_usuario: d.respuesta_usuario || null,
+      leccion: contenidoMap.get(d.dia_numero)
+        ? {
+            titulo: contenidoMap.get(d.dia_numero).titulo_modulo,
+            tipo: contenidoMap.get(d.dia_numero).tipo_contenido,
+            emociones_objetivo: contenidoMap.get(d.dia_numero).emociones_objetivo,
+            respuesta_tipo: contenidoMap.get(d.dia_numero).respuesta_tipo,
+            datos_leccion: contenidoMap.get(d.dia_numero).datos_leccion
+          }
+        : null
+    }))
+  };
+};
+
+/**
+ * Devuelve todas las preguntas de test ordenadas por número.
+ */
+exports.getTestPreguntas = async () => {
+  return TestPregunta.find().sort('numero').select('numero texto competencia competencia_label -_id');
 };
 
 // Exportado para testing unitario
