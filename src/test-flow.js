@@ -40,9 +40,10 @@ async function main() {
   console.log(res.status, JSON.stringify(res.data, null, 2));
 
   console.log('\n=== 2. Registrar usuario ===');
+  const email = `juan_${Date.now()}@test.com`;
   res = await request('POST', '/auth/register', {
     nombre: 'Juan Pérez',
-    email: 'juan@test.com',
+    email,
     password: '123456',
     codigo_activacion: 'IEN-001'
   });
@@ -50,35 +51,64 @@ async function main() {
   const token = res.data.access_token;
   const authHeader = { Authorization: `Bearer ${token}` };
 
+  console.log('\n=== 2b. Obtener preguntas de diagnóstico ===');
+  res = await request('GET', '/plan/test-preguntas', null, authHeader);
+  console.log(res.status, `Recibidas ${res.data.length} preguntas`);
+
+  // Crear 30 respuestas de test válidas:
+  // Autoconciencia y Autocontrol darán < 20 (score 3)
+  // Las demás darán score 5 (para dar 25 total)
+  const respuestas = res.data.map(p => {
+    let score = 5;
+    if (p.competencia === 'autoconciencia' || p.competencia === 'autocontrol') {
+      score = 3;
+    }
+    return { numero: p.numero, score };
+  });
+
   console.log('\n=== 3. Setup test inicial ===');
-  res = await request('POST', '/plan/setup-test', {
-    respuestas: [
-      { pregunta_id: 'p1', texto: '¿Cómo te sientes hoy?', respuesta_elegida: 'Bien', score: 3 },
-      { pregunta_id: 'p2', texto: '¿Manejas bien el estrés?', respuesta_elegida: 'Regular', score: 2 }
-    ],
-    emociones_a_mejorar: ['ira', 'ansiedad']
-  }, authHeader);
+  res = await request('POST', '/plan/setup-test', { respuestas }, authHeader);
   console.log(res.status, JSON.stringify(res.data, null, 2));
+
+  console.log('\n=== 3b. Intentar llamar setup-test de nuevo (debe fallar 409) ===');
+  const resDup = await request('POST', '/plan/setup-test', { respuestas }, authHeader);
+  console.log(resDup.status, JSON.stringify(resDup.data, null, 2));
 
   console.log('\n=== 4. Contenido de hoy ===');
   res = await request('GET', '/plan/today', null, authHeader);
   console.log(res.status, JSON.stringify(res.data, null, 2));
 
-  console.log('\n=== 5. Completar día ===');
-  res = await request('POST', '/plan/complete-day', null, authHeader);
+  console.log('\n=== 5. Perfil (día 1, racha:0, completados:0) ===');
+  res = await request('GET', '/plan/profile', null, authHeader);
   console.log(res.status, JSON.stringify(res.data, null, 2));
 
-  console.log('\n=== 6. Login ===');
-  res = await request('POST', '/auth/login', { email: 'juan@test.com', password: '123456' });
+  console.log('\n=== 6. Completar día (con respuesta de ejercicio) ===');
+  const respuesta_usuario = {
+    tipo_ejercicio: 'reflexion',
+    respuestas_escaneadas: ['Nivel energía 7', 'Ligera tensión en cuello']
+  };
+  res = await request('POST', '/plan/complete-day', { respuesta_usuario }, authHeader);
   console.log(res.status, JSON.stringify(res.data, null, 2));
 
-  console.log('\n=== 7. Admin: métricas ===');
+  console.log('\n=== 7. Today después de completar (mismo día → leccion: null) ===');
+  res = await request('GET', '/plan/today', null, authHeader);
+  console.log(res.status, JSON.stringify(res.data, null, 2));
+
+  console.log('\n=== 8. Perfil después de completar (día 2, racha:1, completados:1) ===');
+  res = await request('GET', '/plan/profile', null, authHeader);
+  console.log(res.status, JSON.stringify(res.data, null, 2));
+
+  console.log('\n=== 9. Login ===');
+  res = await request('POST', '/auth/login', { email, password: '123456' });
+  console.log(res.status, JSON.stringify(res.data, null, 2));
+
+  console.log('\n=== 10. Admin: métricas ===');
   const adminRes = await request('POST', '/auth/login', { email: 'admin@ien.test', password: 'admin123' });
   const adminToken = adminRes.data.access_token;
   res = await request('GET', '/admin/dashboard/metrics', null, { Authorization: `Bearer ${adminToken}` });
   console.log(res.status, JSON.stringify(res.data, null, 2));
 
-  console.log('\n=== 8. Jobs: reset rachas (con API key incorrecta) ===');
+  console.log('\n=== 11. Jobs: reset rachas (con API key incorrecta) ===');
   res = await request('POST', '/jobs/reset-streaks', null, { 'x-api-key': 'wrong-key' });
   console.log(res.status, JSON.stringify(res.data, null, 2));
 }
