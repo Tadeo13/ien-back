@@ -14,10 +14,12 @@ API REST para el programa IEN (Inteligencia Emocional) con planes de 30 días, a
 | Express 4 | Framework HTTP |
 | Mongoose 8 | ODM para MongoDB |
 | bcryptjs | Hash de contraseñas |
-| jsonwebtoken | JWT (30d expiración) |
+| jsonwebtoken | JWT access token (15 min) + refresh token (30 días) |
+| express-rate-limit | Rate limiting en endpoints de auth |
 | swagger-jsdoc + swagger-ui-express | Documentación interactiva |
 | morgan | Logging de requests |
 | dotenv | Variables de entorno |
+| jest | Testing unitario |
 
 ## Instalación
 
@@ -51,6 +53,7 @@ CRON_API_KEY=tu_api_key_cron
 npm run dev      # Desarrollo con auto-reload (node --watch)
 npm start        # Producción
 npm run seed     # Poblar BD con datos iniciales
+npm test         # Tests unitarios (Jest)
 ```
 
 ## Seed
@@ -85,7 +88,7 @@ curl -X POST http://localhost:3000/api/auth/register \
 curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email": "user@test.com", "password": "123456"}'
-# → { token: "eyJ..." }
+# → { access_token: "eyJ...", refresh_token: "..." }
 ```
 
 ### 3. Configurar plan y avanzar
@@ -107,10 +110,7 @@ curl -X POST http://localhost:3000/api/plan/complete-day \
 ### 4. Admin — Dashboard
 
 ```bash
-curl http://localhost:3000/api/admin/dashboard \
-  -H "Authorization: Bearer <token_admin>"
-
-curl http://localhost:3000/api/admin/metrics \
+curl http://localhost:3000/api/admin/dashboard/metrics \
   -H "Authorization: Bearer <token_admin>"
 ```
 
@@ -147,9 +147,14 @@ ien-back/
 │   ├── routes/                # Definición de rutas Express
 │   ├── services/              # Lógica de negocio
 │   ├── utils/
-│   │   └── AppError.js        # Clase de error personalizada
+│   │   ├── AppError.js        # Clase de error personalizada
+│   │   └── fechas.js          # Utilidades de fecha UTC
 │   ├── seed.js                # Poblado inicial de BD
 │   └── test-flow.js           # Script de prueba del flujo completo
+├── tests/                     # Tests unitarios (Jest)
+│   ├── fechas.test.js
+│   ├── rachas.test.js
+│   └── hitos.test.js
 └── .env.example
 ```
 
@@ -161,13 +166,14 @@ ien-back/
 | POST | `/api/auth/validate-code` | — | Validar código de activación |
 | POST | `/api/auth/register` | — | Registro de usuario |
 | POST | `/api/auth/login` | — | Inicio de sesión |
+| POST | `/api/auth/refresh` | — | Refrescar access token (rotación completa) |
+| POST | `/api/auth/logout` | — | Cerrar sesión (revoca refresh token) |
 | **Plan** | | | |
 | POST | `/api/plan/setup-test` | JWT | Inicializar plan de 30 días |
 | GET | `/api/plan/today` | JWT | Contenido del día actual |
 | POST | `/api/plan/complete-day` | JWT | Marcar día como completado |
 | **Admin** | | | |
-| GET | `/api/admin/dashboard` | JWT+Admin | Dashboard con métricas |
-| GET | `/api/admin/metrics` | JWT+Admin | Métricas detalladas |
+| GET | `/api/admin/dashboard/metrics` | JWT+Admin | Dashboard con métricas por tienda |
 | **Jobs** | | | |
 | POST | `/api/jobs/reset-streaks` | API Key | Resetear rachas vencidas |
 | POST | `/api/jobs/send-reminders` | API Key | Enviar recordatorios |
