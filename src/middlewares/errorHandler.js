@@ -15,4 +15,4 @@ function errorHandler(err, _req, res, _next) {
   res.status(500).json({ error: 'Error del servidor' });
 }
 
-module.exports = { tryCatch, errorHandler, AppError };
+module.exports = { tryCatch, errorHandler };

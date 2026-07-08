@@ -1,5 +1,6 @@
 const { demoledorDeRachas, sendReminders } = require('../services/jobService');
-const { tryCatch, AppError } = require('../middlewares/errorHandler');
+const { tryCatch } = require('../middlewares/errorHandler');
+const AppError = require('../utils/AppError');
 
 exports.resetStreaks = tryCatch(async (_req, res) => {
   const result = await demoledorDeRachas();

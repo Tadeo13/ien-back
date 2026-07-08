@@ -47,7 +47,7 @@ async function main() {
     codigo_activacion: 'IEN-001'
   });
   console.log(res.status, JSON.stringify(res.data, null, 2));
-  const token = res.data.token;
+  const token = res.data.access_token;
   const authHeader = { Authorization: `Bearer ${token}` };
 
   console.log('\n=== 3. Setup test inicial ===');
@@ -74,7 +74,7 @@ async function main() {
 
   console.log('\n=== 7. Admin: métricas ===');
   const adminRes = await request('POST', '/auth/login', { email: 'admin@ien.test', password: 'admin123' });
-  const adminToken = adminRes.data.token;
+  const adminToken = adminRes.data.access_token;
   res = await request('GET', '/admin/dashboard/metrics', null, { Authorization: `Bearer ${adminToken}` });
   console.log(res.status, JSON.stringify(res.data, null, 2));
 

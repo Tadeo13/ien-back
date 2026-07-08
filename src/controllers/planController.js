@@ -1,5 +1,6 @@
 const { setupTest, getToday, completeDay } = require('../services/planService');
-const { tryCatch, AppError } = require('../middlewares/errorHandler');
+const { tryCatch } = require('../middlewares/errorHandler');
+const AppError = require('../utils/AppError');
 
 exports.setupTest = tryCatch(async (req, res) => {
   const { respuestas, emociones_a_mejorar } = req.body;

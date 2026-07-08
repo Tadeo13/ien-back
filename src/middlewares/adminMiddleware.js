@@ -1,5 +1,6 @@
 const Usuario = require('../models/Usuario');
-const { tryCatch, AppError } = require('./errorHandler');
+const { tryCatch } = require('./errorHandler');
+const AppError = require('../utils/AppError');
 
 const adminMiddleware = tryCatch(async (req, _res, next) => {
   const usuario = await Usuario.findById(req.usuario.id).select('rol');
