@@ -1,59 +1,245 @@
 const { Router } = require('express');
 const authMiddleware = require('../middlewares/authMiddleware');
 const adminMiddleware = require('../middlewares/adminMiddleware');
-const { metrics } = require('../controllers/adminController');
+const scopeTiendaMiddleware = require('../middlewares/scopeTiendaMiddleware');
+const {
+  metrics,
+  perfilPaciente,
+  progresoPaciente,
+  listarPacientes,
+  reporteUsuarios,
+  graficaSemanal,
+  crearAdminNegocio
+} = require('../controllers/adminController');
 
 const router = Router();
 
-router.use(authMiddleware, adminMiddleware);
+// Todos los endpoints de admin requieren auth + ser admin + scope
+router.use(authMiddleware, adminMiddleware, scopeTiendaMiddleware);
 
+// ── Dashboard existente ─────────────────────────────────────────────────────
 /**
  * @swagger
  * /api/admin/dashboard/metrics:
  *   get:
- *     summary: Obtener métricas del panel de administración
+ *     summary: "[ADMIN] Métricas del panel de administración"
  *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Métricas agrupadas por tienda
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   tienda_id:
- *                     type: string
- *                   nombre_tienda:
- *                     type: string
- *                   ciudad:
- *                     type: string
- *                   total_activaciones:
- *                     type: number
- *                   usuarios_activos:
- *                     type: number
- *                   completados:
- *                     type: number
- *                   abandonados:
- *                     type: number
- *                   promedio_dia_progreso:
- *                     type: number
- *                   racha_promedio:
- *                     type: number
- *                   racha_maxima_promedio:
- *                     type: number
- *                     description: Promedio de la racha máxima histórica entre los planes de la tienda
- *                   usuarios_en_riesgo:
- *                     type: number
- *                     description: Planes activos con última actividad ayer en UTC (en riesgo de perder racha si no completan hoy)
  *       401:
  *         description: Token ausente o inválido
  *       403:
  *         description: Acceso denegado
  */
 router.get('/dashboard/metrics', metrics);
+
+// ── Fase C — Pacientes ──────────────────────────────────────────────────────
+/**
+ * @swagger
+ * /api/admin/pacientes:
+ *   get:
+ *     summary: "[ADMIN] Listar pacientes (con scoping de tienda)"
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *     responses:
+ *       200:
+ *         description: Lista paginada de pacientes con su plan
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 pacientes:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       nombre:
+ *                         type: string
+ *                       email:
+ *                         type: string
+ *                       fecha_registro:
+ *                         type: string
+ *                       tienda:
+ *                         type: object
+ *                         nullable: true
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                           nombre:
+ *                             type: string
+ *                       plan:
+ *                         type: object
+ *                         nullable: true
+ *                         properties:
+ *                           estado:
+ *                             type: string
+ *                           dia_actual:
+ *                             type: number
+ *                           racha_dias:
+ *                             type: number
+ *                 total:
+ *                   type: integer
+ *                 pagina:
+ *                   type: integer
+ *       403:
+ *         description: Acceso denegado
+ */
+router.get('/pacientes', listarPacientes);
+
+/**
+ * @swagger
+ * /api/admin/pacientes/{usuarioId}/perfil:
+ *   get:
+ *     summary: "[ADMIN] Perfil del paciente (con scoping de tienda)"
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: usuarioId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Perfil del paciente
+ *       404:
+ *         description: Paciente no encontrado o fuera de scope
+ */
+router.get('/pacientes/:usuarioId/perfil', perfilPaciente);
+
+/**
+ * @swagger
+ * /api/admin/pacientes/{usuarioId}/progreso:
+ *   get:
+ *     summary: "[ADMIN] Plan de progreso del paciente (con scoping de tienda)"
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: usuarioId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Plan de progreso del paciente
+ *       404:
+ *         description: Paciente no encontrado, fuera de scope o sin plan
+ */
+router.get('/pacientes/:usuarioId/progreso', progresoPaciente);
+
+// ── Fase C — Reportes ───────────────────────────────────────────────────────
+/**
+ * @swagger
+ * /api/admin/reportes/usuarios:
+ *   get:
+ *     summary: "[ADMIN] Conteos de usuarios registrados y planes activos"
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Conteos por período (total, semanal, hoy)
+ */
+router.get('/reportes/usuarios', reporteUsuarios);
+
+/**
+ * @swagger
+ * /api/admin/reportes/usuarios/grafica-semanal:
+ *   get:
+ *     summary: "[ADMIN] Actividad diaria de usuarios en los últimos 7 días"
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Array de { fecha, cantidad } para los últimos 7 días
+ */
+router.get('/reportes/usuarios/grafica-semanal', graficaSemanal);
+
+// ── Admin General — Usuarios ─────────────────────────────────────────────────
+
+/**
+ * @swagger
+ * /api/admin/usuarios/admin-negocio:
+ *   post:
+ *     summary: "[ADMIN GENERAL] Crear administrador de negocio"
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nombre
+ *               - email
+ *               - password
+ *               - tiendas_administradas
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *                 minLength: 6
+ *               tiendas_administradas:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: IDs de las tiendas que administrará
+ *     responses:
+ *       201:
+ *         description: Admin de negocio creado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 nombre:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 rol:
+ *                   type: string
+ *                   example: admin_negocio
+ *                 tiendas_administradas:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       400:
+ *         description: Datos inválidos o tiendas inexistentes
+ *       403:
+ *         description: Solo admin_general
+ *       409:
+ *         description: El email ya está registrado
+ */
+router.post('/usuarios/admin-negocio', crearAdminNegocio);
 
 module.exports = router;
