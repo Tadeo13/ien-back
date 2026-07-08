@@ -1,5 +1,6 @@
-const { validateCode, register, login } = require('../services/authService');
-const { tryCatch, AppError } = require('../middlewares/errorHandler');
+const { validateCode, register, login, refreshToken, logout } = require('../services/authService');
+const { tryCatch } = require('../middlewares/errorHandler');
+const AppError = require('../utils/AppError');
 
 exports.validateCode = tryCatch(async (req, res) => {
   const { codigo_activacion } = req.body;
@@ -34,5 +35,23 @@ exports.login = tryCatch(async (req, res) => {
 
   const result = await login({ email, password });
 
+  res.json(result);
+});
+
+exports.refresh = tryCatch(async (req, res) => {
+  const { refresh_token } = req.body;
+
+  if (!refresh_token) {
+    throw new AppError(400, 'Refresh token requerido');
+  }
+
+  const result = await refreshToken(refresh_token);
+  res.json(result);
+});
+
+exports.logout = tryCatch(async (req, res) => {
+  const { refresh_token } = req.body;
+
+  const result = await logout(refresh_token);
   res.json(result);
 });

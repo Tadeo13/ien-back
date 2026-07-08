@@ -43,6 +43,12 @@ router.use(authMiddleware, adminMiddleware);
  *                     type: number
  *                   racha_promedio:
  *                     type: number
+ *                   racha_maxima_promedio:
+ *                     type: number
+ *                     description: Promedio de la racha máxima histórica entre los planes de la tienda
+ *                   usuarios_en_riesgo:
+ *                     type: number
+ *                     description: Planes activos con última actividad ayer en UTC (en riesgo de perder racha si no completan hoy)
  *       401:
  *         description: Token ausente o inválido
  *       403:

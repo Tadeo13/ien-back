@@ -1,7 +1,16 @@
 const { Router } = require('express');
-const { validateCode, register, login } = require('../controllers/authController');
+const rateLimit = require('express-rate-limit');
+const { validateCode, register, login, refresh, logout } = require('../controllers/authController');
 
 const router = Router();
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiados intentos, intentá de nuevo en 15 minutos' }
+});
 
 /**
  * @swagger
@@ -43,7 +52,7 @@ const router = Router();
  *       404:
  *         description: Código inválido
  */
-router.post('/validate-code', validateCode);
+router.post('/validate-code', authLimiter, validateCode);
 
 /**
  * @swagger
@@ -75,8 +84,12 @@ router.post('/validate-code', validateCode);
  *             schema:
  *               type: object
  *               properties:
- *                 token:
+ *                 access_token:
  *                   type: string
+ *                   description: Token JWT de acceso (15 min de expiración)
+ *                 refresh_token:
+ *                   type: string
+ *                   description: Token de refresco (30 días de expiración, consumible una vez)
  *                 usuario:
  *                   type: object
  *                   properties:
@@ -93,7 +106,7 @@ router.post('/validate-code', validateCode);
  *       409:
  *         description: Email ya registrado
  */
-router.post('/register', register);
+router.post('/register', authLimiter, register);
 
 /**
  * @swagger
@@ -121,8 +134,12 @@ router.post('/register', register);
  *             schema:
  *               type: object
  *               properties:
- *                 token:
+ *                 access_token:
  *                   type: string
+ *                   description: Token JWT de acceso (15 min de expiración)
+ *                 refresh_token:
+ *                   type: string
+ *                   description: Token de refresco (30 días de expiración, consumible una vez)
  *                 usuario:
  *                   type: object
  *                   properties:
@@ -137,6 +154,73 @@ router.post('/register', register);
  *       401:
  *         description: Credenciales inválidas
  */
-router.post('/login', login);
+router.post('/login', authLimiter, login);
+
+/**
+ * @swagger
+ * /api/auth/refresh:
+ *   post:
+ *     summary: Refrescar access token mediante refresh token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [refresh_token]
+ *             properties:
+ *               refresh_token:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Nuevo par de tokens (rotación completa)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 access_token:
+ *                   type: string
+ *                 refresh_token:
+ *                   type: string
+ *       400:
+ *         description: Refresh token requerido
+ *       401:
+ *         description: Refresh token inválido o expirado
+ */
+router.post('/refresh', refresh);
+
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Cerrar sesión revocando el refresh token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [refresh_token]
+ *             properties:
+ *               refresh_token:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Sesión cerrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 mensaje:
+ *                   type: string
+ *                   example: Sesión cerrada
+ *       400:
+ *         description: Refresh token requerido
+ */
+router.post('/logout', logout);
 
 module.exports = router;

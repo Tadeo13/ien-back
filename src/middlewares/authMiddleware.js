@@ -13,8 +13,11 @@ function authMiddleware(req, _res, next) {
   try {
     req.usuario = jwt.verify(token, process.env.JWT_SECRET);
     next();
-  } catch {
-    next(new AppError(401, 'Token inválido o expirado'));
+  } catch (err) {
+    if (err.name === 'TokenExpiredError') {
+      return next(new AppError(401, 'Token expirado'));
+    }
+    next(new AppError(401, 'Token inválido'));
   }
 }
 

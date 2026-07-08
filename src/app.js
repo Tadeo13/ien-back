@@ -20,6 +20,11 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
+// Root route
+app.get('/', (_req, res) => {
+  res.send('IEN Backend API is running. Documentation available at /api-docs');
+});
+
 // Docs
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

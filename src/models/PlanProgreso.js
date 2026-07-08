@@ -27,6 +27,8 @@ const planProgresoSchema = new Schema({
   fecha_inicio: { type: Date, default: Date.now },
   dia_actual: { type: Number, default: 1 },
   racha_dias: { type: Number, default: 0 },
+  racha_maxima: { type: Number, default: 0 },
+  hitos_alcanzados: { type: [Number], default: [] },
   ultima_fecha_actividad: { type: Date, default: Date.now },
   estado: { type: String, enum: ['activo', 'completado', 'abandonado'], default: 'activo' },
   test_inicial: testInicialSchema,
@@ -42,5 +44,6 @@ const planProgresoSchema = new Schema({
 
 planProgresoSchema.index({ estado: 1, dia_actual: 1 });
 planProgresoSchema.index({ estado: 1, ultima_fecha_actividad: 1 });
+planProgresoSchema.index({ usuario_id: 1, estado: 1 });
 
 module.exports = mongoose.model('PlanProgreso', planProgresoSchema, 'planes_progreso');
