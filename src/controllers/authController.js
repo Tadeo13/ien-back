@@ -58,6 +58,7 @@ exports.profile = tryCatch(async (req, res) => {
   }
 
   res.json({
+    id: usuario._id,
     nombre: usuario.nombre,
     email: usuario.email,
     rol: usuario.rol,
