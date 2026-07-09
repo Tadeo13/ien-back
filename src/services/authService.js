@@ -31,7 +31,7 @@ exports.validateCode = async (codigo_activacion) => {
     .populate('producto_id');
 
   if (!codDoc) {
-    throw new AppError(404, 'Código inválido o ya utilizado');
+    throw new AppError(404, 'Código inválido');
   }
 
   return {
@@ -47,7 +47,7 @@ exports.register = async ({ nombre, email, password, codigo_activacion }) => {
 
   const codDoc = await Codigo.findOne({ codigo: codigo_activacion, activo: true });
   if (!codDoc) {
-    throw new AppError(404, 'Código de activación inválido o ya utilizado');
+    throw new AppError(404, 'Código de activación inválido');
   }
 
   const existe = await Usuario.findOne({ email });
@@ -55,8 +55,6 @@ exports.register = async ({ nombre, email, password, codigo_activacion }) => {
     throw new AppError(409, 'El email ya está registrado');
   }
 
-  // Consumir el código
-  codDoc.activo = false;
   codDoc.fecha_activacion = new Date();
   await codDoc.save();
 
