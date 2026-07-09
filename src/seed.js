@@ -1129,7 +1129,11 @@ async function seed() {
   process.exit(0);
 }
 
-seed().catch((err) => {
-  console.error('Error en seed:', err);
-  process.exit(1);
-});
+if (require.main === module) {
+  seed().catch((err) => {
+    console.error('Error en seed:', err);
+    process.exit(1);
+  });
+}
+
+module.exports = { CONTENIDOS, TEST_PREGUNTAS, CONTENIDOS_ESPECIALES };
