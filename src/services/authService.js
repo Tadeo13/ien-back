@@ -70,7 +70,7 @@ exports.register = async ({ nombre, email, password, codigo_activacion }) => {
 
   const access_token = generarAccessToken(usuario);
   const refresh_token = await generarRefreshToken(usuario._id);
-  return { access_token, refresh_token, usuario: { id: usuario._id, nombre: usuario.nombre, email: usuario.email } };
+  return { access_token, refresh_token, usuario: { id: usuario._id, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol, tiendas_administradas: usuario.tiendas_administradas || [] } };
 };
 
 exports.login = async ({ email, password }) => {
@@ -90,7 +90,7 @@ exports.login = async ({ email, password }) => {
 
   const access_token = generarAccessToken(usuario);
   const refresh_token = await generarRefreshToken(usuario._id);
-  return { access_token, refresh_token, usuario: { id: usuario._id, nombre: usuario.nombre, email: usuario.email } };
+  return { access_token, refresh_token, usuario: { id: usuario._id, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol, tiendas_administradas: usuario.tiendas_administradas || [] } };
 };
 
 exports.refreshToken = async (refreshTokenPlano) => {
