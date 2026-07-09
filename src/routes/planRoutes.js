@@ -280,7 +280,19 @@ router.get('/profile', profile);
  *             properties:
  *               respuesta_usuario:
  *                 type: object
- *                 description: Datos del ejercicio diario completado (opcional y flexible)
+ *                 description: Datos del ejercicio diario completado (opcional)
+ *                 properties:
+ *                   reflexion:
+ *                     type: string
+ *                     description: Reflexión del usuario sobre la lección del día
+ *                     example: Hoy aprendí a identificar mis emociones antes de reaccionar
+ *                   estado_animo:
+ *                     type: number
+ *                     description: Estado de ánimo del usuario (1-5)
+ *                     example: 4
+ *                 example:
+ *                   reflexion: Hoy aprendí a identificar mis emociones antes de reaccionar
+ *                   estado_animo: 4
  *     responses:
  *       200:
  *         description: Día completado

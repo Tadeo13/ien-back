@@ -269,6 +269,17 @@ router.post('/logout', logout);
  *                       type: string
  *                     descripcion:
  *                       type: string
+ *                 tiendas_administradas:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       nombre_tienda:
+ *                         type: string
+ *                       ciudad:
+ *                         type: string
  *       401:
  *         description: Token no provisto o inválido
  *       404:

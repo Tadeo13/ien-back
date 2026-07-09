@@ -50,7 +50,8 @@ exports.profile = tryCatch(async (req, res) => {
   const usuario = await Usuario.findById(req.usuario.id)
     .populate('tienda_id')
     .populate('producto_id')
-    .select('nombre email rol fecha_registro tienda_id producto_id');
+    .populate('tiendas_administradas', 'nombre_tienda ciudad')
+    .select('nombre email rol fecha_registro tienda_id producto_id tiendas_administradas');
 
   if (!usuario) {
     throw new AppError(404, 'Usuario no encontrado');
@@ -70,7 +71,8 @@ exports.profile = tryCatch(async (req, res) => {
       id: usuario.producto_id._id,
       nombre: usuario.producto_id.nombre,
       descripcion: usuario.producto_id.descripcion
-    } : null
+    } : null,
+    tiendas_administradas: usuario.tiendas_administradas
   });
 });
 
