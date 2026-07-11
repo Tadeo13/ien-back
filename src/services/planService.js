@@ -253,6 +253,7 @@ exports.getToday = async (usuarioId) => {
       tipo: contenido.tipo_contenido,
       emociones_objetivo: contenido.emociones_objetivo,
       respuesta_tipo: contenido.respuesta_tipo,
+      campos_respuesta: contenido.campos_respuesta,
       datos_leccion: contenido.datos_leccion
     }
   };

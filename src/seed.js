@@ -1095,7 +1095,7 @@ async function seed() {
   });
   console.log('Admin Negocio creado: admin_negocio@ien.test / admin123 (tiendas: Centro, Norte)');
 
-  // 5. Contenidos diarios: extrae respuesta_tipo y genera campos_respuesta desde datos_leccion.ejercicio
+  // 5. Contenidos diarios: transforma cada paso con su respuesta_tipo individual
   const ESCALA_LIKERT = [
     { valor: 1, etiqueta: 'Nunca' },
     { valor: 2, etiqueta: 'Raramente' },
@@ -1104,21 +1104,57 @@ async function seed() {
     { valor: 5, etiqueta: 'Siempre' }
   ];
 
+  function inferirTipoPaso(texto, ejercicioTipo) {
+    const match = texto.match(/\(escala\s*(\d+)\s*[-–]\s*(\d+)\)/i);
+    if (match) {
+      return { respuesta_tipo: 'escala', min: parseInt(match[1]), max: parseInt(match[2]) };
+    }
+    if (/escala\s*1-10/i.test(texto) || /nivel\s*1-10/i.test(texto) || /___\/10/.test(texto)) {
+      return { respuesta_tipo: 'escala', min: 1, max: 10 };
+    }
+    if (ejercicioTipo === 'reflexion') {
+      return { respuesta_tipo: 'abierta' };
+    }
+    return { respuesta_tipo: 'abierta' };
+  }
+
   const contenidosConTipo = CONTENIDOS.map(c => {
     const ejercicio = c.datos_leccion?.ejercicio;
     let campos_respuesta = [];
 
-    if (ejercicio?.registro) {
-      campos_respuesta = Object.keys(ejercicio.registro).map(key => ({
-        id: key,
-        etiqueta: key.charAt(0).toUpperCase() + key.slice(1),
-        tipo: 'escala',
-        min: 1,
-        max: 10
+    if (ejercicio?.pasos && Array.isArray(ejercicio.pasos)) {
+      const pasosTransformados = ejercicio.pasos.map(p => {
+        if (typeof p === 'string') {
+          const tipo = inferirTipoPaso(p, ejercicio.tipo);
+          return { texto: p, ...tipo };
+        }
+        return p;
+      });
+
+      ejercicio.pasos = pasosTransformados;
+
+      campos_respuesta = pasosTransformados.map((p, i) => ({
+        id: `paso_${i + 1}`,
+        etiqueta: typeof p.texto === 'string' ? p.texto.substring(0, 50) : `Paso ${i + 1}`,
+        tipo: p.respuesta_tipo === 'escala' ? 'escala' : 'texto',
+        min: p.min,
+        max: p.max
       }));
-    } else if (ejercicio?.tipo === 'reflexion') {
-      campos_respuesta = [{ id: 'reflexion', etiqueta: 'Tu reflexión', tipo: 'reflexion' }];
-    } else {
+    }
+
+    if (ejercicio?.registro) {
+      Object.keys(ejercicio.registro).forEach(key => {
+        campos_respuesta.push({
+          id: key,
+          etiqueta: key.charAt(0).toUpperCase() + key.slice(1),
+          tipo: 'escala',
+          min: 1,
+          max: 10
+        });
+      });
+    }
+
+    if (campos_respuesta.length === 0) {
       campos_respuesta = [{ id: 'respuesta', etiqueta: 'Tu respuesta', tipo: 'texto' }];
     }
 
