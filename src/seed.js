@@ -1105,6 +1105,9 @@ async function seed() {
   ];
 
   function inferirTipoPaso(texto, ejercicioTipo) {
+    if (ejercicioTipo === 'practica') {
+      return { respuesta_tipo: 'accion' };
+    }
     const match = texto.match(/\(escala\s*(\d+)\s*[-–]\s*(\d+)\)/i);
     if (match) {
       return { respuesta_tipo: 'escala', min: parseInt(match[1]), max: parseInt(match[2]) };
@@ -1133,13 +1136,15 @@ async function seed() {
 
       ejercicio.pasos = pasosTransformados;
 
-      campos_respuesta = pasosTransformados.map((p, i) => ({
-        id: `paso_${i + 1}`,
-        etiqueta: typeof p.texto === 'string' ? p.texto.substring(0, 50) : `Paso ${i + 1}`,
-        tipo: p.respuesta_tipo === 'escala' ? 'escala' : 'texto',
-        min: p.min,
-        max: p.max
-      }));
+      campos_respuesta = pasosTransformados
+        .filter(p => p.respuesta_tipo !== 'accion')
+        .map((p, i) => ({
+          id: `paso_${i + 1}`,
+          etiqueta: typeof p.texto === 'string' ? p.texto.substring(0, 50) : `Paso ${i + 1}`,
+          tipo: p.respuesta_tipo === 'escala' ? 'escala' : 'texto',
+          min: p.min,
+          max: p.max
+        }));
     }
 
     if (ejercicio?.registro) {
