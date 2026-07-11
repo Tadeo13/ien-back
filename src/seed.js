@@ -9,6 +9,8 @@ const TestPregunta = require('./models/TestPregunta');
 const ContenidoEspecial = require('./models/ContenidoEspecial');
 const Producto = require('./models/Producto');
 const Codigo = require('./models/Codigo');
+const RespuestaTest = require('./models/RespuestaTest');
+const RespuestaDiaria = require('./models/RespuestaDiaria');
 
 // ---------------------------------------------------------------------------
 // Mapa de competencias: slug → label legible
@@ -1027,7 +1029,9 @@ async function seed() {
     TestPregunta.collection.drop().catch(() => {}),
     ContenidoEspecial.collection.drop().catch(() => {}),
     Producto.collection.drop().catch(() => {}),
-    Codigo.collection.drop().catch(() => {})
+    Codigo.collection.drop().catch(() => {}),
+    RespuestaTest.collection.drop().catch(() => {}),
+    RespuestaDiaria.collection.drop().catch(() => {})
   ]);
   console.log('Colecciones y sus índices limpiados');
 
@@ -1091,21 +1095,51 @@ async function seed() {
   });
   console.log('Admin Negocio creado: admin_negocio@ien.test / admin123 (tiendas: Centro, Norte)');
 
-  // 5. Contenidos diarios: extrae respuesta_tipo desde datos_leccion.ejercicio al nivel raíz
-  const contenidosConTipo = CONTENIDOS.map(c => ({
-    ...c,
-    respuesta_tipo: c.datos_leccion?.ejercicio?.respuesta_tipo ?? 'abierta'
-  }));
-  await ContenidoDiario.insertMany(contenidosConTipo);
-  console.log(`${CONTENIDOS.length} contenidos diarios creados`);
+  // 5. Contenidos diarios: extrae respuesta_tipo y genera campos_respuesta desde datos_leccion.ejercicio
+  const ESCALA_LIKERT = [
+    { valor: 1, etiqueta: 'Nunca' },
+    { valor: 2, etiqueta: 'Raramente' },
+    { valor: 3, etiqueta: 'A veces' },
+    { valor: 4, etiqueta: 'Frecuentemente' },
+    { valor: 5, etiqueta: 'Siempre' }
+  ];
 
-  // 6. Test preguntas (30 preguntas, 5 por competencia)
+  const contenidosConTipo = CONTENIDOS.map(c => {
+    const ejercicio = c.datos_leccion?.ejercicio;
+    let campos_respuesta = [];
+
+    if (ejercicio?.registro) {
+      campos_respuesta = Object.keys(ejercicio.registro).map(key => ({
+        id: key,
+        etiqueta: key.charAt(0).toUpperCase() + key.slice(1),
+        tipo: 'escala',
+        min: 1,
+        max: 10
+      }));
+    } else if (ejercicio?.tipo === 'reflexion') {
+      campos_respuesta = [{ id: 'reflexion', etiqueta: 'Tu reflexión', tipo: 'reflexion' }];
+    } else {
+      campos_respuesta = [{ id: 'respuesta', etiqueta: 'Tu respuesta', tipo: 'texto' }];
+    }
+
+    return {
+      ...c,
+      respuesta_tipo: ejercicio?.respuesta_tipo ?? 'abierta',
+      campos_respuesta
+    };
+  });
+
   const preguntasConLabel = TEST_PREGUNTAS.map(p => ({
     ...p,
-    competencia_label: COMPETENCIA_LABELS[p.competencia]
+    competencia_label: COMPETENCIA_LABELS[p.competencia],
+    tipo_respuesta: 'escala',
+    opciones: ESCALA_LIKERT
   }));
   await TestPregunta.insertMany(preguntasConLabel);
   console.log(`${preguntasConLabel.length} preguntas de test creadas`);
+
+  await ContenidoDiario.insertMany(contenidosConTipo);
+  console.log(`${CONTENIDOS.length} contenidos diarios creados`);
 
   // 7. Contenidos especiales (4 registros)
   await ContenidoEspecial.insertMany(CONTENIDOS_ESPECIALES);
