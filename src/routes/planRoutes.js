@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const authMiddleware = require('../middlewares/authMiddleware');
-const { setupTest, today, profile, days, completeDay, advanceDay, getTestPreguntas, responderDiario, respuestasDiarias } = require('../controllers/planController');
+const { setupTest, today, profile, days, completeDay, advanceDay, getTestPreguntas } = require('../controllers/planController');
 
 const router = Router();
 
@@ -331,8 +331,7 @@ router.get('/profile', profile);
  */
 router.post('/complete-day', completeDay);
 
-router.post('/responder-dia', responderDiario);
-router.get('/respuestas-dia/:dia', respuestasDiarias);
+
 
 /**
  * @swagger

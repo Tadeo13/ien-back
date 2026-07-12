@@ -9,8 +9,7 @@ const TestPregunta = require('./models/TestPregunta');
 const ContenidoEspecial = require('./models/ContenidoEspecial');
 const Producto = require('./models/Producto');
 const Codigo = require('./models/Codigo');
-const RespuestaTest = require('./models/RespuestaTest');
-const RespuestaDiaria = require('./models/RespuestaDiaria');
+
 
 // ---------------------------------------------------------------------------
 // Mapa de competencias: slug → label legible
@@ -1030,8 +1029,7 @@ async function seed() {
     ContenidoEspecial.collection.drop().catch(() => {}),
     Producto.collection.drop().catch(() => {}),
     Codigo.collection.drop().catch(() => {}),
-    RespuestaTest.collection.drop().catch(() => {}),
-    RespuestaDiaria.collection.drop().catch(() => {})
+
   ]);
   console.log('Colecciones y sus índices limpiados');
 

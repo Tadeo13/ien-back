@@ -8,7 +8,7 @@ const jobRoutes = require('./routes/jobRoutes');
 const sucursalRoutes = require('./routes/sucursalRoutes');
 const productoRoutes = require('./routes/productoRoutes');
 const codigoRoutes = require('./routes/codigoRoutes');
-const testRoutes = require('./routes/testRoutes');
+
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 const { errorHandler } = require('./middlewares/errorHandler');
@@ -40,7 +40,7 @@ app.use('/api/jobs', jobRoutes);
 app.use('/api/admin/sucursales', sucursalRoutes);
 app.use('/api/admin/productos', productoRoutes);
 app.use('/api/admin/codigos', codigoRoutes);
-app.use('/api/test', testRoutes);
+
 
 app.use(errorHandler);
 

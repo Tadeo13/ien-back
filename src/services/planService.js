@@ -3,7 +3,7 @@ const Tienda = require('../models/Tienda');
 const PlanProgreso = require('../models/PlanProgreso');
 const ContenidoDiario = require('../models/ContenidoDiario');
 const TestPregunta = require('../models/TestPregunta');
-const RespuestaDiaria = require('../models/RespuestaDiaria');
+
 const AppError = require('../utils/AppError');
 const { esMismoDiaCalendarioUTC } = require('../utils/fechas');
 
@@ -381,39 +381,7 @@ exports.getTestPreguntas = async () => {
   return TestPregunta.find().sort('numero').select('numero texto competencia competencia_label -_id');
 };
 
-exports.saveDailyResponses = async (usuarioId, dia_numero, respuestas) => {
-  const plan = await PlanProgreso
-    .findOne({ usuario_id: usuarioId, estado: 'activo' })
-    .select('dia_actual');
-  if (!plan) {
-    throw new AppError(404, 'No hay un plan activo');
-  }
-  if (plan.dia_actual !== dia_numero) {
-    throw new AppError(400, `El día actual es ${plan.dia_actual}, no ${dia_numero}`);
-  }
 
-  const respuestasNormalizadas = respuestas.map(r => ({
-    id: r.id || r.campo,
-    valor: r.valor,
-    tipo: r.tipo || 'texto'
-  }));
-
-  const respuestaDiaria = await RespuestaDiaria.findOneAndUpdate(
-    { usuario: usuarioId, dia_numero },
-    { usuario: usuarioId, dia_numero, respuestas: respuestasNormalizadas, completado: true, fecha: new Date() },
-    { upsert: true, new: true }
-  );
-
-  return respuestaDiaria;
-};
-
-exports.getDailyResponses = async (usuarioId, dia_numero) => {
-  const respuesta = await RespuestaDiaria.findOne({ usuario: usuarioId, dia_numero });
-  if (!respuesta) {
-    throw new AppError(404, 'No hay respuestas para este día');
-  }
-  return respuesta;
-};
 
 // Exportado para testing unitario
 exports.yaCompletoActividadHoy = yaCompletoActividadHoy;

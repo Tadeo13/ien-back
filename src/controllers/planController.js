@@ -1,4 +1,4 @@
-const { setupTest, getToday, getProfile, completeDay, advanceDay, getDays, getTestPreguntas, saveDailyResponses, getDailyResponses } = require('../services/planService');
+const { setupTest, getToday, getProfile, completeDay, advanceDay, getDays, getTestPreguntas } = require('../services/planService');
 const { tryCatch } = require('../middlewares/errorHandler');
 const AppError = require('../utils/AppError');
 
@@ -55,17 +55,4 @@ exports.advanceDay = tryCatch(async (req, res) => {
   res.json(result);
 });
 
-exports.responderDiario = tryCatch(async (req, res) => {
-  const { dia_numero, respuestas } = req.body;
-  if (!dia_numero || !respuestas || !Array.isArray(respuestas)) {
-    throw new AppError(400, 'dia_numero y respuestas son requeridos');
-  }
-  const result = await saveDailyResponses(req.usuario.id, dia_numero, respuestas);
-  res.status(201).json(result);
-});
 
-exports.respuestasDiarias = tryCatch(async (req, res) => {
-  const dia_numero = parseInt(req.params.dia, 10);
-  const result = await getDailyResponses(req.usuario.id, dia_numero);
-  res.json(result);
-});
