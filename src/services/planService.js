@@ -293,7 +293,7 @@ exports.getToday = async (usuarioId) => {
 
   const tipoEspecial = CONTENIDO_ESPECIAL_POR_DIA[plan.dia_actual];
   const contenidoEspecial = tipoEspecial
-    ? await ContenidoEspecial.findOne({ tipo: tipoEspecial }).lean()
+    ? await ContenidoEspecial.findOne({ tipo: tipoEspecial }).select('tipo titulo contenido -_id').lean()
     : null;
 
   return {
@@ -399,7 +399,7 @@ exports.getDays = async (usuarioId, soloCompletados = false) => {
   const contenidoMap = new Map(contenidos.map(c => [c.dia_numero, c]));
 
   const tiposNecesarios = Object.values(CONTENIDO_ESPECIAL_POR_DIA);
-  const especiales = await ContenidoEspecial.find({ tipo: { $in: tiposNecesarios } }).lean();
+  const especiales = await ContenidoEspecial.find({ tipo: { $in: tiposNecesarios } }).select('tipo titulo contenido -_id').lean();
   // NOTA: Asumimos 1 doc por tipo (garantizado por seed + enum).
   // Si se carga contenido especial manualmente con tipos duplicados,
   // el Map se queda con el último. No rompe pero puede ser confuso.
@@ -469,7 +469,7 @@ exports.autocompleteTest = async (usuarioId, debiles = []) => {
 };
 
 exports.getBienvenida = async () => {
-  const doc = await ContenidoEspecial.findOne({ tipo: 'bienvenida' }).lean();
+  const doc = await ContenidoEspecial.findOne({ tipo: 'bienvenida' }).select('tipo titulo contenido -_id').lean();
   if (!doc) {
     throw new AppError(404, 'Contenido de bienvenida no encontrado');
   }
