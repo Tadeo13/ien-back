@@ -281,6 +281,7 @@ exports.getToday = async (usuarioId) => {
     return {
       dia_actual: plan.dia_actual,
       cabecera: null,
+      contenido_especial: null,
       leccion: null
     };
   }
@@ -290,9 +291,15 @@ exports.getToday = async (usuarioId) => {
     throw new AppError(404, 'Contenido no disponible para este día');
   }
 
+  const tipoEspecial = CONTENIDO_ESPECIAL_POR_DIA[plan.dia_actual];
+  const contenidoEspecial = tipoEspecial
+    ? await ContenidoEspecial.findOne({ tipo: tipoEspecial }).lean()
+    : null;
+
   return {
     dia_actual: plan.dia_actual,
     cabecera: getCabeceraSiEsInicioDeBloque(plan.dia_actual),
+    contenido_especial: contenidoEspecial,
     leccion: mapContenidoALeccion(contenido)
   };
 };

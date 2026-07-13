@@ -215,6 +215,18 @@ router.get('/test-inicial', getTestInicial);
  *                   type: string
  *                   nullable: true
  *                   description: Texto introductorio del bloque si el día es el primero del bloque, null si no
+ *                 contenido_especial:
+ *                   type: object
+ *                   nullable: true
+ *                   description: Contenido especial del día (presentación, reflexión), null si no aplica o si ya completó
+ *                   properties:
+ *                     tipo:
+ *                       type: string
+ *                       enum: [presentacion, reflexion_15_dias, reflexion_30_dias]
+ *                     titulo:
+ *                       type: string
+ *                     contenido:
+ *                       type: object
  *                 leccion:
  *                   type: object
  *                   nullable: true
