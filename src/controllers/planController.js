@@ -1,4 +1,4 @@
-const { setupTest, getToday, getProfile, completeDay, advanceDay, getDays, getTestPreguntas } = require('../services/planService');
+const { setupTest, getTestInicial, getToday, getProfile, completeDay, advanceDay, autocompleteTest, getDays, getTestPreguntas } = require('../services/planService');
 const { tryCatch } = require('../middlewares/errorHandler');
 const AppError = require('../utils/AppError');
 
@@ -28,6 +28,11 @@ exports.setupTest = tryCatch(async (req, res) => {
   });
 });
 
+exports.getTestInicial = tryCatch(async (req, res) => {
+  const result = await getTestInicial(req.usuario.id);
+  res.json(result);
+});
+
 exports.today = tryCatch(async (req, res) => {
   const result = await getToday(req.usuario.id);
   res.json(result);
@@ -53,6 +58,14 @@ exports.days = tryCatch(async (req, res) => {
 exports.advanceDay = tryCatch(async (req, res) => {
   const result = await advanceDay(req.usuario.id);
   res.json(result);
+});
+
+exports.autocompleteTest = tryCatch(async (req, res) => {
+  const debiles = req.query.debiles
+    ? req.query.debiles.split(',').map(s => s.trim()).filter(Boolean)
+    : [];
+  const result = await autocompleteTest(req.usuario.id, debiles);
+  res.status(201).json(result);
 });
 
 

@@ -6,6 +6,7 @@ const TestPregunta = require('../models/TestPregunta');
 
 const AppError = require('../utils/AppError');
 const { esMismoDiaCalendarioUTC } = require('../utils/fechas');
+const BLOQUES = require('../constants/bloques');
 
 function yaCompletoActividadHoy(plan, ahora) {
   if (!plan.ultima_fecha_actividad) return false;
@@ -27,6 +28,22 @@ function detectarHito(racha_dias, hitos_alcanzados = []) {
     return racha_dias;
   }
   return null;
+}
+
+function mapContenidoALeccion(contenido) {
+  return {
+    titulo: contenido.titulo_modulo,
+    tipo: contenido.tipo_contenido,
+    emociones_objetivo: contenido.emociones_objetivo,
+    respuesta_tipo: contenido.respuesta_tipo,
+    campos_respuesta: contenido.campos_respuesta,
+    datos_leccion: contenido.datos_leccion
+  };
+}
+
+function getCabeceraSiEsInicioDeBloque(diaNumero) {
+  const bloque = BLOQUES.find(b => b.dia_inicio === diaNumero);
+  return bloque ? bloque.cabecera : null;
 }
 
 /**
@@ -226,6 +243,22 @@ exports.setupTest = async ({ respuestas, usuarioId }) => {
 };
 
 /**
+ * Devuelve los resultados del test inicial del usuario (lectura pura).
+ */
+exports.getTestInicial = async (usuarioId) => {
+  const plan = await PlanProgreso
+    .findOne({ usuario_id: usuarioId })
+    .select('test_inicial');
+  if (!plan || !plan.test_inicial) {
+    throw new AppError(404, 'Test inicial no encontrado');
+  }
+  return {
+    puntuaciones_por_competencia: plan.test_inicial.puntuaciones_por_competencia,
+    competencias_a_mejorar: plan.test_inicial.competencias_a_mejorar
+  };
+};
+
+/**
  * Devuelve el contenido del dia actual del plan activo del usuario.
  */
 exports.getToday = async (usuarioId) => {
@@ -238,7 +271,11 @@ exports.getToday = async (usuarioId) => {
 
   const ahora = new Date();
   if (yaCompletoActividadHoy(plan, ahora)) {
-    return { leccion: null };
+    return {
+      dia_actual: plan.dia_actual,
+      cabecera: null,
+      leccion: null
+    };
   }
 
   const contenido = await ContenidoDiario.findOne({ dia_numero: plan.dia_actual });
@@ -247,15 +284,9 @@ exports.getToday = async (usuarioId) => {
   }
 
   return {
-    leccion: {
-      dia_actual: plan.dia_actual,
-      titulo: contenido.titulo_modulo,
-      tipo: contenido.tipo_contenido,
-      emociones_objetivo: contenido.emociones_objetivo,
-      respuesta_tipo: contenido.respuesta_tipo,
-      campos_respuesta: contenido.campos_respuesta,
-      datos_leccion: contenido.datos_leccion
-    }
+    dia_actual: plan.dia_actual,
+    cabecera: getCabeceraSiEsInicioDeBloque(plan.dia_actual),
+    leccion: mapContenidoALeccion(contenido)
   };
 };
 
@@ -359,16 +390,11 @@ exports.getDays = async (usuarioId, soloCompletados = false) => {
       completado: d.completado,
       fecha_completado: d.fecha_completado,
       respuesta_usuario: d.respuesta_usuario || null,
+      cabecera: getCabeceraSiEsInicioDeBloque(d.dia_numero),
       leccion: (() => {
         const c = contenidoMap.get(d.dia_numero);
         if (!c) return null;
-        return {
-          titulo: c.titulo_modulo,
-          tipo: c.tipo_contenido,
-          emociones_objetivo: c.emociones_objetivo,
-          respuesta_tipo: c.respuesta_tipo,
-          datos_leccion: c.datos_leccion
-        };
+        return mapContenidoALeccion(c);
       })()
     }))
   };
@@ -381,7 +407,40 @@ exports.getTestPreguntas = async () => {
   return TestPregunta.find().sort('numero').select('numero texto competencia competencia_label -_id');
 };
 
+// ---------------------------------------------------------------------------
+// Dev-only: autocomplete del test inicial
+// ---------------------------------------------------------------------------
+const COMPETENCIAS_VALIDAS = [
+  'autoconciencia', 'autoconfianza', 'autocontrol',
+  'empatia', 'motivacion', 'competencia_social'
+];
 
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+/**
+ * Autocompleta el test inicial con scores aleatorios.
+ * @param {string} usuarioId
+ * @param {string[]} debiles - competencias con score bajo (1-2)
+ */
+exports.autocompleteTest = async (usuarioId, debiles = []) => {
+  const invalidos = debiles.filter(d => !COMPETENCIAS_VALIDAS.includes(d));
+  if (invalidos.length > 0) {
+    throw new AppError(400,
+      `Competencia(s) inválida(s): ${invalidos.join(', ')}. Válidas: ${COMPETENCIAS_VALIDAS.join(', ')}`
+    );
+  }
+
+  const preguntas = await TestPregunta.find().select('numero competencia').lean();
+
+  const respuestas = preguntas.map(p => ({
+    numero: p.numero,
+    score: debiles.includes(p.competencia) ? randomInt(1, 2) : randomInt(1, 5)
+  }));
+
+  return exports.setupTest({ respuestas, usuarioId });
+};
 
 // Exportado para testing unitario
 exports.yaCompletoActividadHoy = yaCompletoActividadHoy;

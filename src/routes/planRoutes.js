@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const authMiddleware = require('../middlewares/authMiddleware');
-const { setupTest, today, profile, days, completeDay, advanceDay, getTestPreguntas } = require('../controllers/planController');
+const { setupTest, getTestInicial, today, profile, days, completeDay, advanceDay, autocompleteTest, getTestPreguntas } = require('../controllers/planController');
 
 const router = Router();
 
@@ -129,6 +129,42 @@ router.post('/setup-test', setupTest);
 
 /**
  * @swagger
+ * /api/plan/test-inicial:
+ *   get:
+ *     summary: Obtener resultados del test inicial
+ *     tags: [Plan]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Puntuaciones por competencia y competencias a mejorar
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 puntuaciones_por_competencia:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       competencia:
+ *                         type: string
+ *                       competencia_label:
+ *                         type: string
+ *                       puntuacion:
+ *                         type: number
+ *                 competencias_a_mejorar:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       404:
+ *         description: Test inicial no encontrado
+ */
+router.get('/test-inicial', getTestInicial);
+
+/**
+ * @swagger
  * /api/plan/today:
  *   get:
  *     summary: Obtener la lección del día actual
@@ -143,13 +179,18 @@ router.post('/setup-test', setupTest);
  *             schema:
  *               type: object
  *               properties:
+ *                 dia_actual:
+ *                   type: number
+ *                   description: Número de día actual del plan
+ *                 cabecera:
+ *                   type: string
+ *                   nullable: true
+ *                   description: Texto introductorio del bloque si el día es el primero del bloque, null si no
  *                 leccion:
  *                   type: object
  *                   nullable: true
  *                   description: Datos de la lección del día, o null si ya se completó
  *                   properties:
- *                     dia_actual:
- *                       type: number
  *                     titulo:
  *                       type: string
  *                     tipo:
@@ -158,6 +199,13 @@ router.post('/setup-test', setupTest);
  *                       type: array
  *                       items:
  *                         type: string
+ *                     respuesta_tipo:
+ *                       type: string
+ *                       enum: [abierta, escala, estructurado]
+ *                     campos_respuesta:
+ *                       type: array
+ *                       items:
+ *                         type: object
  *                     datos_leccion:
  *                       type: object
  *       404:
@@ -202,6 +250,10 @@ router.get('/today', today);
  *                       respuesta_usuario:
  *                         type: object
  *                         nullable: true
+ *                       cabecera:
+ *                         type: string
+ *                         nullable: true
+ *                         description: Texto introductorio del bloque si el día es el primero del bloque, null si no
  *                       leccion:
  *                         type: object
  *                         nullable: true
@@ -217,6 +269,10 @@ router.get('/today', today);
  *                           respuesta_tipo:
  *                             type: string
  *                             enum: [abierta, escala, estructurado]
+ *                           campos_respuesta:
+ *                             type: array
+ *                             items:
+ *                               type: object
  *                           datos_leccion:
  *                             type: object
  *       404:
@@ -367,6 +423,57 @@ router.post('/complete-day', completeDay);
  */
 if (process.env.NODE_ENV !== 'production') {
   router.post('/testing/advance', advanceDay);
+
+  /**
+   * @swagger
+   * /api/plan/testing/autocomplete-test:
+   *   post:
+   *     summary: "[DEV] Autocompletar test inicial con scores aleatorios"
+   *     tags: [Plan]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: query
+   *         name: debiles
+   *         schema:
+   *           type: string
+   *         description: Competencias a marcar como débiles (scores 1-2). Separadas por coma.
+   *         example: "autocontrol,empatia"
+   *     responses:
+   *       201:
+   *         description: Plan creado con test inicial autocompletado
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 plan_id:
+   *                   type: string
+   *                 dia_actual:
+   *                   type: number
+   *                 estado:
+   *                   type: string
+   *                 puntuaciones_por_competencia:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       competencia:
+   *                         type: string
+   *                       competencia_label:
+   *                         type: string
+   *                       puntuacion:
+   *                         type: number
+   *                 competencias_a_mejorar:
+   *                   type: array
+   *                   items:
+   *                     type: string
+   *       400:
+   *         description: Competencia(s) inválida(s) en el parámetro debiles
+   *       409:
+   *         description: El usuario ya tiene un plan
+   */
+  router.post('/testing/autocomplete-test', autocompleteTest);
 }
 
 module.exports = router;
