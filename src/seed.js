@@ -39,10 +39,10 @@ const CONTENIDOS = [
         nombre: 'Escaneo Corporal Matutino',
         instruccion: 'Al despertar, permanece en la cama durante 2-3 minutos adicionales escaneando tu cuerpo de pies a cabeza.',
         pasos: [
-          'Observa tus niveles de energía hoy (escala 1-10)',
-          'Identifica tensión en hombros, cuello o mandíbula',
-          'Siente si hay ligereza en las piernas o pesadez mental',
-          'Nota si tu respiración es superficial o profunda'
+          { texto: 'Observa tus niveles de energía hoy', respuesta_tipo: 'escala' },
+          { texto: 'Identifica tensión en hombros, cuello o mandíbula', respuesta_tipo: 'abierta' },
+          { texto: 'Siente si hay ligereza en las piernas o pesadez mental', respuesta_tipo: 'abierta' },
+          { texto: 'Nota si tu respiración es superficial o profunda', respuesta_tipo: 'abierta' }
         ],
         tipo: 'reflexion',
         respuesta_tipo: 'abierta'
@@ -67,9 +67,9 @@ const CONTENIDOS = [
         nombre: 'Evaluación Pre-Comida/Entrenamiento',
         instruccion: 'Antes de tu comida principal o entrenamiento, califica del 1 al 10 cada señal.',
         pasos: [
-          'Hambre Física: sensaciones reales en el estómago',
-          'Cansancio Corporal: fatiga muscular y energética',
-          'Ansiedad Mental: tensión psicológica y preocupación'
+          { texto: 'Hambre Física: sensaciones reales en el estómago', respuesta_tipo: 'abierta' },
+          { texto: 'Cansancio Corporal: fatiga muscular y energética', respuesta_tipo: 'abierta' },
+          { texto: 'Ansiedad Mental: tensión psicológica y preocupación', respuesta_tipo: 'abierta' }
         ],
         registro: { hambre: '___/10', cansancio: '___/10', ansiedad: '___/10' },
         tipo: 'registro',
@@ -95,9 +95,9 @@ const CONTENIDOS = [
         nombre: 'La Pausa del Reconocimiento',
         instruccion: 'Cuando sientas la urgencia de comer algo procesado sin hambre real, aplica este protocolo de 3 pasos.',
         pasos: [
-          'DETENTE por 30 segundos',
-          'NOMBRA en voz alta: "No es hambre/cansancio real, lo que siento es [emoción específica]"',
-          'ELIGE una acción que realmente sane esa emoción'
+          { texto: 'DETENTE por 30 segundos', respuesta_tipo: 'abierta' },
+          { texto: 'NOMBRA en voz alta: "No es hambre/cansancio real, lo que siento es [emoción específica]"', respuesta_tipo: 'abierta' },
+          { texto: 'ELIGE una acción que realmente sane esa emoción', respuesta_tipo: 'abierta' }
         ],
         tipo: 'practica',
         respuesta_tipo: 'abierta'
@@ -122,11 +122,11 @@ const CONTENIDOS = [
         nombre: 'Entrenamiento Sin Distracciones',
         instruccion: 'Durante 10-15 minutos de tu actividad física, elimina distracciones y enfócate en las sensaciones corporales.',
         pasos: [
-          'Apaga música, podcasts and notificaciones',
-          'Concéntrate en el ritmo de tu respiración',
-          'Siente el contacto consciente de tus pies con el suelo',
-          'Percibe la contracción y relajación muscular',
-          'Observa tu latido cardíaco'
+          { texto: 'Apaga música, podcasts and notificaciones', respuesta_tipo: 'abierta' },
+          { texto: 'Concéntrate en el ritmo de tu respiración', respuesta_tipo: 'abierta' },
+          { texto: 'Siente el contacto consciente de tus pies con el suelo', respuesta_tipo: 'abierta' },
+          { texto: 'Percibe la contracción y relajación muscular', respuesta_tipo: 'abierta' },
+          { texto: 'Observa tu latido cardíaco', respuesta_tipo: 'abierta' }
         ],
         tipo: 'practica',
         respuesta_tipo: 'abierta'
@@ -152,10 +152,10 @@ const CONTENIDOS = [
         nombre: 'Análisis de Patrones',
         instruccion: 'Revisa tus anotaciones de los días 1-4 y responde las siguientes preguntas de autoconocimiento.',
         pasos: [
-          '¿A qué hora del día te sientes más fuerte para ejercitarte?',
-          '¿En qué momento tu mente pide más "consuelo" a través de la comida?',
-          '¿Qué emociones específicas identificaste como "anestésicos"?',
-          '¿Cuáles fueron tus niveles de energía más consistentes?'
+          { texto: '¿A qué hora del día te sientes más fuerte para ejercitarte?', respuesta_tipo: 'abierta' },
+          { texto: '¿En qué momento tu mente pide más "consuelo" a través de la comida?', respuesta_tipo: 'abierta' },
+          { texto: '¿Qué emociones específicas identificaste como "anestésicos"?', respuesta_tipo: 'abierta' },
+          { texto: '¿Cuáles fueron tus niveles de energía más consistentes?', respuesta_tipo: 'abierta' }
         ],
         tipo: 'reflexion',
         respuesta_tipo: 'abierta'
@@ -183,9 +183,9 @@ const CONTENIDOS = [
         nombre: 'Reescritura de Identidad',
         instruccion: 'Identifica una etiqueta limitante, elimínala simbólicamente y crea una nueva narrativa en presente.',
         pasos: [
-          'Escribe una etiqueta limitante específica (ej: "Soy perezoso para el ejercicio")',
-          'Táchala físicamente con una línea roja gruesa',
-          'Redacta tu nueva identidad en presente: "Soy una persona que elige cuidar su energía y su salud cada día"'
+          { texto: 'Escribe una etiqueta limitante específica (ej: "Soy perezoso para el ejercicio")', respuesta_tipo: 'abierta' },
+          { texto: 'Táchala físicamente con una línea roja gruesa', respuesta_tipo: 'abierta' },
+          { texto: 'Redacta tu nueva identidad en presente: "Soy una persona que elige cuidar su energía y su salud cada día"', respuesta_tipo: 'abierta' }
         ],
         tipo: 'reflexion',
         respuesta_tipo: 'abierta'
@@ -210,10 +210,10 @@ const CONTENIDOS = [
         nombre: 'Micro-Contrato Diario',
         instruccion: 'Elige UN solo micro-compromiso para hoy y firma tu contrato personal.',
         pasos: [
-          'Tomar mi dosis de suplemento todos los días',
-          'Hacer 5 minutos de estiramientos al despertar',
-          'Leer una página al día de un libro de crecimiento personal',
-          'Caminar 10 minutos después del almuerzo'
+          { texto: 'Tomar mi dosis de suplemento todos los días', respuesta_tipo: 'abierta' },
+          { texto: 'Hacer 5 minutos de estiramientos al despertar', respuesta_tipo: 'abierta' },
+          { texto: 'Leer una página al día de un libro de crecimiento personal', respuesta_tipo: 'abierta' },
+          { texto: 'Caminar 10 minutos después del almuerzo', respuesta_tipo: 'abierta' }
         ],
         tipo: 'registro',
         registro: { compromiso: '', hora: '', testigo: '', firma: '' },
@@ -268,9 +268,9 @@ const CONTENIDOS = [
         nombre: 'Declaración de Elección Consciente',
         instruccion: 'Antes de realizar CUALQUIER acción de salud, di en voz alta la fórmula de empoderamiento.',
         pasos: [
-          'En lugar de "Tengo que tomar mis suplementos" → "Yo elijo tomar mi Ashwagandha porque valoro mi tranquilidad mental"',
-          'En lugar de "Debo ir al gimnasio" → "Yo elijo moverme porque valoro mi vitalidad y energía"',
-          'En lugar de "No puedo comer esto" → "Yo elijo alimentos que nutren mi cuerpo porque valoro mi bienestar"'
+          { texto: 'En lugar de "Tengo que tomar mis suplementos" → "Yo elijo tomar mi Ashwagandha porque valoro mi tranquilidad mental"', respuesta_tipo: 'abierta' },
+          { texto: 'En lugar de "Debo ir al gimnasio" → "Yo elijo moverme porque valoro mi vitalidad y energía"', respuesta_tipo: 'abierta' },
+          { texto: 'En lugar de "No puedo comer esto" → "Yo elijo alimentos que nutren mi cuerpo porque valoro mi bienestar"', respuesta_tipo: 'abierta' }
         ],
         tipo: 'practica',
         registro: { formula: '"Yo elijo [acción] porque valoro mi [beneficio personal]"' },
@@ -321,10 +321,10 @@ const CONTENIDOS = [
         nombre: 'Protocolo de Pausa Consciente',
         instruccion: 'Cuando sientas un antojo, urgencia de sedentarismo, o impulso de procrastinar, aplica este protocolo.',
         pasos: [
-          'DETECCIÓN: Reconoce el impulso automático',
-          'CRONÓMETRO: Activa timer de 5 minutos exactos',
-          'ACTIVIDAD OPUESTA: Si es antojo → bebe 500ml de agua. Si es sedentarismo → 10 estiramientos.',
-          'EVALUACIÓN POST-PAUSA: Si el deseo persiste, actúa con conciencia plena.'
+          { texto: 'DETECCIÓN: Reconoce el impulso automático', respuesta_tipo: 'abierta' },
+          { texto: 'CRONÓMETRO: Activa timer de 5 minutos exactos', respuesta_tipo: 'abierta' },
+          { texto: 'ACTIVIDAD OPUESTA: Si es antojo → bebe 500ml de agua. Si es sedentarismo → 10 estiramientos.', respuesta_tipo: 'abierta' },
+          { texto: 'EVALUACIÓN POST-PAUSA: Si el deseo persiste, actúa con conciencia plena.', respuesta_tipo: 'abierta' }
         ],
         tipo: 'practica',
         respuesta_tipo: 'abierta'
@@ -349,9 +349,9 @@ const CONTENIDOS = [
         nombre: 'Hora Sagrada de Regulación',
         instruccion: 'Establece una hora fija al día para tu ritual de regulación.',
         pasos: [
-          'Suplementación estratégica (2 minutos)',
-          'Caminata consciente (10 minutos)',
-          'Hidratación mindful (3 minutos)'
+          { texto: 'Suplementación estratégica (2 minutos)', respuesta_tipo: 'abierta' },
+          { texto: 'Caminata consciente (10 minutos)', respuesta_tipo: 'abierta' },
+          { texto: 'Hidratación mindful (3 minutos)', respuesta_tipo: 'abierta' }
         ],
         tipo: 'practica',
         registro: { horario_elegido: '', suplemento_matutino: '', suplemento_nocturno: '' },
@@ -403,9 +403,9 @@ const CONTENIDOS = [
         nombre: 'Protocolo de Respiración Estratégica 4-6-8',
         instruccion: 'Aplica esta técnica de respiración antes de comidas, entrenamiento y suplementación.',
         pasos: [
-          'Inhalación nasal: 4 segundos (expande abdomen)',
-          'Retención: 6 segundos (sin tensión)',
-          'Exhalación bucal: 8 segundos (activación parasimpática)'
+          { texto: 'Inhalación nasal: 4 segundos (expande abdomen)', respuesta_tipo: 'abierta' },
+          { texto: 'Retención: 6 segundos (sin tensión)', respuesta_tipo: 'abierta' },
+          { texto: 'Exhalación bucal: 8 segundos (activación parasimpática)', respuesta_tipo: 'abierta' }
         ],
         tipo: 'practica',
         registro: {
@@ -435,9 +435,9 @@ const CONTENIDOS = [
         nombre: 'Protocolo de Tolerancia Emocional "ABLANDAR-PERMITIR-AMAR"',
         instruccion: 'Cuando aparezca tensión, ansiedad o incomodidad, aplica este protocolo.',
         pasos: [
-          'ABLANDAR (30s): Localiza la tensión corporal, respira hacia esa zona, relaja conscientemente',
-          'PERMITIR (60s): Observa pensamientos sin juzgarlos, describe la emoción, permite que exista como "nube pasajera"',
-          'AMAR (30s): Coloca mano en corazón, repite "Puedo estar con esto ahora", ofrécete compasión'
+          { texto: 'ABLANDAR (30s): Localiza la tensión corporal, respira hacia esa zona, relaja conscientemente', respuesta_tipo: 'abierta' },
+          { texto: 'PERMITIR (60s): Observa pensamientos sin juzgarlos, describe la emoción, permite que exista como "nube pasajera"', respuesta_tipo: 'abierta' },
+          { texto: 'AMAR (30s): Coloca mano en corazón, repite "Puedo estar con esto ahora", ofrécete compasión', respuesta_tipo: 'abierta' }
         ],
         tipo: 'practica',
         registro: { emocion: '', intensidad: '', duracion_real: '', estrategia_usada: '' },
@@ -465,9 +465,9 @@ const CONTENIDOS = [
         nombre: 'Técnica de Visualización Multisensorial',
         instruccion: 'Encuentra una posición cómoda y realiza esta visualización científica de 10-15 minutos.',
         pasos: [
-          'Proyección Temporal (5 min): Visualízate exactamente 10 años en el futuro en un lugar específico',
-          'Experiencia Sensorial Completa (5 min): Siente la fuerza de tus latidos, profundidad respiratoria, agilidad muscular',
-          'Conexión Emocional (3-5 min): Siente gratitud hacia tu "yo actual", orgullo por tus decisiones'
+          { texto: 'Proyección Temporal (5 min): Visualízate exactamente 10 años en el futuro en un lugar específico', respuesta_tipo: 'abierta' },
+          { texto: 'Experiencia Sensorial Completa (5 min): Siente la fuerza de tus latidos, profundidad respiratoria, agilidad muscular', respuesta_tipo: 'abierta' },
+          { texto: 'Conexión Emocional (3-5 min): Siente gratitud hacia tu "yo actual", orgullo por tus decisiones', respuesta_tipo: 'abierta' }
         ],
         tipo: 'practica',
         respuesta_tipo: 'abierta'
@@ -493,10 +493,10 @@ const CONTENIDOS = [
         nombre: 'Arqueología de Valores Profundos',
         instruccion: 'Descubre tu "porqué" auténtico respondiendo estas preguntas progresivas.',
         pasos: [
-          '¿Qué es lo más importante para ti en la vida? ¿Por qué es importante?',
-          '¿Cómo se relaciona tu salud con proteger eso que valoras?',
-          'Completa: "Cuido mi salud integral porque quiero _________ para/con _________"',
-          'Escribe tu "porqué" en un post-it y pégalo en un lugar estratégico'
+          { texto: '¿Qué es lo más importante para ti en la vida? ¿Por qué es importante?', respuesta_tipo: 'abierta' },
+          { texto: '¿Cómo se relaciona tu salud con proteger eso que valoras?', respuesta_tipo: 'abierta' },
+          { texto: 'Completa: "Cuido mi salud integral porque quiero _________ para/con _________"', respuesta_tipo: 'abierta' },
+          { texto: 'Escribe tu "porqué" en un post-it y pégalo en un lugar estratégico', respuesta_tipo: 'abierta' }
         ],
         tipo: 'reflexion',
         registro: { por_que: '', pegado_en: '' },
@@ -548,9 +548,9 @@ const CONTENIDOS = [
         nombre: 'Auditoría Energética Consciente',
         instruccion: 'Durante tu comida principal, practica la alimentación consciente energética.',
         pasos: [
-          'Preparación Mindful: 3 respiraciones, intención "Voy a nutrir mi energía celular", gratitud',
-          'Identificación Nutricional: identifica proteínas, carbohidratos complejos, grasas saludables',
-          'Conexión Propósito-Nutrición: "Este [alimento] proporciona [nutriente] para que mi [sistema] pueda [función]"'
+          { texto: 'Preparación Mindful: 3 respiraciones, intención "Voy a nutrir mi energía celular", gratitud', respuesta_tipo: 'abierta' },
+          { texto: 'Identificación Nutricional: identifica proteínas, carbohidratos complejos, grasas saludables', respuesta_tipo: 'abierta' },
+          { texto: 'Conexión Propósito-Nutrición: "Este [alimento] proporciona [nutriente] para que mi [sistema] pueda [función]"', respuesta_tipo: 'abierta' }
         ],
         tipo: 'practica',
         respuesta_tipo: 'abierta'
@@ -579,9 +579,9 @@ const CONTENIDOS = [
         nombre: 'Ritual de Consolidación de Identidad',
         instruccion: 'Realiza este protocolo de cierre y compromiso futuro.',
         pasos: [
-          'Revisión de Transformación: ¿cómo ha cambiado tu relación con tu cuerpo en 20 días?',
-          'Declaración de Compromiso: repite 3 veces "Elijo moverme, descansar y nutrirme porque quiero disfrutar de una vida plena"',
-          'Diseña tu protocolo personal futuro'
+          { texto: 'Revisión de Transformación: ¿cómo ha cambiado tu relación con tu cuerpo en 20 días?', respuesta_tipo: 'abierta' },
+          { texto: 'Declaración de Compromiso: repite 3 veces "Elijo moverme, descansar y nutrirme porque quiero disfrutar de una vida plena"', respuesta_tipo: 'abierta' },
+          { texto: 'Diseña tu protocolo personal futuro', respuesta_tipo: 'abierta' }
         ],
         tipo: 'reflexion',
         registro: {
@@ -609,9 +609,9 @@ const CONTENIDOS = [
         nombre: 'Protocolo de Autocompasión',
         instruccion: 'Cuando detectes autocrítica severa, aplica esta técnica.',
         pasos: [
-          'Identifica el diálogo interno destructivo: pensamiento, emoción y sensación física',
-          'Imagina que tu mejor amigo te confiesa el mismo fallo: ¿qué le dirías?',
-          'Lée en voz alta tu respuesta compasiva dirigiéndola hacia ti'
+          { texto: 'Identifica el diálogo interno destructivo: pensamiento, emoción y sensación física', respuesta_tipo: 'abierta' },
+          { texto: 'Imagina que tu mejor amigo te confiesa el mismo fallo: ¿qué le dirías?', respuesta_tipo: 'abierta' },
+          { texto: 'Lée en voz alta tu respuesta compasiva dirigiéndola hacia ti', respuesta_tipo: 'abierta' }
         ],
         tipo: 'reflexion',
         registro: { pensamiento_autocritico: '', emocion: '', sensacion_fisica: '', respuesta_compasiva: '' },
@@ -671,9 +671,9 @@ const CONTENIDOS = [
         nombre: 'Ritual de Gratitud Cardiovascular',
         instruccion: 'Realiza este ritual de conexión corazón-mente de 5-7 minutos.',
         pasos: [
-          'Conexión Física (2 min): mano derecha sobre el corazón, mano izquierda sobre abdomen, siente el ritmo cardíaco',
-          'Gratitud Específica (3 min): agradece a tu corazón por latir sin que lo recuerdes',
-          'Compromiso de Cuidado (2 min): "Cuidar mi corazón con Cardiosmile es un acto de amor propio"'
+          { texto: 'Conexión Física (2 min): mano derecha sobre el corazón, mano izquierda sobre abdomen, siente el ritmo cardíaco', respuesta_tipo: 'abierta' },
+          { texto: 'Gratitud Específica (3 min): agradece a tu corazón por latir sin que lo recuerdes', respuesta_tipo: 'abierta' },
+          { texto: 'Compromiso de Cuidado (2 min): "Cuidar mi corazón con Cardiosmile es un acto de amor propio"', respuesta_tipo: 'abierta' }
         ],
         tipo: 'practica',
         respuesta_tipo: 'abierta'
@@ -701,9 +701,9 @@ const CONTENIDOS = [
         nombre: 'Protocolo de Empatía Preventiva',
         instruccion: 'Antes de reaccionar con impaciencia o frustración, aplica esta pausa empática.',
         pasos: [
-          'Pausa Fisiológica (30s): 3 ciclos de respiración 4-6-8, afloja hombros y mandíbula',
-          'Reencuadre Empático (30s): "Esta persona también está lidiando con sus propias cargas"',
-          'Respuesta Consciente: elige desde la calma: respuesta empática, pausa para procesar, o límites saludables'
+          { texto: 'Pausa Fisiológica (30s): 3 ciclos de respiración 4-6-8, afloja hombros y mandíbula', respuesta_tipo: 'abierta' },
+          { texto: 'Reencuadre Empático (30s): "Esta persona también está lidiando con sus propias cargas"', respuesta_tipo: 'abierta' },
+          { texto: 'Respuesta Consciente: elige desde la calma: respuesta empática, pausa para procesar, o límites saludables', respuesta_tipo: 'abierta' }
         ],
         tipo: 'practica',
         registro: { situacion_desafiante: '', reaccion_inicial: '', pausa_empatica_aplicada: '', resultado: '' },
@@ -763,9 +763,9 @@ const CONTENIDOS = [
         nombre: 'Protocolo de Asertividad Neurológica',
         instruccion: 'Identifica escenarios sociales desafiantes y prepara guiones asertivos.',
         pasos: [
-          'Identifica 3 situaciones sociales próximas con posible presión',
-          'Desarrolla guiones con la fórmula: [Reconocimiento] + [Límite claro] + [Alternativa positiva]',
-          'Practica: "Se ve delicioso, pero estoy satisfecho/a. Gracias por pensar en mí"'
+          { texto: 'Identifica 3 situaciones sociales próximas con posible presión', respuesta_tipo: 'abierta' },
+          { texto: 'Desarrolla guiones con la fórmula: [Reconocimiento] + [Límite claro] + [Alternativa positiva]', respuesta_tipo: 'abierta' },
+          { texto: 'Practica: "Se ve delicioso, pero estoy satisfecho/a. Gracias por pensar en mí"', respuesta_tipo: 'abierta' }
         ],
         tipo: 'practica',
         registro: {
@@ -820,9 +820,9 @@ const CONTENIDOS = [
         nombre: 'Protocolo de Socialización Mindful',
         instruccion: 'Enfócate en conocer genuinamente a las personas durante eventos sociales.',
         pasos: [
-          'Intención clara: "Voy a enfocarme en conocer genuinamente a las personas"',
-          'Escucha activa: mantén contacto visual, haz preguntas genuinas',
-          'Redirección social: si la conversación se centra en comida, transiciona a temas personales'
+          { texto: 'Intención clara: "Voy a enfocarme en conocer genuinamente a las personas"', respuesta_tipo: 'abierta' },
+          { texto: 'Escucha activa: mantén contacto visual, haz preguntas genuinas', respuesta_tipo: 'abierta' },
+          { texto: 'Redirección social: si la conversación se centra en comida, transiciona a temas personales', respuesta_tipo: 'abierta' }
         ],
         tipo: 'practica',
         registro: { persona: '', algo_nuevo_aprendido: '', conexion_emocional: '' },
@@ -850,9 +850,9 @@ const CONTENIDOS = [
         nombre: 'Protocolo de Límites Empoderados',
         instruccion: 'Identifica saboteadores sociales y desarrolla estrategias específicas de límite.',
         pasos: [
-          'Identifica personas que consistentemente presionan contra tus decisiones saludables',
-          'Desarrolla límites con la fórmula: [Reconocimiento] + [Límite claro] + [Conexión con valores futuros]',
-          'Visualiza cada escenario: imagina mantener tu postura con confianza'
+          { texto: 'Identifica personas que consistentemente presionan contra tus decisiones saludables', respuesta_tipo: 'abierta' },
+          { texto: 'Desarrolla límites con la fórmula: [Reconocimiento] + [Límite claro] + [Conexión con valores futuros]', respuesta_tipo: 'abierta' },
+          { texto: 'Visualiza cada escenario: imagina mantener tu postura con confianza', respuesta_tipo: 'abierta' }
         ],
         tipo: 'reflexion',
         registro: {
@@ -879,9 +879,9 @@ const CONTENIDOS = [
         nombre: 'Ritual de Graduación y Compromiso',
         instruccion: 'Realiza la auditoría final de tu transformación de 30 días y diseña tu protocolo de mantenimiento.',
         pasos: [
-          'Revisa cada bloque: ¿cuál fue tu mayor victoria en cada competencia?',
-          'Diseña tu protocolo personal de mantenimiento con suplementación y prácticas no-negociables',
-          'Escribe una carta compromiso a tu futuro yo'
+          { texto: 'Revisa cada bloque: ¿cuál fue tu mayor victoria en cada competencia?', respuesta_tipo: 'abierta' },
+          { texto: 'Diseña tu protocolo personal de mantenimiento con suplementación y prácticas no-negociables', respuesta_tipo: 'abierta' },
+          { texto: 'Escribe una carta compromiso a tu futuro yo', respuesta_tipo: 'abierta' }
         ],
         tipo: 'reflexion',
         registro: {
