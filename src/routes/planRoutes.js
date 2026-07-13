@@ -254,6 +254,18 @@ router.get('/today', today);
  *                         type: string
  *                         nullable: true
  *                         description: Texto introductorio del bloque si el día es el primero del bloque, null si no
+ *                       contenido_especial:
+ *                         type: object
+ *                         nullable: true
+ *                         description: Contenido especial asociado al día (presentación, reflexión), solo si el día no está completado
+ *                         properties:
+ *                           tipo:
+ *                             type: string
+ *                             enum: [presentacion, reflexion_15_dias, reflexion_30_dias]
+ *                           titulo:
+ *                             type: string
+ *                           contenido:
+ *                             type: object
  *                       leccion:
  *                         type: object
  *                         nullable: true

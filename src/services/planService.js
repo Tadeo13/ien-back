@@ -3,10 +3,17 @@ const Tienda = require('../models/Tienda');
 const PlanProgreso = require('../models/PlanProgreso');
 const ContenidoDiario = require('../models/ContenidoDiario');
 const TestPregunta = require('../models/TestPregunta');
+const ContenidoEspecial = require('../models/ContenidoEspecial');
 
 const AppError = require('../utils/AppError');
 const { esMismoDiaCalendarioUTC } = require('../utils/fechas');
 const BLOQUES = require('../constants/bloques');
+
+const CONTENIDO_ESPECIAL_POR_DIA = {
+  1: 'presentacion',
+  15: 'reflexion_15_dias',
+  30: 'reflexion_30_dias'
+};
 
 function yaCompletoActividadHoy(plan, ahora) {
   if (!plan.ultima_fecha_actividad) return false;
@@ -384,6 +391,13 @@ exports.getDays = async (usuarioId, soloCompletados = false) => {
     .lean();
   const contenidoMap = new Map(contenidos.map(c => [c.dia_numero, c]));
 
+  const tiposNecesarios = Object.values(CONTENIDO_ESPECIAL_POR_DIA);
+  const especiales = await ContenidoEspecial.find({ tipo: { $in: tiposNecesarios } }).lean();
+  // NOTA: Asumimos 1 doc por tipo (garantizado por seed + enum).
+  // Si se carga contenido especial manualmente con tipos duplicados,
+  // el Map se queda con el último. No rompe pero puede ser confuso.
+  const especialesPorTipo = new Map(especiales.map(e => [e.tipo, e]));
+
   return {
     dias: dias.map(d => ({
       dia_numero: d.dia_numero,
@@ -391,6 +405,11 @@ exports.getDays = async (usuarioId, soloCompletados = false) => {
       fecha_completado: d.fecha_completado,
       respuesta_usuario: d.respuesta_usuario || null,
       cabecera: getCabeceraSiEsInicioDeBloque(d.dia_numero),
+      contenido_especial: (() => {
+        const tipo = CONTENIDO_ESPECIAL_POR_DIA[d.dia_numero];
+        if (!tipo || d.completado) return null;
+        return especialesPorTipo.get(tipo) || null;
+      })(),
       leccion: (() => {
         const c = contenidoMap.get(d.dia_numero);
         if (!c) return null;
