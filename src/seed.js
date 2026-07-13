@@ -953,12 +953,12 @@ const CONTENIDOS_ESPECIALES = [
     contenido: {
       mensaje: 'Bienvenido a tu programa de Inteligencia Emocional y Nutrición. Durante 30 días trabajarás 6 competencias clave que transformarán tu relación con tus emociones y tu bienestar.',
       competencias: [
-        { nombre: 'Autoconciencia', descripcion: 'Días 1-5: Reconocer tus emociones y estados físicos en tiempo real.' },
-        { nombre: 'Autoconfianza', descripcion: 'Días 6-10: Construir una narrativa de identidad saludable.' },
-        { nombre: 'Autocontrol', descripcion: 'Días 11-15: Crear espacio entre el estímulo y la respuesta.' },
-        { nombre: 'Motivación', descripcion: 'Días 16-20: Conectar acciones con valores profundos.' },
-        { nombre: 'Empatía', descripcion: 'Días 21-25: Cultivar compasión hacia ti mismo y los demás.' },
-        { nombre: 'Competencia Social', descripcion: 'Días 26-30: Mantener hábitos saludables en entornos sociales.' }
+        { nombre: 'Autoconciencia', descripcion: 'Días 1-5: Reconocer tus emociones y estados físicos en tiempo real.',respuesta_tipo: 'abierta' },
+        { nombre: 'Autoconfianza', descripcion: 'Días 6-10: Construir una narrativa de identidad saludable.',respuesta_tipo: 'abierta' },
+        { nombre: 'Autocontrol', descripcion: 'Días 11-15: Crear espacio entre el estímulo y la respuesta.',respuesta_tipo: 'abierta' },
+        { nombre: 'Motivación', descripcion: 'Días 16-20: Conectar acciones con valores profundos.',respuesta_tipo: 'abierta' },
+        { nombre: 'Empatía', descripcion: 'Días 21-25: Cultivar compasión hacia ti mismo y los demás.',respuesta_tipo: 'abierta' },
+        { nombre: 'Competencia Social', descripcion: 'Días 26-30: Mantener hábitos saludables en entornos sociales.',respuesta_tipo: 'abierta' }
       ],
       llamada_a_accion: 'Completa el test inicial para personalizar tu experiencia.'
     }
@@ -985,10 +985,10 @@ const CONTENIDOS_ESPECIALES = [
     contenido: {
       mensaje: '¡Felicidades! Has completado la primera mitad del programa. Es momento de reflexionar sobre tu transformación.',
       preguntas_reflexion: [
-        '¿Qué competencia emocional has sentido que más ha crecido en ti?',
-        '¿Cuál ha sido tu mayor victoría no-balanza de estas dos semanas?',
-        '¿Qué suplemento ha tenido mayor impacto en tu energía y bienestar?',
-        '¿Cómo ha cambiado tu diálogo interno respecto al inicio del programa?'
+        { texto: '¿Qué competencia emocional has sentido que más ha crecido en ti?', respuesta_tipo: 'abierta' },
+        { texto: '¿Cuál ha sido tu mayor victoría no-balanza de estas dos semanas?', respuesta_tipo: 'abierta' },
+        { texto: '¿Qué suplemento ha tenido mayor impacto en tu energía y bienestar?', respuesta_tipo: 'abierta' },
+        { texto: '¿Cómo ha cambiado tu diálogo interno respecto al inicio del programa?', respuesta_tipo: 'abierta' }
       ],
       recordatorio: 'Llevas 15 días de práctica consistente. Tu cerebro está literalmente recableándose para adoptar nuevos patrones más saludables.',
       proximos_pasos: 'Las siguientes dos semanas profundizarán en empatía y competencia social: las habilidades que impactan directamente tus relaciones y tu bienestar interpersonal.'
