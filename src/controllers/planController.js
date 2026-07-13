@@ -1,4 +1,4 @@
-const { setupTest, getTestInicial, getToday, getProfile, completeDay, advanceDay, autocompleteTest, getDays, getTestPreguntas } = require('../services/planService');
+const { setupTest, getTestInicial, getToday, getProfile, completeDay, advanceDay, autocompleteTest, getDays, getTestPreguntas, getBienvenida } = require('../services/planService');
 const { tryCatch } = require('../middlewares/errorHandler');
 const AppError = require('../utils/AppError');
 
@@ -57,6 +57,11 @@ exports.days = tryCatch(async (req, res) => {
 
 exports.advanceDay = tryCatch(async (req, res) => {
   const result = await advanceDay(req.usuario.id);
+  res.json(result);
+});
+
+exports.getBienvenida = tryCatch(async (req, res) => {
+  const result = await getBienvenida();
   res.json(result);
 });
 

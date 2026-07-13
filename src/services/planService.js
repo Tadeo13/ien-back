@@ -461,6 +461,14 @@ exports.autocompleteTest = async (usuarioId, debiles = []) => {
   return exports.setupTest({ respuestas, usuarioId });
 };
 
+exports.getBienvenida = async () => {
+  const doc = await ContenidoEspecial.findOne({ tipo: 'bienvenida' }).lean();
+  if (!doc) {
+    throw new AppError(404, 'Contenido de bienvenida no encontrado');
+  }
+  return doc;
+};
+
 // Exportado para testing unitario
 exports.yaCompletoActividadHoy = yaCompletoActividadHoy;
 exports.detectarHito = detectarHito;

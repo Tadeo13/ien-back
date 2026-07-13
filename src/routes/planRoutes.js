@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const authMiddleware = require('../middlewares/authMiddleware');
-const { setupTest, getTestInicial, today, profile, days, completeDay, advanceDay, autocompleteTest, getTestPreguntas } = require('../controllers/planController');
+const { setupTest, getTestInicial, today, profile, days, completeDay, advanceDay, autocompleteTest, getTestPreguntas, getBienvenida } = require('../controllers/planController');
 
 const router = Router();
 
@@ -34,6 +34,35 @@ router.use(authMiddleware);
  *                     type: string
  */
 router.get('/test-preguntas', getTestPreguntas);
+
+/**
+ * @swagger
+ * /api/plan/bienvenida:
+ *   get:
+ *     summary: Obtener contenido de bienvenida del programa
+ *     tags: [Plan]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Contenido especial de bienvenida
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 tipo:
+ *                   type: string
+ *                   example: bienvenida
+ *                 titulo:
+ *                   type: string
+ *                   example: Bienvenido al Programa IEN
+ *                 contenido:
+ *                   type: object
+ *       404:
+ *         description: Contenido de bienvenida no encontrado
+ */
+router.get('/bienvenida', getBienvenida);
 
 /**
  * @swagger
