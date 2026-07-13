@@ -48,13 +48,27 @@ async function findUsuariosRezagados() {
  */
 async function demoledorDeRachas() {
   const inicioDeDiaDeAyer = getInicioDeDiaDeAyer();
+  const filtro = {
+    estado: 'activo',
+    ultima_fecha_actividad: { $lt: inicioDeDiaDeAyer },
+    racha_dias: { $gt: 0 }
+  };
 
-  // Sólo reseteamos si la fecha es estrictamente anterior al inicio de ayer.
-  // Planes con fecha en "ayer" o "hoy" no se tocan.
-  return PlanProgreso.updateMany(
-    { estado: 'activo', ultima_fecha_actividad: { $lt: inicioDeDiaDeAyer } },
-    { $set: { racha_dias: 0 } }
-  );
+  const planesAfectados = await PlanProgreso
+    .find(filtro)
+    .select('usuario_id racha_dias')
+    .lean();
+
+  const resultado = await PlanProgreso.updateMany(filtro, { $set: { racha_dias: 0 } });
+
+  return {
+    matchedCount: resultado.matchedCount,
+    modifiedCount: resultado.modifiedCount,
+    usuarios_afectados: planesAfectados.map(p => ({
+      usuario_id: p.usuario_id,
+      racha_rota: p.racha_dias
+    }))
+  };
 }
 
 module.exports = { findUsuariosRezagados, demoledorDeRachas };

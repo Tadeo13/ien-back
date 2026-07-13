@@ -4,7 +4,7 @@ const AppError = require('../utils/AppError');
 
 exports.resetStreaks = tryCatch(async (_req, res) => {
   const result = await demoledorDeRachas();
-  res.json({ modifiedCount: result.modifiedCount });
+  res.json(result);
 });
 
 exports.sendReminders = tryCatch(async (req, res) => {
