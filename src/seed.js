@@ -957,16 +957,40 @@ const CONTENIDOS_ESPECIALES = [
     tipo: 'bienvenida',
     titulo: 'Bienvenido al Programa IEN',
     contenido: {
-      mensaje: 'Bienvenido a tu programa de Inteligencia Emocional y Nutrición. Durante 30 días trabajarás 6 competencias clave que transformarán tu relación con tus emociones y tu bienestar.',
-      competencias: [
-        { nombre: 'Autoconciencia', descripcion: 'Días 1-5: Reconocer tus emociones y estados físicos en tiempo real.',respuesta_tipo: 'abierta' },
-        { nombre: 'Autoconfianza', descripcion: 'Días 6-10: Construir una narrativa de identidad saludable.',respuesta_tipo: 'abierta' },
-        { nombre: 'Autocontrol', descripcion: 'Días 11-15: Crear espacio entre el estímulo y la respuesta.',respuesta_tipo: 'abierta' },
-        { nombre: 'Motivación', descripcion: 'Días 16-20: Conectar acciones con valores profundos.',respuesta_tipo: 'abierta' },
-        { nombre: 'Empatía', descripcion: 'Días 21-25: Cultivar compasión hacia ti mismo y los demás.',respuesta_tipo: 'abierta' },
-        { nombre: 'Competencia Social', descripcion: 'Días 26-30: Mantener hábitos saludables en entornos sociales.',respuesta_tipo: 'abierta' }
-      ],
-      llamada_a_accion: 'Completa el test inicial para personalizar tu experiencia.'
+      programa: {
+        nombre: 'Cuidamos de tu mente y de tu corazón',
+        subtitulo: '30 días de Inteligencia Emocional con Cardiosmile y Vitamin Shoppe'
+      },
+      introduccion: 'En solo 30 días, puedes transformar completamente tu relación contigo mismo y con el mundo que te rodea. No se trata de cambios superficiales o promesas vacías; se trata de una revolución interna respaldada por la ciencia y diseñada para durar toda la vida.',
+      viaje_transformacion: {
+        titulo: 'Tu Viaje de Transformación',
+        intro: 'Imagínate dentro de 30 días:',
+        puntos: [
+          'Despertando cada mañana con claridad mental y energía auténtica',
+          'Navegando cualquier situación social con confianza y asertividad',
+          'Tomando decisiones desde tus valores más profundos, no desde impulsos',
+          'Siendo tu mejor aliado en lugar de tu peor crítico',
+          'Manteniendo tu bienestar sin sacrificar conexiones genuinas'
+        ]
+      },
+      competencias_maestras: {
+        titulo: 'Más que un Programa: Una Nueva Forma de Vivir',
+        descripcion: 'Este no es otro programa de bienestar temporal. Es el desarrollo de seis competencias maestras de la inteligencia emocional que transformarán cada área de tu vida:',
+        cita: 'No se trata de ser perfecto; se trata de ser consciente, confiado, controlado, motivado, empático y socialmente competente.',
+        nota: 'Cada día construye sobre el anterior. Cada técnica se integra naturalmente en tu vida. Cada suplemento tiene un propósito específico respaldado por ciencia. Cada ejercicio te acerca a la versión más auténtica y poderosa de ti mismo.'
+      },
+      momento_es_ahora: {
+        titulo: 'Tu Momento es Ahora',
+        descripcion: 'En un mundo que constantemente te invita a buscar soluciones externas, tienes la oportunidad de elegir el camino más revolucionario: entrenar tu inteligencia emocional',
+        frases_impacto: [
+          '30 días para transformar 30 años de patrones automáticos',
+          '30 días para construir la confianza que siempre has deseado',
+          '30 días para convertirte en el protagonista de tu propia historia'
+        ],
+        pregunta: '¿Estás listo para descubrir quién puedes llegar a ser?'
+      },
+      cierre: 'Tu transformación integral comienza con una sola decisión: elegir invertir en ti mismo. Bienvenido a tu nueva vida. Bienvenido a tu verdadero poder.',
+      cita_final: 'El momento en que decides transformarte es el momento en que todo cambia. No esperes el momento perfecto; crélalo.'
     }
   },
   {
