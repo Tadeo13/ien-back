@@ -738,7 +738,8 @@ const CONTENIDOS = [
           fatiga_fisica: '___/10',
           niebla_mental: '___/10',
           irritabilidad_emocional: '___/10',
-          total: '___/30',
+          motivacion_reducida: '___/10',
+          total: '___/40',
           interpretacion: '',
           protocolo_elegido: ''
         },
@@ -939,14 +940,14 @@ const TEST_PREGUNTAS = [
   { numero: 20, competencia: 'autoconfianza',     texto: 'Por lo general me siento cómodo ante situaciones nuevas.' },
   { numero: 21, competencia: 'autocontrol',       texto: 'No escondo mi enfado pero tampoco lo pago con otros.' },
   { numero: 22, competencia: 'empatia',           texto: 'Puedo demostrar empatía y acoplar mis sentimientos a los de la otra persona en una interacción.' },
-  { numero: 23, competencia: 'motivacion',        texto: 'Puedo perseguir un objetivo a largo plazo, haciendo el esfuerzo necesario para lograrlo.' },
-  { numero: 24, competencia: 'competencia_social',texto: 'Cuando hablo con alguien, siempre le escucho atentamente y le dejo que acabe de hablar antes de responder.' },
-  { numero: 25, competencia: 'autoconciencia',    texto: 'Soy capaz de identificar lo que siento cuando una emoción cambia de una a otra.' },
-  { numero: 26, competencia: 'autoconfianza',     texto: 'Creo en mis capacidades y confío en mis decisiones aunque los demás no estén de acuerdo.' },
-  { numero: 27, competencia: 'autocontrol',       texto: 'Mantengo la calma y actúo de forma reflexiva incluso en situaciones de alta presión o conflicto.' },
-  { numero: 28, competencia: 'empatia',           texto: 'Reconozco y comprendo los sentimientos de los demás incluso cuando no los expresan abiertamente.' },
-  { numero: 29, competencia: 'motivacion',        texto: 'Me recupero rápidamente de los contratiempos y mantengo el rumbo hacia mis objetivos.' },
-  { numero: 30, competencia: 'competencia_social',texto: 'Soy capaz de crear un ambiente positivo y motivador que influye favorablemente en las personas que me rodean.' }
+  { numero: 23, competencia: 'motivacion',        texto: 'Soy capaz de seguir adelante en un proyecto importante a pesar de los obstáculos.' },
+  { numero: 24, competencia: 'competencia_social',texto: 'Los demás me respetan y les caigo bien, incluso cuando no están de acuerdo conmigo.' },
+  { numero: 25, competencia: 'autoconciencia',    texto: 'Tengo muy claro cuáles son mis propias metas y valores.' },
+  { numero: 26, competencia: 'autoconfianza',     texto: 'Expreso mis puntos de vista con honestidad y ponderación, sin agobiar.' },
+  { numero: 27, competencia: 'autocontrol',       texto: 'Puedo controlar mis estados de ánimo y muy raras veces llevo las emociones negativas al trabajo.' },
+  { numero: 28, competencia: 'empatia',           texto: 'Centro toda mi atención en la otra persona cuando estoy escuchándolo.' },
+  { numero: 29, competencia: 'motivacion',        texto: 'Creo que el trabajo que hago cada día tiene sentido y aporta valor a la sociedad.' },
+  { numero: 30, competencia: 'competencia_social',texto: 'Puedo persuadir eficazmente a otros para que adopten mi punto de vista sin coaccionarles.' }
 ];
 
 // ---------------------------------------------------------------------------
@@ -1013,32 +1014,83 @@ const CONTENIDOS_ESPECIALES = [
     tipo: 'reflexion_15_dias',
     titulo: 'Reflexión de Mitad de Programa (Día 15)',
     contenido: {
-      mensaje: '¡Felicidades! Has completado la primera mitad del programa. Es momento de reflexionar sobre tu transformación.',
-      preguntas_reflexion: [
-        { texto: '¿Qué competencia emocional has sentido que más ha crecido en ti?', respuesta_tipo: 'abierta' },
-        { texto: '¿Cuál ha sido tu mayor victoría no-balanza de estas dos semanas?', respuesta_tipo: 'abierta' },
-        { texto: '¿Qué suplemento ha tenido mayor impacto en tu energía y bienestar?', respuesta_tipo: 'abierta' },
-        { texto: '¿Cómo ha cambiado tu diálogo interno respecto al inicio del programa?', respuesta_tipo: 'abierta' }
+      titulo: 'El Viaje de 15 Días hacia la Transformación Integral',
+      progresion_consciente: {
+        texto: 'Al completar la mitad de este programa, has emprendido un viaje extraordinario que va mucho más allá de simples cambios en la dieta o rutinas de ejercicio. Has desarrollado las tres competencias fundamentales que distinguen a las personas que logran transformaciones duraderas.',
+        cita: 'La verdadera transformación no ocurre cuando cambias lo que haces, sino cuando cambias quién eres.'
+      },
+      evolucion_etapas: [
+        {
+          titulo: 'Días 1-5: Del Piloto Automático al Observador Consciente',
+          texto: 'Has aprendido a reconocer tus señales internas antes de que se conviertan en acciones automáticas. Esta autoconciencia es el fundamento sobre el cual se construye toda transformación auténtica.'
+        },
+        {
+          titulo: 'Días 6-10: De la Víctima al Protagonista de tu Historia',
+          texto: 'Has reescrito tu narrativa interna, transformando etiquetas limitantes en identidades empoderadas. Los micro-compromisos cumplidos han demostrado a tu cerebro que eres capaz de mantener promesas contigo mismo.'
+        },
+        {
+          titulo: 'Días 11-15: Del Impulso al Dominio Consciente',
+          texto: 'Has desarrollado la capacidad más sofisticada del ser humano: el autocontrol inteligente. Has aprendido a navegar la incomodidad emocional sin recurrir a mecanismos de escape.'
+        }
       ],
-      recordatorio: 'Llevas 15 días de práctica consistente. Tu cerebro está literalmente recableándose para adoptar nuevos patrones más saludables.',
-      proximos_pasos: 'Las siguientes dos semanas profundizarán en empatía y competencia social: las habilidades que impactan directamente tus relaciones y tu bienestar interpersonal.'
+      ciencia_transformacion: [
+        'Tu corteza prefrontal se ha fortalecido a través de la práctica repetida del autocontrol',
+        'Tus ritmos circadianos se han estabilizado mediante rutinas consistentes',
+        'Tu sistema nervioso ha aprendido a alternar eficientemente entre activación y relajación',
+        'Tu identidad neurológica se ha reorganizado a través de la neuroplasticidad dirigida'
+      ],
+      agradecimiento: {
+        titulo: 'Un Agradecimiento Especial',
+        puntos: [
+          'A tu valentía por comprometerte con este proceso cuando hubiera sido más fácil seguir en piloto automático.',
+          'A tu constancia por elegir la práctica diaria incluso en días difíciles.',
+          'A tu apertura por permitir que la ciencia y la sabiduría se encuentren en tu experiencia personal.'
+        ]
+      },
+      cita_final: 'No se trata de ser perfecto; se trata de ser consciente. No se trata de no caer nunca; se trata de levantarse con sabiduría.',
+      firma: 'Lic. Gladys C. Patiño - Nutricionista Funcional. Int Emocional en Nut y Salud. Nut y Salud Mental. Neurociencias'
     }
   },
   {
     tipo: 'reflexion_30_dias',
     titulo: 'Reflexión de Cierre del Programa (Día 30)',
     contenido: {
-      mensaje: '¡Lo lograste! Has completado los 30 días del Programa IEN. Eres parte de un grupo selecto de personas comprometidas con su transformación integral.',
-      logros_posibles: [
-        'Mayor conciencia de tus estados emocionales y físicos',
-        'Narrativa de identidad saludable consolidada',
-        'Herramientas de autocontrol ante impulsos desadaptativos',
-        'Motivación intrínseca alineada con tus valores profundos',
-        'Práctica de autocompasión y empatía activa',
-        'Competencia social para mantener hábitos en cualquier entorno'
+      titulo: 'La Transformación de 30 Días: El Viaje Completo',
+      cita_apertura: 'La verdadera transformación no es solo cambiar lo que haces en privado, sino mantener esos cambios con gracia y confianza en cualquier entorno social.',
+      evolucion_dimensiones: [
+        { dias: '1-5', competencia: 'AUTOCONCIENCIA', transformacion: 'Del piloto automático a la elección consciente', resultado: 'Capacidad de reconocer señales internas antes de actuar' },
+        { dias: '6-10', competencia: 'AUTOCONFIANZA', transformacion: 'De "no puedo" a "elijo conscientemente"', resultado: 'Identidad empoderada basada en evidencia de capacidad' },
+        { dias: '11-15', competencia: 'AUTOCONTROL', transformacion: 'Del impulso al dominio consciente', resultado: 'Gestión inteligente de emociones y estímulos' },
+        { dias: '16-20', competencia: 'MOTIVACIÓN', transformacion: 'De "tengo que" a "quiero vivir plenamente"', resultado: 'Motivación intrínseca alineada con valores profundos' },
+        { dias: '21-25', competencia: 'EMPATÍA INTEGRAL', transformacion: 'De autocrítica destructiva a autocompasión nutritiva', resultado: 'Capacidad de ser tu mejor aliado y conectar empáticamente' },
+        { dias: '26-30', competencia: 'COMPETENCIA SOCIAL', transformacion: 'De aislamiento o capitulación a asertividad empática', resultado: 'Habilidad de mantener tu bienestar conectando auténticamente' }
       ],
-      protocolo_mantenimiento: 'Continúa con tu suplementación personalizada, tus 3 prácticas no-negociables y tu conexión diaria con tu "porqué".',
-      mensaje_final: 'La inteligencia emocional no es un destino, es un camino. Que cada día sea una nueva oportunidad de elegir tu bienestar.'
+      ciencia_transformacion: {
+        cambios_neurologicos: [
+          'Corteza prefrontal fortalecida: Mayor capacidad de planificación y autocontrol social',
+          'Circuitos de asertividad activados: Comunicación clara sin agresividad ni pasividad',
+          'Redes de empatía social optimizadas: Mejor regulación emocional en interacciones complejas'
+        ],
+        optimizacion_bioquimica: [
+          'Regulación del cortisol social: Mejor respuesta al estrés interpersonal',
+          'Liberación de oxitocina por conexión: Mejora en vínculos sociales y salud cardiovascular',
+          'Estabilización de neurotransmisores: Estado de ánimo equilibrado en entornos sociales'
+        ]
+      },
+      sistema_operativo_social: {
+        titulo: 'Tu Nuevo Sistema Operativo Social Integral',
+        ciclo: [
+          { paso: 'RECONOCE', descripcion: 'Identifica presión social o conflicto interpersonal', competencia_base: 'Autoconciencia' },
+          { paso: 'CENTRA', descripcion: 'Conecta con tu respiración y valores', competencia_base: 'Autoconfianza' },
+          { paso: 'EVALÚA', descripcion: 'Considera opciones desde tu identidad empoderada', competencia_base: 'Autocontrol' },
+          { paso: 'COMUNICA', descripcion: 'Expresa límites o necesidades con asertividad empática', competencia_base: 'Competencia Social' },
+          { paso: 'MANTIENE', descripcion: 'Sostiene tu posición desde amor propio', competencia_base: 'Empatía Integral' },
+          { paso: 'CONECTA', descripcion: 'Busca puntos de conexión auténtica', competencia_base: 'Automotivación' }
+        ]
+      },
+      legado: 'Es posible ser auténtico en cualquier entorno. Es posible cuidarse sin aislarse. Es posible conectar genuinamente sin comprometer tu bienestar.',
+      compromiso_sagrado: 'Prometo honrar mi autenticidad en cualquier entorno social. Prometo comunicar mis límites con claridad y compasión. Prometo buscar conexión genuina, no aprobación superficial. Prometo recordar que mi bienestar es un regalo que ofrezco al mundo, no un lujo que debo sacrificar.',
+      firma: 'Lic. Gladys C. Patiño - Nutricionista Funcional. Int Emocional en Nut y Salud. Nut y Salud Mental. Neurociencias'
     }
   }
 ];
