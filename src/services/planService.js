@@ -7,7 +7,6 @@ const ContenidoEspecial = require('../models/ContenidoEspecial');
 
 const AppError = require('../utils/AppError');
 const { esMismoDiaCalendarioUTC } = require('../utils/fechas');
-const BLOQUES = require('../constants/bloques');
 
 const CONTENIDO_ESPECIAL_POR_DIA = {
   1: 'presentacion',
@@ -48,9 +47,9 @@ function mapContenidoALeccion(contenido) {
   };
 }
 
-function getCabeceraSiEsInicioDeBloque(diaNumero) {
-  const bloque = BLOQUES.find(b => b.dia_inicio === diaNumero);
-  return bloque ? bloque.cabecera : null;
+async function getCabeceraSiEsInicioDeBloque(diaNumero) {
+  const contenido = await ContenidoDiario.findOne({ dia_numero: diaNumero }).select('cabecera').lean();
+  return contenido?.cabecera || null;
 }
 
 /**
@@ -298,7 +297,7 @@ exports.getToday = async (usuarioId) => {
 
   return {
     dia_actual: plan.dia_actual,
-    cabecera: getCabeceraSiEsInicioDeBloque(plan.dia_actual),
+    cabecera: await getCabeceraSiEsInicioDeBloque(plan.dia_actual),
     contenido_especial: contenidoEspecial,
     leccion: mapContenidoALeccion(contenido)
   };
@@ -405,25 +404,25 @@ exports.getDays = async (usuarioId, soloCompletados = false) => {
   // el Map se queda con el último. No rompe pero puede ser confuso.
   const especialesPorTipo = new Map(especiales.map(e => [e.tipo, e]));
 
-  return {
-    dias: dias.map(d => ({
-      dia_numero: d.dia_numero,
-      completado: d.completado,
-      fecha_completado: d.fecha_completado,
-      respuesta_usuario: d.respuesta_usuario || null,
-      cabecera: getCabeceraSiEsInicioDeBloque(d.dia_numero),
-      contenido_especial: (() => {
-        const tipo = CONTENIDO_ESPECIAL_POR_DIA[d.dia_numero];
-        if (!tipo || d.completado) return null;
-        return especialesPorTipo.get(tipo) || null;
-      })(),
-      leccion: (() => {
-        const c = contenidoMap.get(d.dia_numero);
-        if (!c) return null;
-        return mapContenidoALeccion(c);
-      })()
-    }))
-  };
+  const diasMapeados = await Promise.all(dias.map(async d => ({
+    dia_numero: d.dia_numero,
+    completado: d.completado,
+    fecha_completado: d.fecha_completado,
+    respuesta_usuario: d.respuesta_usuario || null,
+    cabecera: await getCabeceraSiEsInicioDeBloque(d.dia_numero),
+    contenido_especial: (() => {
+      const tipo = CONTENIDO_ESPECIAL_POR_DIA[d.dia_numero];
+      if (!tipo || d.completado) return null;
+      return especialesPorTipo.get(tipo) || null;
+    })(),
+    leccion: (() => {
+      const c = contenidoMap.get(d.dia_numero);
+      if (!c) return null;
+      return mapContenidoALeccion(c);
+    })()
+  })));
+
+  return { dias: diasMapeados };
 };
 
 /**

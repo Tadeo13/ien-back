@@ -25,7 +25,8 @@ const contenidoDiarioSchema = new Schema({
     default: 'abierta'
   },
   campos_respuesta: [campoRespuestaSchema],
-  datos_leccion: { type: Schema.Types.Mixed, required: true }
+  datos_leccion: { type: Schema.Types.Mixed, required: true },
+  cabecera: { type: String, default: null }
 });
 
 module.exports = mongoose.model('ContenidoDiario', contenidoDiarioSchema, 'contenidos_diarios');

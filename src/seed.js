@@ -31,6 +31,7 @@ const CONTENIDOS = [
     dia_numero: 1, tipo_contenido: 'instructivo',
     titulo_modulo: 'Día 1: El Escáner de Energía Vital',
     emociones_objetivo: ['alegría', 'tristeza', 'ira', 'miedo'],
+    cabecera: `Bloque 1: Autoconciencia (Días 1-5)\n\nTema: "Reconociendo mis señales internas: El Despertar del Observador".\n\nLa famosa cita de Lao Tzu habla del poder de nuestros pensamientos para moldear nuestras vidas. "Vigila tus pensamientos, se convierten en tus palabras; vigila tus palabras, se convierten en tus acciones; vigila tus acciones, se convierten en tus hábitos; vigila tus hábitos, se convierten en tu carácter; vigila tu carácter, se convierte en tu destino".\n\nLa ciencia confirma que nos convertimos en lo que pensamos. Por término medio, tenemos unos 70.000 pensamientos al día, y los pensamientos que entran en nuestra conciencia están influidos por nuestras experiencias, percepciones y educación.\n\nTener un alto nivel de autoconciencia es crucial para comprender los diversos pensamientos y sistemas de creencias que tenemos sobre nosotros mismos y el mundo. Observar nuestras acciones y hábitos puede proporcionarnos información valiosa sobre lo que pensamos y creemos.`,
     datos_leccion: {
       titulo: 'El Escáner de Energía Vital',
       bloque: 'Autoconciencia',
@@ -175,6 +176,7 @@ const CONTENIDOS = [
     dia_numero: 6, tipo_contenido: 'instructivo',
     titulo_modulo: 'Día 6: El Cambio de Narrativa Sistémica',
     emociones_objetivo: ['alegría', 'tristeza'],
+    cabecera: `Bloque 2: Autoconfianza (Días 6-10)\n\nTema Central: "Creer en mi propia capacidad de cambio: De la Víctima al Protagonista"\n\nMuchos de nosotros llegamos a este punto con una mochila cargada de lo que llamamos "fracasos" dietéticos o rutinas de ejercicio abandonadas. Esa historia ha erosionado nuestra confianza, haciéndonos creer que no tenemos "fuerza de voluntad".\n\nSin embargo, la autoconfianza en la salud integral no es una cualidad mágica con la que se nace; es una competencia que se construye. En estos próximos 5 días, vamos a dejar atrás la identidad del "dietante fallido o el perezoso" para convertirnos en los autores de nuestra propia historia.\n\nConstruir autoconfianza y autoeficacia significa entender que eres capaz de nutrir tu cuerpo y moverte con decisiones inteligentes, celebrando cada pequeña victoria como una prueba real de tu poder de transformación. Tu mente cree lo que le dices: hoy empezamos a decirle que sí puedes.`,
     datos_leccion: {
       titulo: 'El Cambio de Narrativa Sistémica',
       bloque: 'Autoconfianza',
@@ -313,6 +315,7 @@ const CONTENIDOS = [
     dia_numero: 11, tipo_contenido: 'instructivo',
     titulo_modulo: 'Día 11: La Regla de los 5 Minutos (Mente y Cuerpo)',
     emociones_objetivo: ['ira', 'miedo'],
+    cabecera: `Bloque 3: Autocontrol y Gestión Integral (Días 11-15)\n\nTema Central: "La Pausa Poderosa: Gestión vs. Represión"\n\nTransformación Clave: Este bloque transforma la teoría en disciplina consciente. El autocontrol no se limita a la comida, sino que abarca la gestión integral del estrés, sedentarismo y calidad del sueño, factores que impactan directamente en la salud cardiovascular y metabólica.\n\nA menudo confundimos el autocontrol con una "represión espartana" o una lucha agotadora contra nuestros deseos. Sin embargo, la verdadera Inteligencia Emocional nos enseña que el control nace de la capacidad de gestionar los impulsos y las emociones conflictivas, no de negarlas.\n\nEn este bloque, aprenderemos que el autocontrol es, en realidad, la habilidad de crear un espacio consciente entre el estímulo (un antojo, el estrés o la pereza) y nuestra respuesta. No se trata de prohibir, sino de elegir con libertad.\n\nAl integrar esta "Pausa Poderosa" en tu nutrición, en tu movimiento y en tu descanso, dejas de ser un pasajero de tus impulsos para convertirte en el conductor de tu bienestar.`,
     datos_leccion: {
       titulo: 'La Regla de los 5 Minutos (Mente y Cuerpo)',
       bloque: 'Autocontrol',
@@ -457,6 +460,7 @@ const CONTENIDOS = [
     dia_numero: 16, tipo_contenido: 'instructivo',
     titulo_modulo: 'Día 16: El Viaje al Futuro (Visualización Neuroplástica)',
     emociones_objetivo: ['alegría', 'tristeza'],
+    cabecera: `Bloque 4: Motivación y Proactividad (Días 16-20)\n\nTema Central: "Encontrando el Motor Interno: Del 'Tengo que' al 'Quiero'"\n\nTransformación Definitiva: Este bloque consolida la transición de la motivación externa volátil hacia un motor interno sostenible. Basado en la neurociencia de la motivación intrínseca, desarrollarás la capacidad de mantener el compromiso con tu bienestar desde valores profundos, no desde presión externa.\n\nLa motivación basada únicamente en la estética o en la presión social es volátil y suele desvanecerse ante el primer obstáculo. Para lograr un cambio de paradigma real en tu salud, necesitamos anclar tus acciones en valores intrínsecos profundos.\n\nEn este bloque, dejaremos atrás el "tengo que adelgazar" para abrazar el "quiero vivir con energía". La automotivación no es esperar a tener ganas de cuidarte; es la proactividad de asumir la responsabilidad de hacer que las cosas sucedan.`,
     datos_leccion: {
       titulo: 'El Viaje al Futuro (Visualización Neuroplástica)',
       bloque: 'Motivación',
@@ -601,6 +605,7 @@ const CONTENIDOS = [
     dia_numero: 21, tipo_contenido: 'instructivo',
     titulo_modulo: 'Día 21: La Regla del Mejor Amigo (Neurociencia de la Autocompasión)',
     emociones_objetivo: ['alegría', 'tristeza'],
+    cabecera: `Bloque 5: Empatía y Autocompasión\n\n"Autocompasión y Conexión con el Otro"\n\nTransformación Final: La empatía no solo se aplica a las personas, sino a aceptar que habrá días sin entrenamiento o noches de mal descanso. Lo importante es retomar con amor propio, no con castigo. Este bloque integra la neurociencia de la autocompasión con estrategias de conexión social y descanso reparador.\n\nEn el camino hacia una salud integral, la perfección es el enemigo de la constancia. La falta de autocompasión tras un error dietético o un día sin ejercicio suele conducir al "efecto de tirar la toalla", donde la culpa nos empuja a abandonar todo nuestro progreso.\n\nEn este bloque, aprenderemos que la empatía tiene una doble dirección: hacia los demás y, fundamentalmente, hacia uno mismo. Ser amable contigo cuando las cosas no salen según lo planeado es la herramienta más poderosa para retomar el rumbo con sabiduría en lugar de castigo.`,
     datos_leccion: {
       titulo: 'La Regla del Mejor Amigo (Neurociencia de la Autocompasión)',
       bloque: 'Empatía',
@@ -755,6 +760,7 @@ const CONTENIDOS = [
     dia_numero: 26, tipo_contenido: 'instructivo',
     titulo_modulo: 'Día 26: El Guion de la Asertividad Saludable (Neurociencia Social)',
     emociones_objetivo: ['alegría', 'ira'],
+    cabecera: `Bloque 6: Competencia Social y Asertividad\n\n"Navegando el Entorno Social: Límites y Celebración"\n\nTransformación Social Definitiva: Aquí es donde demuestras que tu cambio es sólido, aprendiendo a convivir en entornos sociales (fiestas, cenas familiares, reuniones de trabajo) sin que el entorno sabotee tu salud cardiovascular, nutrición o bienestar mental. La competencia social es la habilidad de mantener tu estilo de vida saludable frente a la presión de grupo sin aislarte.\n\nA menudo, el entorno social se convierte en el mayor saboteador de nuestros hábitos saludables. Sin embargo, la verdadera salud integral no consiste en aislarse para "cumplir", sino en desarrollar las habilidades sociales necesarias para disfrutar de la vida sin descuidar tu bienestar.\n\nEn estos últimos 5 días, aprenderemos que puedes socializar, celebrar y compartir con los demás manteniendo tus límites con asertividad y sin rastro de culpa.`,
     datos_leccion: {
       titulo: 'El Guion de la Asertividad Saludable (Neurociencia Social)',
       bloque: 'Competencia Social',
