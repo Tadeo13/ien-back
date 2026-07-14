@@ -69,8 +69,14 @@ exports.autocompleteTest = tryCatch(async (req, res) => {
   const debiles = req.query.debiles
     ? req.query.debiles.split(',').map(s => s.trim()).filter(Boolean)
     : [];
-  const result = await autocompleteTest(req.usuario.id, debiles);
-  res.status(201).json(result);
+  const plan = await autocompleteTest(req.usuario.id, debiles);
+  res.status(201).json({
+    plan_id: plan._id,
+    dia_actual: plan.dia_actual,
+    estado: plan.estado,
+    puntuaciones_por_competencia: plan.test_inicial.puntuaciones_por_competencia,
+    competencias_a_mejorar: plan.test_inicial.competencias_a_mejorar
+  });
 });
 
 
