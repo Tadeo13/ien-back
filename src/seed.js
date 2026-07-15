@@ -40,7 +40,7 @@ const CONTENIDOS = [
         nombre: 'Escaneo Corporal Matutino',
         instruccion: 'Al despertar, permanece en la cama durante 2-3 minutos adicionales escaneando tu cuerpo de pies a cabeza.',
         pasos: [
-          { texto: 'Observa tus niveles de energía hoy', respuesta_tipo: 'escala' },
+          { texto: 'Observa tus niveles de energía hoy', respuesta_tipo: 'escala', min: 1, max: 10 },
           { texto: 'Identifica tensión en hombros, cuello o mandíbula', respuesta_tipo: 'abierta' },
           { texto: 'Siente si hay ligereza en las piernas o pesadez mental', respuesta_tipo: 'abierta' },
           { texto: 'Nota si tu respiración es superficial o profunda', respuesta_tipo: 'abierta' }
@@ -68,9 +68,9 @@ const CONTENIDOS = [
         nombre: 'Evaluación Pre-Comida/Entrenamiento',
         instruccion: 'Antes de tu comida principal o entrenamiento, califica del 1 al 10 cada señal.',
         pasos: [
-          { texto: 'Hambre Física: sensaciones reales en el estómago', respuesta_tipo: 'abierta' },
-          { texto: 'Cansancio Corporal: fatiga muscular y energética', respuesta_tipo: 'abierta' },
-          { texto: 'Ansiedad Mental: tensión psicológica y preocupación', respuesta_tipo: 'abierta' }
+          { texto: 'Hambre Física: sensaciones reales en el estómago', respuesta_tipo: 'escala', min: 1, max: 10 },
+          { texto: 'Cansancio Corporal: fatiga muscular y energética', respuesta_tipo: 'escala', min: 1, max: 10 },
+          { texto: 'Ansiedad Mental: tensión psicológica y preocupación', respuesta_tipo: 'escala', min: 1, max: 10 }
         ],
         registro: { hambre: '___/10', cansancio: '___/10', ansiedad: '___/10' },
         tipo: 'registro',
@@ -96,9 +96,9 @@ const CONTENIDOS = [
         nombre: 'La Pausa del Reconocimiento',
         instruccion: 'Cuando sientas la urgencia de comer algo procesado sin hambre real, aplica este protocolo de 3 pasos.',
         pasos: [
-          { texto: 'DETENTE por 30 segundos', respuesta_tipo: 'abierta' },
-          { texto: 'NOMBRA en voz alta: "No es hambre/cansancio real, lo que siento es [emoción específica]"', respuesta_tipo: 'abierta' },
-          { texto: 'ELIGE una acción que realmente sane esa emoción', respuesta_tipo: 'abierta' }
+          { texto: 'DETENTE por 30 segundos', respuesta_tipo: 'accion' },
+          { texto: 'NOMBRA en voz alta: "No es hambre/cansancio real, lo que siento es [emoción específica]"', respuesta_tipo: 'accion' },
+          { texto: 'ELIGE una acción que realmente sane esa emoción', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
         respuesta_tipo: 'abierta'
@@ -123,11 +123,11 @@ const CONTENIDOS = [
         nombre: 'Entrenamiento Sin Distracciones',
         instruccion: 'Durante 10-15 minutos de tu actividad física, elimina distracciones y enfócate en las sensaciones corporales.',
         pasos: [
-          { texto: 'Apaga música, podcasts and notificaciones', respuesta_tipo: 'abierta' },
-          { texto: 'Concéntrate en el ritmo de tu respiración', respuesta_tipo: 'abierta' },
-          { texto: 'Siente el contacto consciente de tus pies con el suelo', respuesta_tipo: 'abierta' },
-          { texto: 'Percibe la contracción y relajación muscular', respuesta_tipo: 'abierta' },
-          { texto: 'Observa tu latido cardíaco', respuesta_tipo: 'abierta' }
+          { texto: 'Apaga música, podcasts and notificaciones', respuesta_tipo: 'practica' },
+          { texto: 'Concéntrate en el ritmo de tu respiración', respuesta_tipo: 'practica' },
+          { texto: 'Siente el contacto consciente de tus pies con el suelo', respuesta_tipo: 'practica' },
+          { texto: 'Percibe la contracción y relajación muscular', respuesta_tipo: 'practica' },
+          { texto: 'Observa tu latido cardíaco', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
         respuesta_tipo: 'abierta'
@@ -212,10 +212,10 @@ const CONTENIDOS = [
         nombre: 'Micro-Contrato Diario',
         instruccion: 'Elige UN solo micro-compromiso para hoy y firma tu contrato personal.',
         pasos: [
-          { texto: 'Tomar mi dosis de suplemento todos los días', respuesta_tipo: 'abierta' },
-          { texto: 'Hacer 5 minutos de estiramientos al despertar', respuesta_tipo: 'abierta' },
-          { texto: 'Leer una página al día de un libro de crecimiento personal', respuesta_tipo: 'abierta' },
-          { texto: 'Caminar 10 minutos después del almuerzo', respuesta_tipo: 'abierta' }
+          { texto: 'Tomar mi dosis de suplemento todos los días', respuesta_tipo: 'accion' },
+          { texto: 'Hacer 5 minutos de estiramientos al despertar', respuesta_tipo: 'accion' },
+          { texto: 'Leer una página al día de un libro de crecimiento personal', respuesta_tipo: 'accion' },
+          { texto: 'Caminar 10 minutos después del almuerzo', respuesta_tipo: 'accion' }
         ],
         tipo: 'registro',
         registro: { compromiso: '', hora: '', testigo: '', firma: '' },
@@ -238,17 +238,24 @@ const CONTENIDOS = [
       bloque: 'Autoconfianza',
       concepto: 'La obsesión con el peso suele erosionar la confianza; buscamos éxitos en el bienestar global.',
       ejercicio: {
-        nombre: 'Auditoría de Bienestar Integral',
-        instruccion: 'Ignora la balanza. Evalúa estas áreas de bienestar.',
+        nombre: 'Auditor�a de Bienestar Integral',
+        instruccion: 'Ignora la balanza. Eval�a estas �reas de bienestar.',
+        pasos: [
+          { texto: 'Energ�a F�sica: �Subiste escaleras con menos fatiga?', respuesta_tipo: 'abierta' },
+          { texto: 'Claridad Mental: �Te sientes m�s enfocado/a durante el trabajo?', respuesta_tipo: 'abierta' },
+          { texto: 'Fuerza Muscular: �Tus m�sculos se sienten m�s firmes?', respuesta_tipo: 'abierta' },
+          { texto: 'Calidad de Sue�o: �Despertaste m�s descansado/a?', respuesta_tipo: 'abierta' },
+          { texto: 'Estado de �nimo: �Te sientes m�s optimista que la semana pasada?', respuesta_tipo: 'abierta' }
+        ],
+        tipo: 'reflexion',
+        respuesta_tipo: 'abierta',
         registro: {
-          energia_fisica: { pregunta: '¿Subiste escaleras con menos fatiga?', observacion: '' },
-          claridad_mental: { pregunta: '¿Te sientes más enfocado/a durante el trabajo?', observacion: '' },
-          fuerza_muscular: { pregunta: '¿Tus músculos se sienten más firmes?', observacion: '' },
-          calidad_sueno: { pregunta: '¿Despertaste más descansado/a?', observacion: '' },
-          estado_animo: { pregunta: '¿Te sientes más optimista que la semana pasada?', observacion: '' }
+          energia_fisica: { pregunta: '�Subiste escaleras con menos fatiga?', observacion: '' },
+          claridad_mental: { pregunta: '�Te sientes m�s enfocado/a durante el trabajo?', observacion: '' },
+          fuerza_muscular: { pregunta: '�Tus m�sculos se sienten m�s firmes?', observacion: '' },
+          calidad_sueno: { pregunta: '�Despertaste m�s descansado/a?', observacion: '' },
+          estado_animo: { pregunta: '�Te sientes m�s optimista que la semana pasada?', observacion: '' }
         },
-        tipo: 'registro',
-        respuesta_tipo: 'escala'
       },
       contenido: 'Reconocer que tu corazón late con más fuerza y tu cuerpo se siente más ágil es el verdadero indicador de una salud funcional.',
       suplementacion: [
@@ -270,9 +277,9 @@ const CONTENIDOS = [
         nombre: 'Declaración de Elección Consciente',
         instruccion: 'Antes de realizar CUALQUIER acción de salud, di en voz alta la fórmula de empoderamiento.',
         pasos: [
-          { texto: 'En lugar de "Tengo que tomar mis suplementos" → "Yo elijo tomar mi Ashwagandha porque valoro mi tranquilidad mental"', respuesta_tipo: 'abierta' },
-          { texto: 'En lugar de "Debo ir al gimnasio" → "Yo elijo moverme porque valoro mi vitalidad y energía"', respuesta_tipo: 'abierta' },
-          { texto: 'En lugar de "No puedo comer esto" → "Yo elijo alimentos que nutren mi cuerpo porque valoro mi bienestar"', respuesta_tipo: 'abierta' }
+          { texto: 'En lugar de "Tengo que tomar mis suplementos" → "Yo elijo tomar mi Ashwagandha porque valoro mi tranquilidad mental"', respuesta_tipo: 'accion' },
+          { texto: 'En lugar de "Debo ir al gimnasio" → "Yo elijo moverme porque valoro mi vitalidad y energía"', respuesta_tipo: 'accion' },
+          { texto: 'En lugar de "No puedo comer esto" → "Yo elijo alimentos que nutren mi cuerpo porque valoro mi bienestar"', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
         registro: { formula: '"Yo elijo [acción] porque valoro mi [beneficio personal]"' },
@@ -295,15 +302,20 @@ const CONTENIDOS = [
       bloque: 'Autoconfianza',
       concepto: 'Visualizar el progreso acumulado en todas las áreas refuerza la creencia en la propia capacidad de cambio.',
       ejercicio: {
-        nombre: 'Revisión de Transformación',
-        instruccion: 'Haz una lista de 3 momentos específicos donde actuaste como el "protagonista" de tu salud integral.',
+        nombre: 'Revisi�n de Transformaci�n',
+        instruccion: 'Haz una lista de 3 momentos espec�ficos donde actuaste como el "protagonista" de tu salud integral.',
+        pasos: [
+          { texto: 'Identifica un momento donde actuaste como protagonista de tu salud: �qu� situaci�n, qu� acci�n tomaste y c�mo te sentiste?', respuesta_tipo: 'abierta' },
+          { texto: 'Reconoce un segundo momento de transformaci�n: �qu� hiciste diferente esta vez?', respuesta_tipo: 'abierta' },
+          { texto: 'Identifica un tercer momento: �qu� patr�n de cambio positivo empiezas a notar?', respuesta_tipo: 'abierta' }
+        ],
+        tipo: 'reflexion',
+        respuesta_tipo: 'abierta',
         registro: {
           momento_1: { situacion: '', accion: '', sentimiento: '' },
           momento_2: { situacion: '', accion: '', sentimiento: '' },
           momento_3: { situacion: '', accion: '', sentimiento: '' }
         },
-        tipo: 'reflexion',
-        respuesta_tipo: 'estructurado'
       },
       contenido: '¿Todavía crees que no puedes? Los hechos demuestran que ya estás transformando tu mente y tu cuerpo.',
       suplementacion: [],
@@ -324,10 +336,10 @@ const CONTENIDOS = [
         nombre: 'Protocolo de Pausa Consciente',
         instruccion: 'Cuando sientas un antojo, urgencia de sedentarismo, o impulso de procrastinar, aplica este protocolo.',
         pasos: [
-          { texto: 'DETECCIÓN: Reconoce el impulso automático', respuesta_tipo: 'abierta' },
-          { texto: 'CRONÓMETRO: Activa timer de 5 minutos exactos', respuesta_tipo: 'abierta' },
-          { texto: 'ACTIVIDAD OPUESTA: Si es antojo → bebe 500ml de agua. Si es sedentarismo → 10 estiramientos.', respuesta_tipo: 'abierta' },
-          { texto: 'EVALUACIÓN POST-PAUSA: Si el deseo persiste, actúa con conciencia plena.', respuesta_tipo: 'abierta' }
+          { texto: 'DETECCIÓN: Reconoce el impulso automático', respuesta_tipo: 'accion' },
+          { texto: 'CRONÓMETRO: Activa timer de 5 minutos exactos', respuesta_tipo: 'accion' },
+          { texto: 'ACTIVIDAD OPUESTA: Si es antojo → bebe 500ml de agua. Si es sedentarismo → 10 estiramientos.', respuesta_tipo: 'accion' },
+          { texto: 'EVALUACIÓN POST-PAUSA: Si el deseo persiste, actúa con conciencia plena.', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
         respuesta_tipo: 'abierta'
@@ -352,9 +364,9 @@ const CONTENIDOS = [
         nombre: 'Hora Sagrada de Regulación',
         instruccion: 'Establece una hora fija al día para tu ritual de regulación.',
         pasos: [
-          { texto: 'Suplementación estratégica (2 minutos)', respuesta_tipo: 'abierta' },
-          { texto: 'Caminata consciente (10 minutos)', respuesta_tipo: 'abierta' },
-          { texto: 'Hidratación mindful (3 minutos)', respuesta_tipo: 'abierta' }
+          { texto: 'Suplementación estratégica (2 minutos)', respuesta_tipo: 'accion' },
+          { texto: 'Caminata consciente (10 minutos)', respuesta_tipo: 'accion' },
+          { texto: 'Hidratación mindful (3 minutos)', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
         registro: { horario_elegido: '', suplemento_matutino: '', suplemento_nocturno: '' },
@@ -378,15 +390,20 @@ const CONTENIDOS = [
       bloque: 'Autocontrol',
       concepto: 'La gestión del impulso es más efectiva cuando diseñamos un ambiente que no nos sabotea.',
       ejercicio: {
-        nombre: 'Rediseño Estratégico del Ambiente',
-        instruccion: 'Identifica saboteadores ambientales y reubícalos estratégicamente.',
+        nombre: 'Redise�o Estrat�gico del Ambiente',
+        instruccion: 'Identifica saboteadores ambientales y reub�calos estrat�gicamente.',
+        pasos: [
+          { texto: 'Identifica un objeto o alimento en tu entorno que sabotea tus decisiones saludables', respuesta_tipo: 'accion' },
+          { texto: 'Reubica ese elemento en un lugar menos accesible o visible', respuesta_tipo: 'accion' },
+          { texto: 'Coloca un sustituto saludable en el lugar original para facilitar tu mejor elecci�n', respuesta_tipo: 'accion' }
+        ],
+        tipo: 'practica',
+        respuesta_tipo: 'abierta',
         registro: {
           saboteador: { objeto: '', ubicacion_actual: '', frecuencia: '' },
           reubicacion: { nueva_ubicacion: '', tiempo_extra_acceso: '' },
           sustituto: { objeto_saludable: '', accion_que_promueve: '' }
         },
-        tipo: 'registro',
-        respuesta_tipo: 'estructurado'
       },
       contenido: 'Controlar tu entorno es la forma más eficiente de no agotar tu fuerza de voluntad.',
       suplementacion: [],
@@ -406,9 +423,9 @@ const CONTENIDOS = [
         nombre: 'Protocolo de Respiración Estratégica 4-6-8',
         instruccion: 'Aplica esta técnica de respiración antes de comidas, entrenamiento y suplementación.',
         pasos: [
-          { texto: 'Inhalación nasal: 4 segundos (expande abdomen)', respuesta_tipo: 'abierta' },
-          { texto: 'Retención: 6 segundos (sin tensión)', respuesta_tipo: 'abierta' },
-          { texto: 'Exhalación bucal: 8 segundos (activación parasimpática)', respuesta_tipo: 'abierta' }
+          { texto: 'Inhalación nasal: 4 segundos (expande abdomen)', respuesta_tipo: 'accion' },
+          { texto: 'Retención: 6 segundos (sin tensión)', respuesta_tipo: 'accion' },
+          { texto: 'Exhalación bucal: 8 segundos (activación parasimpática)', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
         registro: {
@@ -438,9 +455,9 @@ const CONTENIDOS = [
         nombre: 'Protocolo de Tolerancia Emocional "ABLANDAR-PERMITIR-AMAR"',
         instruccion: 'Cuando aparezca tensión, ansiedad o incomodidad, aplica este protocolo.',
         pasos: [
-          { texto: 'ABLANDAR (30s): Localiza la tensión corporal, respira hacia esa zona, relaja conscientemente', respuesta_tipo: 'abierta' },
-          { texto: 'PERMITIR (60s): Observa pensamientos sin juzgarlos, describe la emoción, permite que exista como "nube pasajera"', respuesta_tipo: 'abierta' },
-          { texto: 'AMAR (30s): Coloca mano en corazón, repite "Puedo estar con esto ahora", ofrécete compasión', respuesta_tipo: 'abierta' }
+          { texto: 'ABLANDAR (30s): Localiza la tensión corporal, respira hacia esa zona, relaja conscientemente', respuesta_tipo: 'accion' },
+          { texto: 'PERMITIR (60s): Observa pensamientos sin juzgarlos, describe la emoción, permite que exista como "nube pasajera"', respuesta_tipo: 'accion' },
+          { texto: 'AMAR (30s): Coloca mano en corazón, repite "Puedo estar con esto ahora", ofrécete compasión', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
         registro: { emocion: '', intensidad: '', duracion_real: '', estrategia_usada: '' },
@@ -469,9 +486,9 @@ const CONTENIDOS = [
         nombre: 'Técnica de Visualización Multisensorial',
         instruccion: 'Encuentra una posición cómoda y realiza esta visualización científica de 10-15 minutos.',
         pasos: [
-          { texto: 'Proyección Temporal (5 min): Visualízate exactamente 10 años en el futuro en un lugar específico', respuesta_tipo: 'abierta' },
-          { texto: 'Experiencia Sensorial Completa (5 min): Siente la fuerza de tus latidos, profundidad respiratoria, agilidad muscular', respuesta_tipo: 'abierta' },
-          { texto: 'Conexión Emocional (3-5 min): Siente gratitud hacia tu "yo actual", orgullo por tus decisiones', respuesta_tipo: 'abierta' }
+          { texto: 'Proyección Temporal (5 min): Visualízate exactamente 10 años en el futuro en un lugar específico', respuesta_tipo: 'accion' },
+          { texto: 'Experiencia Sensorial Completa (5 min): Siente la fuerza de tus latidos, profundidad respiratoria, agilidad muscular', respuesta_tipo: 'accion' },
+          { texto: 'Conexión Emocional (3-5 min): Siente gratitud hacia tu "yo actual", orgullo por tus decisiones', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
         respuesta_tipo: 'abierta'
@@ -524,15 +541,20 @@ const CONTENIDOS = [
       bloque: 'Motivación',
       concepto: 'La proactividad es la responsabilidad de diseñar las condiciones necesarias para que las decisiones saludables sean las más fáciles.',
       ejercicio: {
-        nombre: 'Rediseño de Ecosistema Personal',
-        instruccion: 'Identifica puntos de fricción y rediseña tu entorno para eliminar barreras.',
+        nombre: 'Redise�o de Ecosistema Personal',
+        instruccion: 'Identifica puntos de fricci�n y redise�a tu entorno para eliminar barreras.',
+        pasos: [
+          { texto: 'Crea tu estaci�n de bienestar matutina con suplementos organizados, agua y tu recordatorio visual del porqu�', respuesta_tipo: 'accion' },
+          { texto: 'Dise�a un sistema de hidrataci�n autom�tica colocando tu botella de agua en un lugar visible y estrat�gico', respuesta_tipo: 'accion' },
+          { texto: 'Prepara tu espacio para activar el movimiento sin fricci�n: deja ropa y zapatos listos', respuesta_tipo: 'accion' }
+        ],
+        tipo: 'practica',
+        respuesta_tipo: 'abierta',
         registro: {
           estacion_bienestar: { ubicacion: '', elementos: '', ritual: '' },
           hidratacion_automatica: { estrategia: '', recordatorio: '', facilitador: '' },
           activacion_movimiento: { preparacion: '', ubicacion_zapatos: '', recordatorio_visual: '' }
         },
-        tipo: 'registro',
-        respuesta_tipo: 'estructurado'
       },
       contenido: 'Cuando las decisiones saludables requieren menos esfuerzo que las no saludables, el cambio se vuelve automático y sostenible.',
       suplementacion: [],
@@ -552,9 +574,9 @@ const CONTENIDOS = [
         nombre: 'Auditoría Energética Consciente',
         instruccion: 'Durante tu comida principal, practica la alimentación consciente energética.',
         pasos: [
-          { texto: 'Preparación Mindful: 3 respiraciones, intención "Voy a nutrir mi energía celular", gratitud', respuesta_tipo: 'abierta' },
-          { texto: 'Identificación Nutricional: identifica proteínas, carbohidratos complejos, grasas saludables', respuesta_tipo: 'abierta' },
-          { texto: 'Conexión Propósito-Nutrición: "Este [alimento] proporciona [nutriente] para que mi [sistema] pueda [función]"', respuesta_tipo: 'abierta' }
+          { texto: 'Preparación Mindful: 3 respiraciones, intención "Voy a nutrir mi energía celular", gratitud', respuesta_tipo: 'accion' },
+          { texto: 'Identificación Nutricional: identifica proteínas, carbohidratos complejos, grasas saludables', respuesta_tipo: 'accion' },
+          { texto: 'Conexión Propósito-Nutrición: "Este [alimento] proporciona [nutriente] para que mi [sistema] pueda [función]"', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
         respuesta_tipo: 'abierta'
@@ -641,8 +663,16 @@ const CONTENIDOS = [
       bloque: 'Empatía',
       concepto: 'Un "desliz" es solo un dato, no una definición de quién eres.',
       ejercicio: {
-        nombre: 'Nota de Redirección Consciente',
-        instruccion: 'Cuando experimentes un desliz, completa este formulario.',
+        nombre: 'Nota de Redirecci�n Consciente',
+        instruccion: 'Cuando experimentes un desliz, aplica este protocolo de re-enfoque.',
+        pasos: [
+          { texto: 'Reconoce la situaci�n del desliz sin juzgarte: �qu� pas�, cu�ndo y c�mo respondiste?', respuesta_tipo: 'abierta' },
+          { texto: 'Extrae un aprendizaje compasivo: �qu� te ense�a esta experiencia sobre ti?', respuesta_tipo: 'abierta' },
+          { texto: 'Elige una acci�n concreta de autocuidado como pr�ximo paso para retomar tu rumbo', respuesta_tipo: 'accion' },
+          { texto: 'Firma un compromiso de autocompasi�n para recordarte que un desliz no define tu camino', respuesta_tipo: 'accion' }
+        ],
+        tipo: 'reflexion',
+        respuesta_tipo: 'abierta',
         registro: {
           fecha: '',
           situacion: '',
@@ -652,8 +682,6 @@ const CONTENIDOS = [
           razon_eleccion: '',
           firma_autocompasion: ''
         },
-        tipo: 'registro',
-        respuesta_tipo: 'estructurado'
       },
       contenido: 'El autocuidado es un proceso continuo, no una línea recta de perfección.',
       suplementacion: [
@@ -676,9 +704,9 @@ const CONTENIDOS = [
         nombre: 'Ritual de Gratitud Cardiovascular',
         instruccion: 'Realiza este ritual de conexión corazón-mente de 5-7 minutos.',
         pasos: [
-          { texto: 'Conexión Física (2 min): mano derecha sobre el corazón, mano izquierda sobre abdomen, siente el ritmo cardíaco', respuesta_tipo: 'abierta' },
-          { texto: 'Gratitud Específica (3 min): agradece a tu corazón por latir sin que lo recuerdes', respuesta_tipo: 'abierta' },
-          { texto: 'Compromiso de Cuidado (2 min): "Cuidar mi corazón con Cardiosmile es un acto de amor propio"', respuesta_tipo: 'abierta' }
+          { texto: 'Conexión Física (2 min): mano derecha sobre el corazón, mano izquierda sobre abdomen, siente el ritmo cardíaco', respuesta_tipo: 'accion' },
+          { texto: 'Gratitud Específica (3 min): agradece a tu corazón por latir sin que lo recuerdes', respuesta_tipo: 'accion' },
+          { texto: 'Compromiso de Cuidado (2 min): "Cuidar mi corazón con Cardiosmile es un acto de amor propio"', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
         respuesta_tipo: 'abierta'
@@ -706,9 +734,9 @@ const CONTENIDOS = [
         nombre: 'Protocolo de Empatía Preventiva',
         instruccion: 'Antes de reaccionar con impaciencia o frustración, aplica esta pausa empática.',
         pasos: [
-          { texto: 'Pausa Fisiológica (30s): 3 ciclos de respiración 4-6-8, afloja hombros y mandíbula', respuesta_tipo: 'abierta' },
-          { texto: 'Reencuadre Empático (30s): "Esta persona también está lidiando con sus propias cargas"', respuesta_tipo: 'abierta' },
-          { texto: 'Respuesta Consciente: elige desde la calma: respuesta empática, pausa para procesar, o límites saludables', respuesta_tipo: 'abierta' }
+          { texto: 'Pausa Fisiológica (30s): 3 ciclos de respiración 4-6-8, afloja hombros y mandíbula', respuesta_tipo: 'accion' },
+          { texto: 'Reencuadre Empático (30s): "Esta persona también está lidiando con sus propias cargas"', respuesta_tipo: 'accion' },
+          { texto: 'Respuesta Consciente: elige desde la calma: respuesta empática, pausa para procesar, o límites saludables', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
         registro: { situacion_desafiante: '', reaccion_inicial: '', pausa_empatica_aplicada: '', resultado: '' },
@@ -732,8 +760,17 @@ const CONTENIDOS = [
       bloque: 'Empatía',
       concepto: 'La falta de autocompasión a menudo se disfraza de exigencia excesiva que lleva al agotamiento.',
       ejercicio: {
-        nombre: 'Auditoría de Señales de Agotamiento',
-        instruccion: 'Evalúa tu nivel de agotamiento y aplica el protocolo correspondiente.',
+        nombre: 'Auditor�a de Se�ales de Agotamiento',
+        instruccion: 'Eval�a tu nivel de agotamiento y aplica el protocolo correspondiente.',
+        pasos: [
+          { texto: 'Eval�a tu nivel de fatiga f�sica hoy', respuesta_tipo: 'escala', min: 1, max: 10 },
+          { texto: 'Eval�a tu nivel de niebla mental', respuesta_tipo: 'escala', min: 1, max: 10 },
+          { texto: 'Eval�a tu nivel de irritabilidad emocional', respuesta_tipo: 'escala', min: 1, max: 10 },
+          { texto: 'Eval�a tu nivel de motivaci�n reducida', respuesta_tipo: 'escala', min: 1, max: 10 },
+          { texto: 'Suma tus puntuaciones totales y aplica el protocolo de descanso correspondiente', respuesta_tipo: 'accion' }
+        ],
+        tipo: 'registro',
+        respuesta_tipo: 'escala',
         registro: {
           fatiga_fisica: '___/10',
           niebla_mental: '___/10',
@@ -743,8 +780,6 @@ const CONTENIDOS = [
           interpretacion: '',
           protocolo_elegido: ''
         },
-        tipo: 'registro',
-        respuesta_tipo: 'escala'
       },
       contenido: 'El bienestar incluye darte el combustible para actuar, pero también el permiso para recuperarte.',
       suplementacion: [
@@ -770,9 +805,9 @@ const CONTENIDOS = [
         nombre: 'Protocolo de Asertividad Neurológica',
         instruccion: 'Identifica escenarios sociales desafiantes y prepara guiones asertivos.',
         pasos: [
-          { texto: 'Identifica 3 situaciones sociales próximas con posible presión', respuesta_tipo: 'abierta' },
-          { texto: 'Desarrolla guiones con la fórmula: [Reconocimiento] + [Límite claro] + [Alternativa positiva]', respuesta_tipo: 'abierta' },
-          { texto: 'Practica: "Se ve delicioso, pero estoy satisfecho/a. Gracias por pensar en mí"', respuesta_tipo: 'abierta' }
+          { texto: 'Identifica 3 situaciones sociales próximas con posible presión', respuesta_tipo: 'accion' },
+          { texto: 'Desarrolla guiones con la fórmula: [Reconocimiento] + [Límite claro] + [Alternativa positiva]', respuesta_tipo: 'accion' },
+          { texto: 'Practica: "Se ve delicioso, pero estoy satisfecho/a. Gracias por pensar en mí"', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
         registro: {
@@ -797,15 +832,21 @@ const CONTENIDOS = [
       concepto: 'El entorno social es a menudo el mayor saboteador de los hábitos; la planificación proactiva es tu mejor defense.',
       ejercicio: {
         nombre: 'Protocolo de Pre-Carga Integral',
-        instruccion: 'Prepara estratégicamente tu cuerpo y mente antes de eventos sociales.',
+        instruccion: 'Prepara estrat�gicamente tu cuerpo y mente antes de eventos sociales.',
+        pasos: [
+          { texto: 'Pre-carga nutricional: consume comida equilibrada + hidrataci�n + suplementaci�n 2-3 horas antes del evento', respuesta_tipo: 'accion' },
+          { texto: 'Pre-carga mental: revisa tus guiones asertivos, visualiza el evento con confianza y conecta con tu porqu�', respuesta_tipo: 'accion' },
+          { texto: 'Pre-carga emocional: realiza 5 ciclos de respiraci�n 4-6-8 y repite tu afirmaci�n de bienestar', respuesta_tipo: 'accion' },
+          { texto: 'Prepara tu kit de emergencia social: agua, L-Teanina, snack saludable y recordatorio visual', respuesta_tipo: 'accion' }
+        ],
+        tipo: 'practica',
+        respuesta_tipo: 'abierta',
         registro: {
           pre_carga_nutricional: { comida: '', hidratacion: '', suplementacion: '' },
           pre_carga_mental: { guiones_revisados: '', visualizacion: '', conexion_proposito: '' },
           pre_carga_emocional: { respiracion_reguladora: '', afirmacion: '', intencion: '' },
           kit_emergencia_social: ['botella_agua', 'L-Teanina', 'snack_saludable', 'recordatorio_visual']
         },
-        tipo: 'registro',
-        respuesta_tipo: 'estructurado'
       },
       contenido: 'No llegar con hambre física o ansiedad al evento te permite elegir desde la razón y no desde el impulso emocional.',
       suplementacion: [
@@ -827,9 +868,9 @@ const CONTENIDOS = [
         nombre: 'Protocolo de Socialización Mindful',
         instruccion: 'Enfócate en conocer genuinamente a las personas durante eventos sociales.',
         pasos: [
-          { texto: 'Intención clara: "Voy a enfocarme en conocer genuinamente a las personas"', respuesta_tipo: 'abierta' },
-          { texto: 'Escucha activa: mantén contacto visual, haz preguntas genuinas', respuesta_tipo: 'abierta' },
-          { texto: 'Redirección social: si la conversación se centra en comida, transiciona a temas personales', respuesta_tipo: 'abierta' }
+          { texto: 'Intención clara: "Voy a enfocarme en conocer genuinamente a las personas"', respuesta_tipo: 'accion' },
+          { texto: 'Escucha activa: mantén contacto visual, haz preguntas genuinas', respuesta_tipo: 'accion' },
+          { texto: 'Redirección social: si la conversación se centra en comida, transiciona a temas personales', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
         registro: { persona: '', algo_nuevo_aprendido: '', conexion_emocional: '' },
@@ -1102,18 +1143,17 @@ async function seed() {
   await mongoose.connect(process.env.MONGO_URI);
   console.log('Conectado a MongoDB');
 
-  // Limpiar todas las colecciones dropeándolas físicamente para limpiar índices obsoletos
+  // Limpiar todas las coleciones antes de insertar (evita duplicados)
   await Promise.all([
-    Tienda.collection.drop().catch(() => {}),
-    Usuario.collection.drop().catch(() => {}),
-    ContenidoDiario.collection.drop().catch(() => {}),
-    TestPregunta.collection.drop().catch(() => {}),
-    ContenidoEspecial.collection.drop().catch(() => {}),
-    Producto.collection.drop().catch(() => {}),
-    Codigo.collection.drop().catch(() => {}),
-
+    Tienda.deleteMany({}),
+    Usuario.deleteMany({}),
+    ContenidoDiario.deleteMany({}),
+    TestPregunta.deleteMany({}),
+    ContenidoEspecial.deleteMany({}),
+    Producto.deleteMany({}),
+    Codigo.deleteMany({})
   ]);
-  console.log('Colecciones y sus índices limpiados');
+  console.log('Colecciones limpiadas');
 
   // 1. Tiendas (sin campo codigo_activacion)
   const tiendas = await Tienda.insertMany([
@@ -1292,3 +1332,10 @@ if (require.main === module) {
 }
 
 module.exports = { CONTENIDOS, TEST_PREGUNTAS, CONTENIDOS_ESPECIALES };
+
+
+
+
+
+
+
