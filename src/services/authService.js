@@ -5,7 +5,9 @@ const Usuario = require('../models/Usuario');
 const Tienda = require('../models/Tienda');
 const Codigo = require('../models/Codigo');
 const RefreshToken = require('../models/RefreshToken');
+const Producto = require('../models/Producto');
 const AppError = require('../utils/AppError');
+const { enviarCorreo } = require('./emailService');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -70,6 +72,19 @@ exports.register = async ({ nombre, email, password, codigo_activacion }) => {
 
   const access_token = generarAccessToken(usuario);
   const refresh_token = await generarRefreshToken(usuario._id);
+
+  Producto.findById(codDoc.producto_id).select('nombre').lean()
+    .then(producto => {
+      return enviarCorreo({
+        usuario_id: usuario._id,
+        destinatario: usuario.email,
+        asunto: '¡Tu transformación de 30 días comienza AHORA!',
+        html: `<p>Placeholder — bienvenida, producto: ${producto?.nombre || ''}</p>`,
+        tipo_correo: 'bienvenida'
+      });
+    })
+    .catch(err => console.error('[register] Error en correo de bienvenida:', err.message));
+
   return { access_token, refresh_token, usuario: { id: usuario._id, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol, tiendas_administradas: usuario.tiendas_administradas || [] } };
 };
 
