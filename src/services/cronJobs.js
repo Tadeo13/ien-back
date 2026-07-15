@@ -1,5 +1,6 @@
 const PlanProgreso = require('../models/PlanProgreso');
-const { esMismoDiaCalendarioUTC, getInicioDeDiaDeAyer } = require('../utils/fechas');
+const Usuario = require('../models/Usuario');
+const { getInicioDeDiaDeAyer } = require('../utils/fechas');
 
 async function findUsuariosRezagados() {
   const umbralMinimo = new Date(Date.now() - 2 * 60 * 60 * 1000);
@@ -71,4 +72,35 @@ async function demoledorDeRachas() {
   };
 }
 
-module.exports = { findUsuariosRezagados, demoledorDeRachas };
+async function findUsuariosSinActivar() {
+  const hace5Dias = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
+  return Usuario.aggregate([
+    { $match: { fecha_registro: { $lte: hace5Dias } } },
+    { $lookup: { from: 'planes_progreso', localField: '_id', foreignField: 'usuario_id', as: 'plan' } },
+    { $match: { plan: { $size: 0 } } },
+    { $project: { nombre: 1, email: 1, producto_id: 1, fecha_registro: 1 } }
+  ]);
+}
+
+async function findUsuariosParaRecuperar() {
+  const hace7Dias = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  return PlanProgreso.aggregate([
+    {
+      $match: {
+        estado: 'activo',
+        ultima_fecha_actividad: { $lte: hace7Dias },
+        $expr: {
+          $eq: [
+            { $arrayElemAt: ['$progreso_diario.completado', { $subtract: ['$dia_actual', 1] }] },
+            false
+          ]
+        }
+      }
+    },
+    { $lookup: { from: 'usuarios', localField: 'usuario_id', foreignField: '_id', as: 'usuario' } },
+    { $unwind: '$usuario' },
+    { $project: { usuario_id: 1, dia_actual: 1, nombre: '$usuario.nombre', email: '$usuario.email' } }
+  ]);
+}
+
+module.exports = { findUsuariosRezagados, demoledorDeRachas, findUsuariosSinActivar, findUsuariosParaRecuperar };
