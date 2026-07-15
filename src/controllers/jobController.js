@@ -1,9 +1,9 @@
-const { demoledorDeRachas, sendReminders } = require('../services/jobService');
+const { resetStreaksYNotificar, sendReminders, enviarActivationNudges, enviarRecoveryEmails } = require('../services/jobService');
 const { tryCatch } = require('../middlewares/errorHandler');
 const AppError = require('../utils/AppError');
 
 exports.resetStreaks = tryCatch(async (_req, res) => {
-  const result = await demoledorDeRachas();
+  const result = await resetStreaksYNotificar();
   res.json(result);
 });
 
@@ -16,5 +16,15 @@ exports.sendReminders = tryCatch(async (req, res) => {
   }
 
   const result = await sendReminders(momento_alerta);
+  res.json(result);
+});
+
+exports.sendActivationNudge = tryCatch(async (_req, res) => {
+  const result = await enviarActivationNudges();
+  res.json(result);
+});
+
+exports.sendRecovery = tryCatch(async (_req, res) => {
+  const result = await enviarRecoveryEmails();
   res.json(result);
 });
