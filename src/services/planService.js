@@ -4,6 +4,7 @@ const PlanProgreso = require('../models/PlanProgreso');
 const ContenidoDiario = require('../models/ContenidoDiario');
 const TestPregunta = require('../models/TestPregunta');
 const ContenidoEspecial = require('../models/ContenidoEspecial');
+const { enviarCorreo } = require('./emailService');
 
 const AppError = require('../utils/AppError');
 const { esMismoDiaCalendarioUTC } = require('../utils/fechas');
@@ -338,6 +339,22 @@ exports.completeDay = async (usuarioId, respuestaUsuario) => {
   }
 
   const { plan: planActualizado, hito_alcanzado } = await marcarDiaCompletado(plan._id, respuestaUsuario);
+
+  if (hito_alcanzado !== null) {
+    Usuario.findById(usuarioId).select('nombre email').lean()
+      .then(usuario => {
+        if (!usuario) return;
+        return enviarCorreo({
+          usuario_id: usuarioId,
+          destinatario: usuario.email,
+          asunto: `¡Felicidades ${usuario.nombre}! Llegaste a tu hito de ${hito_alcanzado} días`,
+          html: `<p>Placeholder — hito de ${hito_alcanzado} días</p>`,
+          tipo_correo: 'hito',
+          meta: { hito: hito_alcanzado }
+        });
+      })
+      .catch(err => console.error('[completeDay] Error en correo de hito:', err.message));
+  }
 
   return {
     // BUG-01 Fix: Usar el valor incrementado (planActualizado) y restarle 1,
