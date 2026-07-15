@@ -28,7 +28,7 @@ function yaCompletoActividadHoy(plan, ahora) {
 
 // Hitos de racha a notificar al frontend (para badge/celebración).
 // No disparan correo todavía — eso queda para la fase de email.
-const HITOS_RACHA = [3, 7, 15, 30];
+const HITOS_RACHA = [7, 14, 21];
 
 function detectarHito(racha_dias, hitos_alcanzados = []) {
   if (HITOS_RACHA.includes(racha_dias) && !hitos_alcanzados.includes(racha_dias)) {
