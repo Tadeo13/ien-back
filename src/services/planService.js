@@ -249,7 +249,8 @@ exports.setupTest = async ({ respuestas, usuarioId }) => {
 };
 
 /**
- * Devuelve los resultados del test inicial del usuario (lectura pura).
+ * Devuelve los resultados del test inicial del usuario, incluyendo
+ * respuestas individuales enriquecidas con el texto de cada pregunta.
  */
 exports.getTestInicial = async (usuarioId) => {
   const plan = await PlanProgreso
@@ -258,9 +259,28 @@ exports.getTestInicial = async (usuarioId) => {
   if (!plan || !plan.test_inicial) {
     throw new AppError(404, 'Test inicial no encontrado');
   }
+
+  const preguntasDb = await TestPregunta.find()
+    .select('numero texto competencia competencia_label')
+    .lean();
+  const preguntasMap = new Map(preguntasDb.map(p => [p.numero, p]));
+
+  const respuestasConTexto = plan.test_inicial.respuestas.map(r => {
+    const pregunta = preguntasMap.get(r.pregunta_numero);
+    return {
+      pregunta_numero: r.pregunta_numero,
+      competencia: r.competencia,
+      score: r.score,
+      texto: pregunta?.texto || '',
+      competencia_label: pregunta?.competencia_label || r.competencia
+    };
+  });
+
   return {
+    fecha_completado: plan.test_inicial.fecha_completado,
     puntuaciones_por_competencia: plan.test_inicial.puntuaciones_por_competencia,
-    competencias_a_mejorar: plan.test_inicial.competencias_a_mejorar
+    competencias_a_mejorar: plan.test_inicial.competencias_a_mejorar,
+    respuestas: respuestasConTexto
   };
 };
 

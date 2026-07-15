@@ -6,8 +6,10 @@ const {
   metrics,
   perfilPaciente,
   progresoPaciente,
+  testInicialPaciente,
+  actividadesPaciente,
   listarPacientes,
-  reporteUsuarios,
+  reportesUsuarios,
   graficaSemanal,
   crearAdminNegocio
 } = require('../controllers/adminController');
@@ -147,6 +149,50 @@ router.get('/pacientes/:usuarioId/perfil', perfilPaciente);
  *         description: Paciente no encontrado, fuera de scope o sin plan
  */
 router.get('/pacientes/:usuarioId/progreso', progresoPaciente);
+
+/**
+ * @swagger
+ * /api/admin/pacientes/{usuarioId}/test-inicial:
+ *   get:
+ *     summary: "[ADMIN] Test inicial del paciente con respuestas enriquecidas"
+ *     tags: [Admin - Reportes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: usuarioId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Test inicial del paciente
+ *       404:
+ *         description: Paciente no encontrado, fuera de scope o sin test
+ */
+router.get('/pacientes/:usuarioId/test-inicial', testInicialPaciente);
+
+/**
+ * @swagger
+ * /api/admin/pacientes/{usuarioId}/actividades:
+ *   get:
+ *     summary: "[ADMIN] Actividades diarias completadas del paciente"
+ *     tags: [Admin - Reportes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: usuarioId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Días completados con contenido de lección
+ *       404:
+ *         description: Paciente no encontrado, fuera de scope o sin plan
+ */
+router.get('/pacientes/:usuarioId/actividades', actividadesPaciente);
 
 // ── Fase C — Reportes ───────────────────────────────────────────────────────
 /**
