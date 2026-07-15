@@ -9,7 +9,7 @@ const {
   testInicialPaciente,
   actividadesPaciente,
   listarPacientes,
-  reportesUsuarios,
+  reporteUsuarios,
   graficaSemanal,
   crearAdminNegocio
 } = require('../controllers/adminController');
