@@ -47,9 +47,10 @@ exports.actualizar = tryCatch(async (req, res) => {
     throw new AppError(403, 'Sin acceso a esta sucursal');
   }
 
-  const campos = req.usuario.rol === 'admin_general'
-    ? req.body
-    : { nombre_tienda: req.body.nombre_tienda, ciudad: req.body.ciudad };
+  const campos = {
+    nombre_tienda: req.body.nombre_tienda,
+    ciudad: req.body.ciudad
+  };
 
   const tienda = await Tienda.findByIdAndUpdate(id, campos, { new: true, runValidators: true });
   if (!tienda) throw new AppError(404, 'Sucursal no encontrada');

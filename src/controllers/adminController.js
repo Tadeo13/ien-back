@@ -4,9 +4,7 @@ const AppError = require('../utils/AppError');
 const mongoose = require('mongoose');
 const Usuario = require('../models/Usuario');
 const PlanProgreso = require('../models/PlanProgreso');
-const { getInicioDeDiaDeHoy } = require('../utils/fechas');
-const Tienda = require('../models/Tienda');
-const Producto = require('../models/Producto');
+const { getInicioDeDiaDeHoy, getFechaHaceDias } = require('../utils/fechas');
 
 // ─── Existente ────────────────────────────────────────────────────────────────
 
@@ -27,6 +25,7 @@ async function obtenerPacienteConScope(usuarioId, tiendasPermitidas) {
   }
 
   const usuario = await Usuario.findById(usuarioId)
+    .select('-password_hash')
     .populate('tienda_id', 'nombre_tienda ciudad')
     .populate('producto_id', 'nombre descripcion');
 
@@ -91,7 +90,7 @@ function filtroTiendas(tiendasPermitidas) {
  */
 exports.reporteUsuarios = tryCatch(async (req, res) => {
   const hoy = getInicioDeDiaDeHoy();
-  const hace7dias = new Date(hoy.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const hace7dias = getFechaHaceDias(7);
 
   // Filtro base por scope de tienda
   const baseFiltro = filtroTiendas(req.tiendasPermitidas);
