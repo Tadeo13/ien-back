@@ -1,9 +1,9 @@
 const PlanProgreso = require('../models/PlanProgreso');
 const Usuario = require('../models/Usuario');
-const { getInicioDeDiaDeAyer } = require('../utils/fechas');
+const { getInicioDeDiaDeAyer, getFechaHaceHoras, getFechaHaceDias } = require('../utils/fechas');
 
 async function findUsuariosRezagados() {
-  const umbralMinimo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+  const umbralMinimo = getFechaHaceHoras(2);
 
   return PlanProgreso.aggregate([
     {
@@ -73,7 +73,7 @@ async function demoledorDeRachas() {
 }
 
 async function findUsuariosSinActivar() {
-  const hace5Dias = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
+  const hace5Dias = getFechaHaceDias(5);
   return Usuario.aggregate([
     { $match: { fecha_registro: { $lte: hace5Dias } } },
     { $lookup: { from: 'planes_progreso', localField: '_id', foreignField: 'usuario_id', as: 'plan' } },
@@ -83,7 +83,7 @@ async function findUsuariosSinActivar() {
 }
 
 async function findUsuariosParaRecuperar() {
-  const hace7Dias = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const hace7Dias = getFechaHaceDias(7);
   return PlanProgreso.aggregate([
     {
       $match: {

@@ -40,4 +40,12 @@ function esMismoDiaCalendarioUTC(fechaA, fechaB) {
   );
 }
 
-module.exports = { getInicioDeDiaDeAyer, getInicioDeDiaDeHoy, esMismoDiaCalendarioUTC };
+function getFechaHaceHoras(horas) {
+  return new Date(Date.now() - horas * 60 * 60 * 1000);
+}
+
+function getFechaHaceDias(dias) {
+  return new Date(Date.now() - dias * 24 * 60 * 60 * 1000);
+}
+
+module.exports = { getInicioDeDiaDeAyer, getInicioDeDiaDeHoy, esMismoDiaCalendarioUTC, getFechaHaceHoras, getFechaHaceDias };

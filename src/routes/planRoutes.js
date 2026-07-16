@@ -424,7 +424,7 @@ router.get('/profile', profile);
  *                 hito_alcanzado:
  *                   type: number
  *                   nullable: true
- *                   description: Hito de racha alcanzado en este completado (3, 7, 15, 30) o null si no se alcanzó ninguno nuevo
+ *                   description: Hito de racha alcanzado en este completado (7, 14, 21) o null si no se alcanzó ninguno nuevo
  *       404:
  *         description: No hay plan activo
  *       409:
