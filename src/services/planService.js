@@ -37,11 +37,27 @@ function detectarHito(racha_dias, hitos_alcanzados = []) {
 }
 
 function mapContenidoALeccion(contenido) {
+  const pasos = contenido.datos_leccion?.ejercicio?.pasos;
+  const campos_respuesta = Array.isArray(pasos)
+    ? pasos
+        .filter(p => p.respuesta_tipo !== 'accion' || p.texto)
+        .map((p, i) => ({
+          id: p.id || `paso_${i + 1}`,
+          etiqueta: (typeof p.texto === 'string' ? p.texto : `Paso ${i + 1}`).substring(0, 80),
+          tipo: p.respuesta_tipo === 'escala' ? 'escala'
+            : p.respuesta_tipo === 'accion' ? 'accion'
+            : 'texto',
+          min: p.min,
+          max: p.max
+        }))
+    : [];
+
   return {
     titulo: contenido.titulo_modulo,
     tipo: contenido.tipo_contenido,
     emociones_objetivo: contenido.emociones_objetivo,
     respuesta_tipo: contenido.respuesta_tipo,
+    campos_respuesta,
     datos_leccion: contenido.datos_leccion
   };
 }
