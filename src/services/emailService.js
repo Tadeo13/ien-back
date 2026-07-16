@@ -2,10 +2,18 @@ const { Resend } = require('resend');
 const HistorialCorreo = require('../models/HistorialCorreo');
 
 async function registrarHistorial({ usuario_id, destinatario, tipo_correo, estado, meta }) {
-  try {
-    await HistorialCorreo.create({ usuario_id, email_destino: destinatario, tipo_correo, estado, meta });
-  } catch (err) {
-    console.error('[emailService] Error registrando historial:', err.message);
+  const datos = { usuario_id, email_destino: destinatario, tipo_correo, estado, meta };
+  for (let intento = 1; intento <= 2; intento++) {
+    try {
+      await HistorialCorreo.create(datos);
+      return;
+    } catch (err) {
+      if (intento === 2) {
+        console.error('[CRITICAL] No se pudo registrar HistorialCorreo tras reintento:', err.message, JSON.stringify(datos));
+      } else {
+        await new Promise(r => setTimeout(r, 500));
+      }
+    }
   }
 }
 
@@ -34,8 +42,13 @@ async function enviarCorreo({ usuario_id, destinatario, asunto, html, tipo_corre
 }
 
 async function yaSeEnvio(usuario_id, tipo_correo) {
-  const existe = await HistorialCorreo.findOne({ usuario_id, tipo_correo, estado: 'enviado' }).lean();
-  return !!existe;
+  try {
+    const existe = await HistorialCorreo.findOne({ usuario_id, tipo_correo, estado: 'enviado' }).lean();
+    return !!existe;
+  } catch (err) {
+    console.error('[yaSeEnvio] Error consultando HistorialCorreo:', err.message);
+    throw err;
+  }
 }
 
 module.exports = { enviarCorreo, yaSeEnvio };
