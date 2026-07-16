@@ -54,5 +54,9 @@ const planProgresoSchema = new Schema({
 planProgresoSchema.index({ estado: 1, dia_actual: 1 });
 planProgresoSchema.index({ estado: 1, ultima_fecha_actividad: 1 });
 planProgresoSchema.index({ usuario_id: 1, estado: 1 });
+planProgresoSchema.index(
+  { usuario_id: 1 },
+  { unique: true, partialFilterExpression: { estado: 'activo' } }
+);
 
 module.exports = mongoose.model('PlanProgreso', planProgresoSchema, 'planes_progreso');
