@@ -1,10 +1,19 @@
-const { Router } = require('express');
-const apiKeyMiddleware = require('../middlewares/apiKeyMiddleware');
-const { resetStreaks, sendReminders, sendActivationNudge, sendRecovery } = require('../controllers/jobController');
+  const { Router } = require('express');
+  const rateLimit = require('express-rate-limit');
+  const apiKeyMiddleware = require('../middlewares/apiKeyMiddleware');
+  const { resetStreaks, sendReminders, sendActivationNudge, sendRecovery } = require('../controllers/jobController');
 
-const router = Router();
+  const router = Router();
 
-router.use(apiKeyMiddleware);
+  const jobLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Demasiadas llamadas a jobs, intentá de nuevo en 1 hora' }
+  });
+
+  router.use(jobLimiter, apiKeyMiddleware);
 
 /**
  * @swagger

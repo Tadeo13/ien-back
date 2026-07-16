@@ -190,7 +190,7 @@ router.post('/login', authLimiter, login);
  *       401:
  *         description: Refresh token inválido o expirado
  */
-router.post('/refresh', refresh);
+router.post('/refresh', authLimiter, refresh);
 
 /**
  * @swagger
