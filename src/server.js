@@ -4,6 +4,10 @@ const app = require('./app');
 
 const { PORT = 3000, MONGO_URI } = process.env;
 
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Rejection:', err);
+});
+
 if (!MONGO_URI) {
   console.error('MONGO_URI is required');
   process.exit(1);
