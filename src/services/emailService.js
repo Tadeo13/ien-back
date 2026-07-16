@@ -1,8 +1,8 @@
 const { Resend } = require('resend');
 const HistorialCorreo = require('../models/HistorialCorreo');
 
-async function registrarHistorial({ usuario_id, destinatario, tipo_correo, estado, meta }) {
-  const datos = { usuario_id, email_destino: destinatario, tipo_correo, estado, meta };
+async function registrarHistorial({ usuario_id, destinatario, tipo_correo, momento_alerta, estado, meta }) {
+  const datos = { usuario_id, email_destino: destinatario, tipo_correo, momento_alerta, estado, meta };
   for (let intento = 1; intento <= 2; intento++) {
     try {
       await HistorialCorreo.create(datos);
@@ -17,10 +17,10 @@ async function registrarHistorial({ usuario_id, destinatario, tipo_correo, estad
   }
 }
 
-async function enviarCorreo({ usuario_id, destinatario, asunto, html, tipo_correo, meta = {} }) {
+async function enviarCorreo({ usuario_id, destinatario, asunto, html, tipo_correo, momento_alerta, meta = {} }) {
   if (!process.env.RESEND_API_KEY) {
     console.error('[emailService] RESEND_API_KEY no configurada');
-    await registrarHistorial({ usuario_id, destinatario, tipo_correo, estado: 'fallido', meta });
+    await registrarHistorial({ usuario_id, destinatario, tipo_correo, momento_alerta, estado: 'fallido', meta });
     return { success: false, error: 'RESEND_API_KEY no configurada' };
   }
   try {
@@ -29,14 +29,14 @@ async function enviarCorreo({ usuario_id, destinatario, asunto, html, tipo_corre
     const { data, error } = await resend.emails.send({ from, to: destinatario, subject: asunto, html });
     if (error) {
       console.error('[emailService] Error de Resend:', error.message);
-      await registrarHistorial({ usuario_id, destinatario, tipo_correo, estado: 'fallido', meta });
+      await registrarHistorial({ usuario_id, destinatario, tipo_correo, momento_alerta, estado: 'fallido', meta });
       return { success: false, error: error.message };
     }
-    await registrarHistorial({ usuario_id, destinatario, tipo_correo, estado: 'enviado', meta });
+    await registrarHistorial({ usuario_id, destinatario, tipo_correo, momento_alerta, estado: 'enviado', meta });
     return { success: true, messageId: data.id };
   } catch (err) {
     console.error('[emailService] Excepción al enviar:', err.message);
-    await registrarHistorial({ usuario_id, destinatario, tipo_correo, estado: 'fallido', meta });
+    await registrarHistorial({ usuario_id, destinatario, tipo_correo, momento_alerta, estado: 'fallido', meta });
     return { success: false, error: err.message };
   }
 }
