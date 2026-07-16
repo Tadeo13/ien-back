@@ -123,10 +123,10 @@ const CONTENIDOS = [
         nombre: 'Entrenamiento Sin Distracciones',
         instruccion: 'Durante 10-15 minutos de tu actividad física, elimina distracciones y enfócate en las sensaciones corporales.',
         pasos: [
-          { texto: 'Apaga música, podcasts and notificaciones', respuesta_tipo: 'practica' },
-          { texto: 'Concéntrate en el ritmo de tu respiración', respuesta_tipo: 'practica' },
-          { texto: 'Siente el contacto consciente de tus pies con el suelo', respuesta_tipo: 'practica' },
-          { texto: 'Percibe la contracción y relajación muscular', respuesta_tipo: 'practica' },
+          { texto: 'Apaga música, podcasts and notificaciones', respuesta_tipo: 'accion' },
+          { texto: 'Concéntrate en el ritmo de tu respiración', respuesta_tipo: 'accion' },
+          { texto: 'Siente el contacto consciente de tus pies con el suelo', respuesta_tipo: 'accion' },
+          { texto: 'Percibe la contracción y relajación muscular', respuesta_tipo: 'accion' },
           { texto: 'Observa tu latido cardíaco', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
