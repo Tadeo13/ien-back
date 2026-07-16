@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const morgan = require('morgan');
+const authMiddleware = require('./middlewares/authMiddleware');
 const authRoutes = require('./routes/authRoutes');
 const planRoutes = require('./routes/planRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -16,7 +18,8 @@ const { errorHandler } = require('./middlewares/errorHandler');
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+app.use(helmet());
+app.use(express.json({ limit: '1mb' }));
 app.use(morgan('dev'));
 
 // Health check
@@ -29,8 +32,8 @@ app.get('/', (_req, res) => {
   res.send('IEN Backend API is running. Documentation available at /api-docs');
 });
 
-// Docs
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Docs — protegido con auth
+app.use('/api-docs', authMiddleware, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -41,6 +44,10 @@ app.use('/api/admin/sucursales', sucursalRoutes);
 app.use('/api/admin/productos', productoRoutes);
 app.use('/api/admin/codigos', codigoRoutes);
 
+// 404 catch-all (JSON, no HTML de Express)
+app.use((_req, res) => {
+  res.status(404).json({ error: 'Ruta no encontrada' });
+});
 
 app.use(errorHandler);
 
