@@ -8,8 +8,8 @@ const { getInicioDeDiaDeHoy, getFechaHaceDias } = require('../utils/fechas');
 
 // ─── Existente ────────────────────────────────────────────────────────────────
 
-exports.metrics = tryCatch(async (_req, res) => {
-  const data = await panelAdminPorTienda();
+exports.metrics = tryCatch(async (req, res) => {
+  const data = await panelAdminPorTienda(req.tiendasPermitidas);
   res.json(data);
 });
 
