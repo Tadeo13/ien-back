@@ -6,7 +6,7 @@ const historialCorreoSchema = new Schema({
   email_destino: { type: String, required: true },
   tipo_correo: {
     type: String,
-    enum: ['bienvenida', 'urgencia_activacion', 'hito', 'racha_rota', 'recuperacion_inactividad', 'recordatorio_diario'],
+    enum: ['bienvenida', 'urgencia_activacion', 'hito', 'racha_rota', 'recuperacion_inactividad', 'recordatorio_diario', 'recuperacion_contrasena'],
     required: true
   },
   momento_alerta: { type: String, enum: ['mañana', 'recordatorio_tarde', 'alerta_noche'], required: false },

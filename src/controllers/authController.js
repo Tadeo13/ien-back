@@ -1,4 +1,4 @@
-const { validateCode, register, login, refreshToken, logout } = require('../services/authService');
+const { validateCode, register, login, refreshToken, logout, forgotPassword, verifyResetToken, resetPassword } = require('../services/authService');
 const { tryCatch } = require('../middlewares/errorHandler');
 const AppError = require('../utils/AppError');
 const Usuario = require('../models/Usuario');
@@ -92,5 +92,39 @@ exports.logout = tryCatch(async (req, res) => {
   const { refresh_token } = req.body;
 
   const result = await logout(refresh_token);
+  res.json(result);
+});
+
+exports.forgotPassword = tryCatch(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    throw new AppError(400, 'Email requerido');
+  }
+
+  await forgotPassword(email);
+
+  res.json({ mensaje: 'Si el email está registrado, recibirás un enlace de recuperación' });
+});
+
+exports.verifyResetToken = tryCatch(async (req, res) => {
+  const { token } = req.query;
+
+  if (!token) {
+    throw new AppError(400, 'Token requerido');
+  }
+
+  const result = await verifyResetToken(token);
+  res.json(result);
+});
+
+exports.resetPassword = tryCatch(async (req, res) => {
+  const { token, nueva_password } = req.body;
+
+  if (!token || !nueva_password) {
+    throw new AppError(400, 'Token y nueva contraseña requeridos');
+  }
+
+  const result = await resetPassword(token, nueva_password);
   res.json(result);
 });

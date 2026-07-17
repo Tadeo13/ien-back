@@ -1,11 +1,35 @@
 const { Router } = require('express');
 const rateLimit = require('express-rate-limit');
-const { validateCode, register, login, refresh, logout, profile } = require('../controllers/authController');
+const { validateCode, register, login, refresh, logout, profile, forgotPassword, verifyResetToken, resetPassword } = require('../controllers/authController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 const router = Router();
 
 const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiados intentos, intentá de nuevo en 15 minutos' }
+});
+
+const resetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiadas solicitudes de recuperación, intentá de nuevo en 15 minutos' }
+});
+
+const verifyResetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiadas consultas, intentá de nuevo en 15 minutos' }
+});
+
+const resetPasswordLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   standardHeaders: true,
@@ -286,5 +310,104 @@ router.post('/logout', logout);
  *         description: Usuario no encontrado
  */
 router.get('/profile', authMiddleware, profile);
+
+/**
+ * @swagger
+ * /api/auth/forgot-password:
+ *   post:
+ *     summary: Solicitar recuperación de contraseña
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Si el email está registrado, se envía un enlace de recuperación
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 mensaje:
+ *                   type: string
+ *       400:
+ *         description: Email requerido
+ *       429:
+ *         description: Demasiadas solicitudes
+ */
+router.post('/forgot-password', resetLimiter, forgotPassword);
+
+/**
+ * @swagger
+ * /api/auth/verify-reset-token:
+ *   get:
+ *     summary: Verificar validez de un token de recuperación
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: query
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Token de recuperación
+ *     responses:
+ *       200:
+ *         description: Resultado de la verificación
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 valido:
+ *                   type: boolean
+ *                 email:
+ *                   type: string
+ *                   description: Email enmascarado si el token es válido
+ *       400:
+ *         description: Token requerido
+ *       429:
+ *         description: Demasiadas consultas
+ */
+router.get('/verify-reset-token', verifyResetLimiter, verifyResetToken);
+
+/**
+ * @swagger
+ * /api/auth/reset-password:
+ *   post:
+ *     summary: Restablecer contraseña con token de recuperación
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [token, nueva_password]
+ *             properties:
+ *               token:
+ *                 type: string
+ *               nueva_password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Contraseña actualizada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 mensaje:
+ *                   type: string
+ *       400:
+ *         description: Token inválido o expirado
+ */
+router.post('/reset-password', resetPasswordLimiter, resetPassword);
 
 module.exports = router;

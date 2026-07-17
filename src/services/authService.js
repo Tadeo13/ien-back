@@ -5,6 +5,7 @@ const Usuario = require('../models/Usuario');
 const Tienda = require('../models/Tienda');
 const Codigo = require('../models/Codigo');
 const RefreshToken = require('../models/RefreshToken');
+const PasswordResetToken = require('../models/PasswordResetToken');
 const Producto = require('../models/Producto');
 const AppError = require('../utils/AppError');
 const { enviarCorreo } = require('./emailService');
@@ -137,4 +138,103 @@ exports.logout = async (refreshTokenPlano) => {
   }
 
   return { mensaje: 'Sesión cerrada' };
+};
+
+exports.forgotPassword = async (email) => {
+  if (typeof email !== 'string') {
+    throw new AppError(400, 'Email requerido');
+  }
+
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+  const usuario = await Usuario.findOne({ email });
+
+  if (usuario) {
+    const token = crypto.randomBytes(32).toString('hex');
+    const token_hash = crypto.createHash('sha256').update(token).digest('hex');
+    const fecha_expiracion = new Date(Date.now() + 15 * 60 * 1000);
+
+    await PasswordResetToken.create({
+      usuario_id: usuario._id,
+      token_hash,
+      fecha_expiracion
+    });
+
+    const resetUrl = `${FRONTEND_URL}/reset-password?token=${token}`;
+
+    enviarCorreo({
+      usuario_id: usuario._id,
+      destinatario: usuario.email,
+      asunto: 'Recuperá tu contraseña',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #333;">Recuperación de contraseña</h2>
+          <p>Hola ${usuario.nombre},</p>
+          <p>Recibimos una solicitud para restablecer tu contraseña. Hacé clic en el botón de abajo:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetUrl}" style="background-color: #4F46E5; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Restablecer contraseña</a>
+          </div>
+          <p style="color: #666; font-size: 14px;">Este enlace expira en 15 minutos.</p>
+          <p style="color: #666; font-size: 14px;">Si no solicitaste este cambio, podés ignorar este mensaje.</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+          <p style="color: #999; font-size: 12px;">Si el botón no funciona, copiá y pegá este enlace en tu navegador:<br>${resetUrl}</p>
+        </div>
+      `,
+      tipo_correo: 'recuperacion_contrasena'
+    }).catch(err => console.error('[forgotPassword] Error en correo de recuperación:', err.message));
+  }
+};
+
+exports.verifyResetToken = async (token) => {
+  if (typeof token !== 'string') {
+    throw new AppError(400, 'Token requerido');
+  }
+
+  const token_hash = crypto.createHash('sha256').update(token).digest('hex');
+  const doc = await PasswordResetToken.findOne({
+    token_hash,
+    usado: false,
+    fecha_expiracion: { $gt: new Date() }
+  }).populate('usuario_id', 'email');
+
+  if (!doc || !doc.usuario_id) {
+    return { valido: false };
+  }
+
+  const email = doc.usuario_id.email;
+  const masked = email.charAt(0) + '***' + email.slice(email.indexOf('@'));
+
+  return { valido: true, email: masked };
+};
+
+exports.resetPassword = async (token, nuevaPassword) => {
+  if (typeof token !== 'string' || typeof nuevaPassword !== 'string') {
+    throw new AppError(400, 'Token y nueva contraseña requeridos');
+  }
+
+  const token_hash = crypto.createHash('sha256').update(token).digest('hex');
+  const doc = await PasswordResetToken.findOneAndUpdate(
+    { token_hash, usado: false, fecha_expiracion: { $gt: new Date() } },
+    { usado: true },
+    { new: false }
+  );
+
+  if (!doc) {
+    throw new AppError(400, 'Token inválido o expirado');
+  }
+
+  const usuario = await Usuario.findById(doc.usuario_id);
+  if (!usuario) {
+    throw new AppError(404, 'Usuario no encontrado');
+  }
+
+  usuario.password_hash = await bcrypt.hash(nuevaPassword, 10);
+  await usuario.save();
+
+  await RefreshToken.updateMany(
+    { usuario_id: usuario._id, revocado: false },
+    { revocado: true }
+  );
+
+  return { mensaje: 'Contraseña actualizada' };
 };
