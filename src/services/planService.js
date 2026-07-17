@@ -38,12 +38,27 @@ function detectarHito(racha_dias, hitos_alcanzados = []) {
 }
 
 function mapContenidoALeccion(contenido) {
+  const pasos = contenido.datos_leccion?.ejercicio?.pasos;
+  const campos_respuesta = Array.isArray(pasos)
+    ? pasos
+        .filter(p => p.respuesta_tipo !== 'accion' || p.texto)
+        .map((p, i) => ({
+          id: p.id || `paso_${i + 1}`,
+          etiqueta: (typeof p.texto === 'string' ? p.texto : `Paso ${i + 1}`).substring(0, 80),
+          tipo: p.respuesta_tipo === 'escala' ? 'escala'
+            : p.respuesta_tipo === 'accion' ? 'accion'
+            : 'texto',
+          min: p.min,
+          max: p.max
+        }))
+    : [];
+
   return {
     titulo: contenido.titulo_modulo,
     tipo: contenido.tipo_contenido,
     emociones_objetivo: contenido.emociones_objetivo,
     respuesta_tipo: contenido.respuesta_tipo,
-    campos_respuesta: contenido.campos_respuesta,
+    campos_respuesta,
     datos_leccion: contenido.datos_leccion
   };
 }
@@ -250,7 +265,8 @@ exports.setupTest = async ({ respuestas, usuarioId }) => {
 };
 
 /**
- * Devuelve los resultados del test inicial del usuario (lectura pura).
+ * Devuelve los resultados del test inicial del usuario, incluyendo
+ * respuestas individuales enriquecidas con el texto de cada pregunta.
  */
 exports.getTestInicial = async (usuarioId) => {
   const plan = await PlanProgreso
@@ -259,9 +275,28 @@ exports.getTestInicial = async (usuarioId) => {
   if (!plan || !plan.test_inicial) {
     throw new AppError(404, 'Test inicial no encontrado');
   }
+
+  const preguntasDb = await TestPregunta.find()
+    .select('numero texto competencia competencia_label')
+    .lean();
+  const preguntasMap = new Map(preguntasDb.map(p => [p.numero, p]));
+
+  const respuestasConTexto = plan.test_inicial.respuestas.map(r => {
+    const pregunta = preguntasMap.get(r.pregunta_numero);
+    return {
+      pregunta_numero: r.pregunta_numero,
+      competencia: r.competencia,
+      score: r.score,
+      texto: pregunta?.texto || '',
+      competencia_label: pregunta?.competencia_label || r.competencia
+    };
+  });
+
   return {
+    fecha_completado: plan.test_inicial.fecha_completado,
     puntuaciones_por_competencia: plan.test_inicial.puntuaciones_por_competencia,
-    competencias_a_mejorar: plan.test_inicial.competencias_a_mejorar
+    competencias_a_mejorar: plan.test_inicial.competencias_a_mejorar,
+    respuestas: respuestasConTexto
   };
 };
 
@@ -269,10 +304,22 @@ exports.getTestInicial = async (usuarioId) => {
  * Devuelve el contenido del dia actual del plan activo del usuario.
  */
 exports.getToday = async (usuarioId) => {
-  const plan = await PlanProgreso
+  let plan = await PlanProgreso
     .findOne({ usuario_id: usuarioId, estado: 'activo' })
     .select('dia_actual ultima_fecha_actividad progreso_diario');
   if (!plan) {
+    plan = await PlanProgreso
+      .findOne({ usuario_id: usuarioId, estado: 'completado' })
+      .select('dia_actual ultima_fecha_actividad progreso_diario');
+    if (plan) {
+      return {
+        dia_actual: plan.dia_actual,
+        completado: true,
+        cabecera: null,
+        contenido_especial: null,
+        leccion: null
+      };
+    }
     throw new AppError(404, 'No hay un plan activo');
   }
 
@@ -308,9 +355,14 @@ exports.getToday = async (usuarioId) => {
  * Devuelve el estado completo del progreso del plan activo del usuario.
  */
 exports.getProfile = async (usuarioId) => {
-  const plan = await PlanProgreso
+  let plan = await PlanProgreso
     .findOne({ usuario_id: usuarioId, estado: 'activo' })
     .select('dia_actual racha_dias racha_maxima estado fecha_inicio ultima_fecha_actividad progreso_diario');
+  if (!plan) {
+    plan = await PlanProgreso
+      .findOne({ usuario_id: usuarioId, estado: 'completado' })
+      .select('dia_actual racha_dias racha_maxima estado fecha_inicio ultima_fecha_actividad progreso_diario');
+  }
   if (!plan) {
     throw new AppError(404, 'No hay un plan activo');
   }
@@ -400,9 +452,14 @@ exports.advanceDay = async (usuarioId) => {
  * @param {boolean} soloCompletados - Si true, solo devuelve días completados.
  */
 exports.getDays = async (usuarioId, soloCompletados = false) => {
-  const plan = await PlanProgreso
+  let plan = await PlanProgreso
     .findOne({ usuario_id: usuarioId, estado: 'activo' })
     .select('progreso_diario');
+  if (!plan) {
+    plan = await PlanProgreso
+      .findOne({ usuario_id: usuarioId, estado: 'completado' })
+      .select('progreso_diario');
+  }
   if (!plan) throw new AppError(404, 'No hay un plan activo');
 
   let dias = plan.progreso_diario;

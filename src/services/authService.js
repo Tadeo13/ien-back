@@ -57,9 +57,6 @@ exports.register = async ({ nombre, email, password, codigo_activacion }) => {
     throw new AppError(409, 'El email ya está registrado');
   }
 
-  codDoc.fecha_activacion = new Date();
-  await codDoc.save();
-
   const password_hash = await bcrypt.hash(password, 10);
   const usuario = await Usuario.create({
     nombre,

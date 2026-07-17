@@ -243,10 +243,6 @@ router.get('/test-inicial', getTestInicial);
  *                     respuesta_tipo:
  *                       type: string
  *                       enum: [abierta, escala, estructurado]
- *                     campos_respuesta:
- *                       type: array
- *                       items:
- *                         type: object
  *                     datos_leccion:
  *                       type: object
  *       404:
@@ -322,10 +318,6 @@ router.get('/today', today);
  *                           respuesta_tipo:
  *                             type: string
  *                             enum: [abierta, escala, estructurado]
- *                           campos_respuesta:
- *                             type: array
- *                             items:
- *                               type: object
  *                           datos_leccion:
  *                             type: object
  *       404:

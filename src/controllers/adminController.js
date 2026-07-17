@@ -4,7 +4,11 @@ const AppError = require('../utils/AppError');
 const mongoose = require('mongoose');
 const Usuario = require('../models/Usuario');
 const PlanProgreso = require('../models/PlanProgreso');
+const TestPregunta = require('../models/TestPregunta');
+const ContenidoDiario = require('../models/ContenidoDiario');
 const { getInicioDeDiaDeHoy, getFechaHaceDias } = require('../utils/fechas');
+const Tienda = require('../models/Tienda');
+const Producto = require('../models/Producto');
 
 // ─── Existente ────────────────────────────────────────────────────────────────
 
@@ -73,6 +77,111 @@ exports.progresoPaciente = tryCatch(async (req, res) => {
   if (!plan) throw new AppError(404, 'El paciente no tiene plan de progreso');
 
   res.json(plan);
+});
+
+/**
+ * GET /admin/pacientes/:usuarioId/test-inicial
+ * Retorna el test inicial del paciente con respuestas enriquecidas.
+ */
+exports.testInicialPaciente = tryCatch(async (req, res) => {
+  await obtenerPacienteConScope(req.params.usuarioId, req.tiendasPermitidas);
+
+  const plan = await PlanProgreso.findOne({ usuario_id: req.params.usuarioId })
+    .sort({ fecha_inicio: -1 })
+    .select('test_inicial');
+
+  if (!plan || !plan.test_inicial) {
+    throw new AppError(404, 'Test inicial no encontrado');
+  }
+
+  const testInicial = plan.test_inicial.toObject();
+  const preguntasDb = await TestPregunta.find()
+    .select('numero texto competencia_label')
+    .lean();
+  const preguntasMap = new Map(preguntasDb.map(p => [p.numero, p]));
+
+  testInicial.respuestas = testInicial.respuestas.map(r => {
+    const pregunta = preguntasMap.get(r.pregunta_numero);
+    return {
+      ...r,
+      texto: pregunta?.texto || '',
+      competencia_label: pregunta?.competencia_label || r.competencia
+    };
+  });
+
+  res.json({
+    fecha_completado: testInicial.fecha_completado,
+    puntuaciones_por_competencia: testInicial.puntuaciones_por_competencia,
+    competencias_a_mejorar: testInicial.competencias_a_mejorar,
+    respuestas: testInicial.respuestas
+  });
+});
+
+/**
+ * GET /admin/pacientes/:usuarioId/actividades
+ * Retorna los días completados del paciente con contenido de lección.
+ */
+exports.actividadesPaciente = tryCatch(async (req, res) => {
+  await obtenerPacienteConScope(req.params.usuarioId, req.tiendasPermitidas);
+
+  const plan = await PlanProgreso.findOne({ usuario_id: req.params.usuarioId })
+    .sort({ fecha_inicio: -1 })
+    .select('progreso_diario');
+
+  if (!plan) throw new AppError(404, 'El paciente no tiene plan de progreso');
+
+  const diasCompletados = plan.progreso_diario.filter(d => d.completado);
+  if (diasCompletados.length === 0) {
+    return res.json({ dias: [] });
+  }
+
+  const contenidos = await ContenidoDiario
+    .find({ dia_numero: { $in: diasCompletados.map(d => d.dia_numero) } })
+    .lean();
+  const contenidoMap = new Map(contenidos.map(c => [c.dia_numero, c]));
+
+  const dias = plan.progreso_diario.map(d => {
+    const resultado = {
+      dia_numero: d.dia_numero,
+      completado: d.completado,
+      fecha_completado: d.fecha_completado,
+      respuesta_usuario: d.respuesta_usuario || null,
+      cabecera: null,
+      contenido_especial: null,
+      leccion: null
+    };
+
+    if (d.completado) {
+      const c = contenidoMap.get(d.dia_numero);
+      if (c) {
+        const pasos = c.datos_leccion?.ejercicio?.pasos;
+        const campos_respuesta = Array.isArray(pasos)
+          ? pasos
+              .filter(p => p.respuesta_tipo !== 'accion' || p.texto)
+              .map((p, i) => ({
+                id: p.id || `paso_${i + 1}`,
+                etiqueta: (typeof p.texto === 'string' ? p.texto : `Paso ${i + 1}`).substring(0, 80),
+                tipo: p.respuesta_tipo === 'escala' ? 'escala'
+                  : p.respuesta_tipo === 'accion' ? 'accion'
+                  : 'texto',
+                min: p.min,
+                max: p.max
+              }))
+          : [];
+        resultado.leccion = {
+          titulo: c.titulo_modulo,
+          tipo: c.tipo_contenido,
+          emociones_objetivo: c.emociones_objetivo,
+          respuesta_tipo: c.respuesta_tipo,
+          campos_respuesta,
+          datos_leccion: c.datos_leccion
+        };
+      }
+    }
+    return resultado;
+  });
+
+  res.json({ dias });
 });
 
 // ─── Fase C — Reportes ────────────────────────────────────────────────────────

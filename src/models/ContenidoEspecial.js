@@ -11,6 +11,6 @@ const contenidoEspecialSchema = new Schema({
   contenido: { type: Schema.Types.Mixed, required: true }
 });
 
-contenidoEspecialSchema.index({ tipo: 1 });
+contenidoEspecialSchema.index({ tipo: 1 }, { unique: true });
 
 module.exports = mongoose.model('ContenidoEspecial', contenidoEspecialSchema, 'contenidos_especiales');
