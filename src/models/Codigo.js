@@ -1,8 +1,5 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
-// Registrar schemas referenciados para que .populate() funcione en cualquier contexto
-require('./Tienda');
-require('./Producto');
 
 const codigoSchema = new Schema({
   codigo: { type: String, required: true, unique: true },
