@@ -139,27 +139,46 @@ exports.actividadesPaciente = tryCatch(async (req, res) => {
     .lean();
   const contenidoMap = new Map(contenidos.map(c => [c.dia_numero, c]));
 
-  const dias = plan.progreso_diario.map(d => ({
-    dia_numero: d.dia_numero,
-    completado: d.completado,
-    fecha_completado: d.fecha_completado,
-    respuesta_usuario: d.respuesta_usuario || null,
-    cabecera: null,
-    contenido_especial: null,
-    leccion: (() => {
-      if (!d.completado) return null;
+  const dias = plan.progreso_diario.map(d => {
+    const resultado = {
+      dia_numero: d.dia_numero,
+      completado: d.completado,
+      fecha_completado: d.fecha_completado,
+      respuesta_usuario: d.respuesta_usuario || null,
+      cabecera: null,
+      contenido_especial: null,
+      leccion: null
+    };
+
+    if (d.completado) {
       const c = contenidoMap.get(d.dia_numero);
-      if (!c) return null;
-      return {
-        titulo: c.titulo_modulo,
-        tipo: c.tipo_contenido,
-        emociones_objetivo: c.emociones_objetivo,
-        respuesta_tipo: c.respuesta_tipo,
-        campos_respuesta: c.campos_respuesta,
-        datos_leccion: c.datos_leccion
-      };
-    })()
-  }));
+      if (c) {
+        const pasos = c.datos_leccion?.ejercicio?.pasos;
+        const campos_respuesta = Array.isArray(pasos)
+          ? pasos
+              .filter(p => p.respuesta_tipo !== 'accion' || p.texto)
+              .map((p, i) => ({
+                id: p.id || `paso_${i + 1}`,
+                etiqueta: (typeof p.texto === 'string' ? p.texto : `Paso ${i + 1}`).substring(0, 80),
+                tipo: p.respuesta_tipo === 'escala' ? 'escala'
+                  : p.respuesta_tipo === 'accion' ? 'accion'
+                  : 'texto',
+                min: p.min,
+                max: p.max
+              }))
+          : [];
+        resultado.leccion = {
+          titulo: c.titulo_modulo,
+          tipo: c.tipo_contenido,
+          emociones_objetivo: c.emociones_objetivo,
+          respuesta_tipo: c.respuesta_tipo,
+          campos_respuesta,
+          datos_leccion: c.datos_leccion
+        };
+      }
+    }
+    return resultado;
+  });
 
   res.json({ dias });
 });

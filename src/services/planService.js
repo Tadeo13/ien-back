@@ -303,10 +303,22 @@ exports.getTestInicial = async (usuarioId) => {
  * Devuelve el contenido del dia actual del plan activo del usuario.
  */
 exports.getToday = async (usuarioId) => {
-  const plan = await PlanProgreso
+  let plan = await PlanProgreso
     .findOne({ usuario_id: usuarioId, estado: 'activo' })
     .select('dia_actual ultima_fecha_actividad progreso_diario');
   if (!plan) {
+    plan = await PlanProgreso
+      .findOne({ usuario_id: usuarioId, estado: 'completado' })
+      .select('dia_actual ultima_fecha_actividad progreso_diario');
+    if (plan) {
+      return {
+        dia_actual: plan.dia_actual,
+        completado: true,
+        cabecera: null,
+        contenido_especial: null,
+        leccion: null
+      };
+    }
     throw new AppError(404, 'No hay un plan activo');
   }
 
@@ -342,9 +354,14 @@ exports.getToday = async (usuarioId) => {
  * Devuelve el estado completo del progreso del plan activo del usuario.
  */
 exports.getProfile = async (usuarioId) => {
-  const plan = await PlanProgreso
+  let plan = await PlanProgreso
     .findOne({ usuario_id: usuarioId, estado: 'activo' })
     .select('dia_actual racha_dias racha_maxima estado fecha_inicio ultima_fecha_actividad progreso_diario');
+  if (!plan) {
+    plan = await PlanProgreso
+      .findOne({ usuario_id: usuarioId, estado: 'completado' })
+      .select('dia_actual racha_dias racha_maxima estado fecha_inicio ultima_fecha_actividad progreso_diario');
+  }
   if (!plan) {
     throw new AppError(404, 'No hay un plan activo');
   }
@@ -418,9 +435,14 @@ exports.advanceDay = async (usuarioId) => {
  * @param {boolean} soloCompletados - Si true, solo devuelve días completados.
  */
 exports.getDays = async (usuarioId, soloCompletados = false) => {
-  const plan = await PlanProgreso
+  let plan = await PlanProgreso
     .findOne({ usuario_id: usuarioId, estado: 'activo' })
     .select('progreso_diario');
+  if (!plan) {
+    plan = await PlanProgreso
+      .findOne({ usuario_id: usuarioId, estado: 'completado' })
+      .select('progreso_diario');
+  }
   if (!plan) throw new AppError(404, 'No hay un plan activo');
 
   let dias = plan.progreso_diario;

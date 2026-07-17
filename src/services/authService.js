@@ -26,7 +26,7 @@ exports.validateCode = async (codigo_activacion) => {
     throw new AppError(400, 'Código de activación inválido');
   }
 
-  const codDoc = await Codigo.findOne({ codigo: codigo_activacion, activo: true, fecha_activacion: null })
+  const codDoc = await Codigo.findOne({ codigo: codigo_activacion, activo: true })
     .populate('tienda_id')
     .populate('producto_id');
 
@@ -45,19 +45,15 @@ exports.register = async ({ nombre, email, password, codigo_activacion }) => {
     throw new AppError(400, 'Todos los campos son requeridos');
   }
 
-  const codDoc = await Codigo.findOne({ codigo: codigo_activacion, activo: true, fecha_activacion: null });
+  const codDoc = await Codigo.findOne({ codigo: codigo_activacion, activo: true });
   if (!codDoc) {
-    throw new AppError(404, 'Código de activación inválido o ya utilizado');
+    throw new AppError(404, 'Código de activación inválido');
   }
 
   const existe = await Usuario.findOne({ email });
   if (existe) {
     throw new AppError(409, 'El email ya está registrado');
   }
-
-  codDoc.activo = false;
-  codDoc.fecha_activacion = new Date();
-  await codDoc.save();
 
   const password_hash = await bcrypt.hash(password, 10);
   const usuario = await Usuario.create({
