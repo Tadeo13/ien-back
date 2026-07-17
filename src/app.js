@@ -33,7 +33,7 @@ app.get('/', (_req, res) => {
 });
 
 // Docs — protegido con auth
-app.use('/api-docs', authMiddleware, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
 app.use('/api/auth', authRoutes);
