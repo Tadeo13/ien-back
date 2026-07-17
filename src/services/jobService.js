@@ -2,44 +2,23 @@ const { demoledorDeRachas, findUsuariosRezagados, findUsuariosSinActivar, findUs
 const Usuario = require('../models/Usuario');
 const { enviarCorreo, yaSeEnvio } = require('./emailService');
 
-// Textos de asunto/cuerpo por momento del día.
-// El cuerpo HTML es mínimo y funcional por ahora; el diseño final viene después.
-const TEXTOS_RECORDATORIO = {
-  mañana: {
-    asunto: (nombre, _dia) => `${nombre}, ¡arrancá el día con tu actividad!`,
-    html:   (nombre, dia)  => `<p>Hola ${nombre} 👋</p><p>Es por la mañana y todavía no completaste tu actividad del <strong>Día ${dia}</strong>. Son solo unos minutos — ¡podés hacerlo ahora!</p>`
-  },
-  recordatorio_tarde: {
-    asunto: (nombre, dia)  => `${nombre}, todavía estás a tiempo — completá el Día ${dia}`,
-    html:   (nombre, dia)  => `<p>Hola ${nombre} 👋</p><p>La tarde es un buen momento para completar tu actividad del <strong>Día ${dia}</strong>. ¡No pierdas tu racha!</p>`
-  },
-  alerta_noche: {
-    asunto: (nombre, _dia) => `${nombre}, el día termina — completá tu actividad ahora`,
-    html:   (nombre, dia)  => `<p>Hola ${nombre} 👋</p><p>Queda poco tiempo para completar el <strong>Día ${dia}</strong>. Si no lo hacés hoy, tu racha se reiniciará mañana.</p>`
-  }
-};
-
-async function sendReminders(momento_alerta) {
+async function sendReminders() {
   const usuarios = await findUsuariosRezagados();
   if (usuarios.length === 0) {
     return { enviados: 0, fallidos: 0, total: 0 };
   }
 
-  const textos = TEXTOS_RECORDATORIO[momento_alerta];
   let enviados = 0, fallidos = 0;
 
   for (const u of usuarios) {
     try {
-      // enviarCorreo registra un único doc en HistorialCorreo internamente
-      // (tanto en éxito como en fallo). No hacemos ninguna escritura extra aquí.
       const resultado = await enviarCorreo({
         usuario_id: u.usuario_id,
         destinatario: u.email,
-        asunto: textos.asunto(u.nombre, u.dia_actual),
-        html:   textos.html(u.nombre, u.dia_actual),
+        asunto: `${u.nombre}, no olvides completar tu actividad del Día ${u.dia_actual}`,
+        html: `<p>Hola ${u.nombre} 👋</p><p>Aún no completaste tu actividad del <strong>Día ${u.dia_actual}</strong>. Son solo unos minutos — ¡hacelo ahora y no pierdas tu racha!</p>`,
         tipo_correo: 'recordatorio_diario',
-        momento_alerta,
-        meta: { momento_alerta, dia_actual: u.dia_actual, racha_dias: u.racha_dias }
+        meta: { dia_actual: u.dia_actual, racha_dias: u.racha_dias }
       });
       if (resultado.success) {
         enviados++;

@@ -1,15 +1,12 @@
 const PlanProgreso = require('../models/PlanProgreso');
 const Usuario = require('../models/Usuario');
-const { getInicioDeDiaDeAyer, getFechaHaceHoras, getFechaHaceDias } = require('../utils/fechas');
+const { getInicioDeDiaDeAyer, getFechaHaceDias } = require('../utils/fechas');
 
 async function findUsuariosRezagados() {
-  const umbralMinimo = getFechaHaceHoras(2);
-
   return PlanProgreso.aggregate([
     {
       $match: {
         estado: 'activo',
-        ultima_fecha_actividad: { $lte: umbralMinimo },
         $expr: {
           $eq: [
             { $arrayElemAt: ['$progreso_diario.completado', { $subtract: ['$dia_actual', 1] }] },

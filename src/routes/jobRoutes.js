@@ -42,22 +42,10 @@ router.post('/reset-streaks', resetStreaks);
  * @swagger
  * /api/jobs/send-reminders:
  *   post:
- *     summary: Enviar recordatorios a usuarios rezagados y registrar en HistorialCorreo
+ *     summary: Enviar recordatorio diario a usuarios rezagados y registrar en HistorialCorreo
  *     tags: [Jobs]
  *     security:
  *       - apiKeyAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [momento_alerta]
- *             properties:
- *               momento_alerta:
- *                 type: string
- *                 enum: [mañana, recordatorio_tarde, alerta_noche]
- *                 description: Momento del día en que se envía el recordatorio
  *     responses:
  *       200:
  *         description: Resultado del envío de recordatorios
@@ -70,8 +58,6 @@ router.post('/reset-streaks', resetStreaks);
  *                   type: number
  *                 fallidos:
  *                   type: number
- *       400:
- *         description: momento_alerta requerido o inválido
  *       401:
  *         description: API key inválida
  */

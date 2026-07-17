@@ -9,7 +9,6 @@ const historialCorreoSchema = new Schema({
     enum: ['bienvenida', 'urgencia_activacion', 'hito', 'racha_rota', 'recuperacion_inactividad', 'recordatorio_diario', 'recuperacion_contrasena'],
     required: true
   },
-  momento_alerta: { type: String, enum: ['mañana', 'recordatorio_tarde', 'alerta_noche'], required: false },
   meta: { type: Schema.Types.Mixed },
   fecha_envio: { type: Date, default: Date.now, expires: 5184000 },
   estado: { type: String, enum: ['enviado', 'fallido'], required: true }
