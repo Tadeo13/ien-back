@@ -9,6 +9,7 @@ const PasswordResetToken = require('../models/PasswordResetToken');
 const Producto = require('../models/Producto');
 const AppError = require('../utils/AppError');
 const { enviarCorreo } = require('./emailService');
+const templates = require('../email/templates');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -76,8 +77,8 @@ exports.register = async ({ nombre, email, password, codigo_activacion }) => {
       return enviarCorreo({
         usuario_id: usuario._id,
         destinatario: usuario.email,
-        asunto: '¡Tu transformación de 30 días comienza AHORA!',
-        html: `<p>Placeholder — bienvenida, producto: ${producto?.nombre || ''}</p>`,
+        asunto: 'Tu transformación de 30 días comienza hoy',
+        html: templates.bienvenida(usuario.nombre),
         tipo_correo: 'bienvenida'
       });
     })
@@ -166,20 +167,7 @@ exports.forgotPassword = async (email) => {
       usuario_id: usuario._id,
       destinatario: usuario.email,
       asunto: 'Recuperá tu contraseña',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #333;">Recuperación de contraseña</h2>
-          <p>Hola ${usuario.nombre},</p>
-          <p>Recibimos una solicitud para restablecer tu contraseña. Hacé clic en el botón de abajo:</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${resetUrl}" style="background-color: #4F46E5; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Restablecer contraseña</a>
-          </div>
-          <p style="color: #666; font-size: 14px;">Este enlace expira en 15 minutos.</p>
-          <p style="color: #666; font-size: 14px;">Si no solicitaste este cambio, podés ignorar este mensaje.</p>
-          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-          <p style="color: #999; font-size: 12px;">Si el botón no funciona, copiá y pegá este enlace en tu navegador:<br>${resetUrl}</p>
-        </div>
-      `,
+      html: templates.recuperacionContrasena(usuario.nombre, resetUrl),
       tipo_correo: 'recuperacion_contrasena'
     }).catch(err => console.error('[forgotPassword] Error en correo de recuperación:', err.message));
   }

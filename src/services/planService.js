@@ -5,6 +5,7 @@ const ContenidoDiario = require('../models/ContenidoDiario');
 const TestPregunta = require('../models/TestPregunta');
 const ContenidoEspecial = require('../models/ContenidoEspecial');
 const { enviarCorreo } = require('./emailService');
+const templates = require('../email/templates');
 
 const AppError = require('../utils/AppError');
 const { esMismoDiaCalendarioUTC } = require('../utils/fechas');
@@ -28,7 +29,7 @@ function yaCompletoActividadHoy(plan, ahora) {
 
 // Hitos de racha a notificar al frontend (para badge/celebración).
 // No disparan correo todavía — eso queda para la fase de email.
-const HITOS_RACHA = [7, 14, 21];
+const HITOS_RACHA = [7, 14, 21, 28];
 
 function detectarHito(racha_dias, hitos_alcanzados = []) {
   if (HITOS_RACHA.includes(racha_dias) && !hitos_alcanzados.includes(racha_dias)) {
@@ -399,8 +400,8 @@ exports.completeDay = async (usuarioId, respuestaUsuario) => {
         return enviarCorreo({
           usuario_id: usuarioId,
           destinatario: usuario.email,
-          asunto: `¡Felicidades ${usuario.nombre}! Llegaste a tu hito de ${hito_alcanzado} días`,
-          html: `<p>Placeholder — hito de ${hito_alcanzado} días</p>`,
+          asunto: usuario.nombre + ', ' + hito_alcanzado + ' días — ¡semana completada!',
+          html: templates.hito(usuario.nombre, hito_alcanzado),
           tipo_correo: 'hito',
           meta: { hito: hito_alcanzado }
         });

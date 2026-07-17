@@ -1,3 +1,4 @@
+const templates = require('../email/templates');
 const { demoledorDeRachas, findUsuariosRezagados, findUsuariosSinActivar, findUsuariosParaRecuperar } = require('./cronJobs');
 const Usuario = require('../models/Usuario');
 const { enviarCorreo, yaSeEnvio } = require('./emailService');
@@ -15,8 +16,8 @@ async function sendReminders() {
       const resultado = await enviarCorreo({
         usuario_id: u.usuario_id,
         destinatario: u.email,
-        asunto: `${u.nombre}, no olvides completar tu actividad del Día ${u.dia_actual}`,
-        html: `<p>Hola ${u.nombre} 👋</p><p>Aún no completaste tu actividad del <strong>Día ${u.dia_actual}</strong>. Son solo unos minutos — ¡hacelo ahora y no pierdas tu racha!</p>`,
+        asunto: u.nombre + ', no olvides completar tu actividad del Día ' + u.dia_actual,
+        html: templates.recordatorioDiario(u.nombre, u.dia_actual),
         tipo_correo: 'recordatorio_diario',
         meta: { dia_actual: u.dia_actual, racha_dias: u.racha_dias }
       });
@@ -51,8 +52,8 @@ async function resetStreaksYNotificar() {
       const resultado_envio = await enviarCorreo({
         usuario_id: afectado.usuario_id,
         destinatario: usuario.email,
-        asunto: `${usuario.nombre}, se rompió tu racha de ${afectado.racha_rota} días`,
-        html: `<p>Hola ${usuario.nombre}, lamentablemente perdiste tu racha de <strong>${afectado.racha_rota} días</strong>. Podés volver a empezar hoy.</p>`,
+        asunto: usuario.nombre + ', se rompió tu racha de ' + afectado.racha_rota + ' días',
+        html: templates.rachaRota(usuario.nombre, afectado.racha_rota),
         tipo_correo: 'racha_rota',
         meta: { racha_rota: afectado.racha_rota }
       });
@@ -77,8 +78,8 @@ async function enviarActivationNudges() {
       const resultado = await enviarCorreo({
         usuario_id: u._id,
         destinatario: u.email,
-        asunto: `${u.nombre}, tu transformación te está esperando...`,
-        html: `<p>Hola ${u.nombre} 👋</p><p>Todavía podés activar tu programa gratuito. Quienes empiezan en los primeros 7 días tienen <strong>3x más probabilidad</strong> de completar la transformación.</p>`,
+        asunto: u.nombre + ', tu transformación te está esperando',
+        html: templates.urgenciaActivacion(u.nombre),
         tipo_correo: 'urgencia_activacion'
       });
       if (resultado.success) {
@@ -104,8 +105,8 @@ async function enviarRecoveryEmails() {
       const resultado = await enviarCorreo({
         usuario_id: u.usuario_id,
         destinatario: u.email,
-        asunto: `${u.nombre}, te extrañamos en tu programa`,
-        html: `<p>Hola ${u.nombre} 👋</p><p>Notamos que llevas varios días sin completar una actividad. Estás en el <strong>Día ${u.dia_actual}</strong> — retomarlo hoy hace toda la diferencia.</p>`,
+        asunto: u.nombre + ', te extrañamos en tu programa',
+        html: templates.recuperacionInactividad(u.nombre, u.dia_actual),
         tipo_correo: 'recuperacion_inactividad'
       });
       if (resultado.success) {
