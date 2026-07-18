@@ -1,5 +1,6 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
+require('./models');
 const app = require('./app');
 
 const { PORT = 3000, MONGO_URI } = process.env;

@@ -5,7 +5,7 @@ const ContenidoDiario = require('../models/ContenidoDiario');
 const TestPregunta = require('../models/TestPregunta');
 const ContenidoEspecial = require('../models/ContenidoEspecial');
 const { enviarCorreo } = require('./emailService');
-const templates = require('../email/templates');
+const { hito } = require('../emailTemplates');
 
 const AppError = require('../utils/AppError');
 const { esMismoDiaCalendarioUTC } = require('../utils/fechas');
@@ -28,7 +28,7 @@ function yaCompletoActividadHoy(plan, ahora) {
 }
 
 // Hitos de racha a notificar al frontend (para badge/celebración).
-// No disparan correo todavía — eso queda para la fase de email.
+// Disparan un correo de celebración al alcanzar el hito.
 const HITOS_RACHA = [7, 14, 21, 28];
 
 function detectarHito(racha_dias, hitos_alcanzados = []) {
@@ -42,16 +42,16 @@ function mapContenidoALeccion(contenido) {
   const pasos = contenido.datos_leccion?.ejercicio?.pasos;
   const campos_respuesta = Array.isArray(pasos)
     ? pasos
-        .filter(p => p.respuesta_tipo !== 'accion' || p.texto)
-        .map((p, i) => ({
-          id: p.id || `paso_${i + 1}`,
-          etiqueta: (typeof p.texto === 'string' ? p.texto : `Paso ${i + 1}`).substring(0, 80),
-          tipo: p.respuesta_tipo === 'escala' ? 'escala'
-            : p.respuesta_tipo === 'accion' ? 'accion'
+      .filter(p => p.respuesta_tipo !== 'accion' || p.texto)
+      .map((p, i) => ({
+        id: p.id || `paso_${i + 1}`,
+        etiqueta: (typeof p.texto === 'string' ? p.texto : `Paso ${i + 1}`).substring(0, 80),
+        tipo: p.respuesta_tipo === 'escala' ? 'escala'
+          : p.respuesta_tipo === 'accion' ? 'accion'
             : 'texto',
-          min: p.min,
-          max: p.max
-        }))
+        min: p.min,
+        max: p.max
+      }))
     : [];
 
   return {
@@ -224,7 +224,7 @@ exports.setupTest = async ({ respuestas, usuarioId }) => {
   // Agrupamiento y cálculo del resultado server-side
   const sumasPorCompetencia = {};
   const competenciaLabelsMap = {};
-  
+
   for (const p of preguntasDb) {
     sumasPorCompetencia[p.competencia] = 0;
     competenciaLabelsMap[p.competencia] = p.competencia_label;
@@ -397,11 +397,12 @@ exports.completeDay = async (usuarioId, respuestaUsuario) => {
     Usuario.findById(usuarioId).select('nombre email').lean()
       .then(usuario => {
         if (!usuario) return;
+        const { asunto, html } = hito(usuario.nombre, hito_alcanzado);
         return enviarCorreo({
           usuario_id: usuarioId,
           destinatario: usuario.email,
-          asunto: usuario.nombre + ', ' + hito_alcanzado + ' días — ¡semana completada!',
-          html: templates.hito(usuario.nombre, hito_alcanzado),
+          asunto,
+          html,
           tipo_correo: 'hito',
           meta: { hito: hito_alcanzado }
         });

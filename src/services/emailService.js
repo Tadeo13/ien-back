@@ -51,4 +51,30 @@ async function yaSeEnvio(usuario_id, tipo_correo) {
   }
 }
 
-module.exports = { enviarCorreo, yaSeEnvio };
+async function enviarEnLote(usuarios, { tipo_correo, renderFn, skipFn }) {
+  let enviados = 0, fallidos = 0, saltados = 0;
+  for (const u of usuarios) {
+    try {
+      if (skipFn && await skipFn(u)) { saltados++; continue; }
+      const { asunto, html, meta } = renderFn(u);
+      const resultado = await enviarCorreo({
+        usuario_id: u._id || u.usuario_id,
+        destinatario: u.email,
+        asunto,
+        html,
+        tipo_correo,
+        meta: meta || {}
+      });
+      if (resultado.success) {
+        enviados++;
+      } else {
+        fallidos++;
+      }
+    } catch (err) {
+      fallidos++;
+    }
+  }
+  return { enviados, fallidos, saltados, total: usuarios.length };
+}
+
+module.exports = { enviarCorreo, yaSeEnvio, enviarEnLote };

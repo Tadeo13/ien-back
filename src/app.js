@@ -32,17 +32,17 @@ app.get('/', (_req, res) => {
   res.send('IEN Backend API is running. Documentation available at /api-docs');
 });
 
-// Docs — protegido con auth
+// Docs
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/plan', planRoutes);
-app.use('/api/admin', adminRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/admin/sucursales', sucursalRoutes);
 app.use('/api/admin/productos', productoRoutes);
 app.use('/api/admin/codigos', codigoRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 catch-all (JSON, no HTML de Express)
 app.use((_req, res) => {

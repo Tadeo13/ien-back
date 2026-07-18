@@ -9,7 +9,7 @@ const PasswordResetToken = require('../models/PasswordResetToken');
 const Producto = require('../models/Producto');
 const AppError = require('../utils/AppError');
 const { enviarCorreo } = require('./emailService');
-const templates = require('../email/templates');
+const { bienvenida, recuperacionContrasena } = require('../emailTemplates');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -73,12 +73,13 @@ exports.register = async ({ nombre, email, password, codigo_activacion }) => {
   const refresh_token = await generarRefreshToken(usuario._id);
 
   Producto.findById(codDoc.producto_id).select('nombre').lean()
-    .then(producto => {
+    .then(() => {
+      const { asunto, html } = bienvenida(usuario.nombre);
       return enviarCorreo({
         usuario_id: usuario._id,
         destinatario: usuario.email,
-        asunto: 'Tu transformación de 30 días comienza hoy',
-        html: templates.bienvenida(usuario.nombre),
+        asunto,
+        html,
         tipo_correo: 'bienvenida'
       });
     })
@@ -162,12 +163,13 @@ exports.forgotPassword = async (email) => {
     });
 
     const resetUrl = `${FRONTEND_URL}/reset-password?token=${token}`;
+    const { asunto, html } = recuperacionContrasena(usuario.nombre, resetUrl);
 
     enviarCorreo({
       usuario_id: usuario._id,
       destinatario: usuario.email,
-      asunto: 'Recuperá tu contraseña',
-      html: templates.recuperacionContrasena(usuario.nombre, resetUrl),
+      asunto,
+      html,
       tipo_correo: 'recuperacion_contrasena'
     }).catch(err => console.error('[forgotPassword] Error en correo de recuperación:', err.message));
   }

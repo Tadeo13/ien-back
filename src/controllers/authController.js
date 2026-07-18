@@ -2,9 +2,6 @@ const { validateCode, register, login, refreshToken, logout, forgotPassword, ver
 const { tryCatch } = require('../middlewares/errorHandler');
 const AppError = require('../utils/AppError');
 const Usuario = require('../models/Usuario');
-// Importar para registrar schemas antes de cualquier populate
-require('../models/Tienda');
-require('../models/Producto');
 
 exports.validateCode = tryCatch(async (req, res) => {
   const { codigo_activacion } = req.body;
