@@ -2,6 +2,7 @@ const { Router } = require('express');
 const authMiddleware = require('../middlewares/authMiddleware');
 const adminMiddleware = require('../middlewares/adminMiddleware');
 const scopeTiendaMiddleware = require('../middlewares/scopeTiendaMiddleware');
+const { requireRol } = require('../middlewares/moderadorMiddleware');
 const {
   metrics,
   perfilPaciente,
@@ -11,15 +12,168 @@ const {
   listarPacientes,
   reporteUsuarios,
   graficaSemanal,
-  crearAdminNegocio
+  crearAdminNegocio,
+  crearModeradorTienda,
+  listarAdminsNegocio,
+  getAdminNegocio,
+  actualizarAdminNegocio,
+  eliminarAdminNegocio,
+  listarModeradoresTienda,
+  getModeradorTienda,
+  actualizarModeradorTienda,
+  eliminarModeradorTienda
 } = require('../controllers/adminController');
 
 const router = Router();
 
-// Todos los endpoints de admin requieren auth + ser admin + scope
+// Auth + verificar que es algún tipo de admin + scope
 router.use(authMiddleware, adminMiddleware, scopeTiendaMiddleware);
 
-// ── Dashboard existente ─────────────────────────────────────────────────────
+// ── Crear moderador — accesible para admin_negocio Y admin_general ───────────
+// Debe declararse ANTES del requireRol global de abajo
+
+/**
+ * @swagger
+ * /api/admin/usuarios/moderador-tienda:
+ *   post:
+ *     summary: "[ADMIN NEGOCIO / ADMIN GENERAL] Crear moderador de tienda"
+ *     tags: [Admin - Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nombre
+ *               - email
+ *               - password
+ *               - tienda_id
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *                 minLength: 6
+ *               tienda_id:
+ *                 type: string
+ *                 description: ID de la tienda que administrará el moderador
+ *     responses:
+ *       201:
+ *         description: Moderador creado
+ *       400:
+ *         description: Datos inválidos o tienda inexistente
+ *       403:
+ *         description: Tienda fuera del scope del admin_negocio
+ *       409:
+ *         description: El email ya está registrado
+ */
+router.post('/usuarios/moderador-tienda', crearModeradorTienda);
+
+// ── CRUD Moderador — accesible para admin_negocio Y admin_general ────────────
+// Todas ANTES del requireRol global de abajo
+
+/**
+ * @swagger
+ * /api/admin/usuarios/moderador-tienda:
+ *   get:
+ *     summary: "[ADMIN NEGOCIO / ADMIN GENERAL] Listar moderadores de tienda"
+ *     tags: [Admin - Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de moderadores dentro del scope
+ */
+router.get('/usuarios/moderador-tienda', listarModeradoresTienda);
+
+/**
+ * @swagger
+ * /api/admin/usuarios/moderador-tienda/{usuarioId}:
+ *   get:
+ *     summary: "[ADMIN NEGOCIO / ADMIN GENERAL] Detalle de un moderador"
+ *     tags: [Admin - Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: usuarioId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Moderador encontrado
+ *       404:
+ *         description: Moderador no encontrado o fuera de scope
+ */
+router.get('/usuarios/moderador-tienda/:usuarioId', getModeradorTienda);
+
+/**
+ * @swagger
+ * /api/admin/usuarios/moderador-tienda/{usuarioId}:
+ *   put:
+ *     summary: "[ADMIN NEGOCIO / ADMIN GENERAL] Actualizar moderador de tienda"
+ *     tags: [Admin - Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: usuarioId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               tienda_id:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Moderador actualizado
+ *       404:
+ *         description: Moderador no encontrado o fuera de scope
+ */
+router.put('/usuarios/moderador-tienda/:usuarioId', actualizarModeradorTienda);
+
+/**
+ * @swagger
+ * /api/admin/usuarios/moderador-tienda/{usuarioId}:
+ *   delete:
+ *     summary: "[ADMIN NEGOCIO / ADMIN GENERAL] Eliminar moderador de tienda"
+ *     tags: [Admin - Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: usuarioId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Moderador eliminado
+ *       404:
+ *         description: Moderador no encontrado o fuera de scope
+ */
+router.delete('/usuarios/moderador-tienda/:usuarioId', eliminarModeradorTienda);
+
+// ── Guard: a partir de aquí solo admin_negocio y admin_general ───────────────
+router.use(requireRol('admin_negocio', 'admin_general'));
+
 /**
  * @swagger
  * /api/admin/dashboard/metrics:
@@ -228,9 +382,23 @@ router.get('/reportes/usuarios/grafica-semanal', graficaSemanal);
 /**
  * @swagger
  * /api/admin/usuarios/admin-negocio:
+ *   get:
+ *     summary: "[ADMIN GENERAL] Listar administradores de negocio"
+ *     tags: [Admin - Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de administradores de negocio
+ */
+router.get('/usuarios/admin-negocio', listarAdminsNegocio);
+
+/**
+ * @swagger
+ * /api/admin/usuarios/admin-negocio:
  *   post:
  *     summary: "[ADMIN GENERAL] Crear administrador de negocio"
- *     tags: [Admin - Reportes]
+ *     tags: [Admin - Usuarios]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -287,5 +455,86 @@ router.get('/reportes/usuarios/grafica-semanal', graficaSemanal);
  *         description: El email ya está registrado
  */
 router.post('/usuarios/admin-negocio', crearAdminNegocio);
+
+/**
+ * @swagger
+ * /api/admin/usuarios/admin-negocio/{usuarioId}:
+ *   get:
+ *     summary: "[ADMIN GENERAL] Detalle de un administrador de negocio"
+ *     tags: [Admin - Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: usuarioId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Administrador encontrado
+ *       404:
+ *         description: Administrador no encontrado
+ */
+router.get('/usuarios/admin-negocio/:usuarioId', getAdminNegocio);
+
+/**
+ * @swagger
+ * /api/admin/usuarios/admin-negocio/{usuarioId}:
+ *   put:
+ *     summary: "[ADMIN GENERAL] Actualizar administrador de negocio"
+ *     tags: [Admin - Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: usuarioId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               tiendas_administradas:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Administrador actualizado
+ *       404:
+ *         description: Administrador no encontrado
+ */
+router.put('/usuarios/admin-negocio/:usuarioId', actualizarAdminNegocio);
+
+/**
+ * @swagger
+ * /api/admin/usuarios/admin-negocio/{usuarioId}:
+ *   delete:
+ *     summary: "[ADMIN GENERAL] Eliminar administrador de negocio"
+ *     tags: [Admin - Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: usuarioId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Administrador eliminado
+ *       404:
+ *         description: Administrador no encontrado
+ */
+router.delete('/usuarios/admin-negocio/:usuarioId', eliminarAdminNegocio);
 
 module.exports = router;

@@ -8,7 +8,15 @@ const {
   getActividadesPaciente,
   getReporteUsuarios,
   getGraficaSemanal,
-  listarPacientes
+  listarPacientes,
+  listarAdminsNegocio,
+  getAdminNegocio,
+  actualizarAdminNegocio,
+  eliminarAdminNegocio,
+  listarModeradoresTienda,
+  getModeradorTienda,
+  actualizarModeradorTienda,
+  eliminarModeradorTienda
 } = require('../services/adminService');
 const { tryCatch } = require('../middlewares/errorHandler');
 const AppError = require('../utils/AppError');
@@ -68,5 +76,73 @@ exports.listarPacientes = tryCatch(async (req, res) => {
   const pagina = Math.max(parseInt(req.query.page) || 1, 1);
   const limite = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 100);
   const data = await listarPacientes(pagina, limite, req.tiendasPermitidas);
+  res.json(data);
+});
+
+// ─── CRUD Admin Negocio ──────────────────────────────────────────────────────
+
+exports.listarAdminsNegocio = tryCatch(async (req, res) => {
+  if (req.usuario.rol !== 'admin_general') {
+    throw new AppError(403, 'Solo admin_general puede listar administradores de negocio');
+  }
+  const data = await listarAdminsNegocio();
+  res.json(data);
+});
+
+exports.getAdminNegocio = tryCatch(async (req, res) => {
+  if (req.usuario.rol !== 'admin_general') {
+    throw new AppError(403, 'Solo admin_general puede ver administradores de negocio');
+  }
+  const data = await getAdminNegocio(req.params.usuarioId);
+  res.json(data);
+});
+
+exports.actualizarAdminNegocio = tryCatch(async (req, res) => {
+  if (req.usuario.rol !== 'admin_general') {
+    throw new AppError(403, 'Solo admin_general puede modificar administradores de negocio');
+  }
+  const data = await actualizarAdminNegocio(req.params.usuarioId, req.body);
+  res.json(data);
+});
+
+exports.eliminarAdminNegocio = tryCatch(async (req, res) => {
+  if (req.usuario.rol !== 'admin_general') {
+    throw new AppError(403, 'Solo admin_general puede eliminar administradores de negocio');
+  }
+  const data = await eliminarAdminNegocio(req.params.usuarioId, req.usuario.id);
+  res.json(data);
+});
+
+// ─── CRUD Moderador Tienda ───────────────────────────────────────────────────
+
+exports.listarModeradoresTienda = tryCatch(async (req, res) => {
+  if (!['admin_negocio', 'admin_general'].includes(req.usuario.rol)) {
+    throw new AppError(403, 'Sin permisos para listar moderadores');
+  }
+  const data = await listarModeradoresTienda(req.tiendasPermitidas);
+  res.json(data);
+});
+
+exports.getModeradorTienda = tryCatch(async (req, res) => {
+  if (!['admin_negocio', 'admin_general'].includes(req.usuario.rol)) {
+    throw new AppError(403, 'Sin permisos para ver moderadores');
+  }
+  const data = await getModeradorTienda(req.params.usuarioId, req.tiendasPermitidas);
+  res.json(data);
+});
+
+exports.actualizarModeradorTienda = tryCatch(async (req, res) => {
+  if (!['admin_negocio', 'admin_general'].includes(req.usuario.rol)) {
+    throw new AppError(403, 'Sin permisos para modificar moderadores');
+  }
+  const data = await actualizarModeradorTienda(req.params.usuarioId, req.body, req.tiendasPermitidas);
+  res.json(data);
+});
+
+exports.eliminarModeradorTienda = tryCatch(async (req, res) => {
+  if (!['admin_negocio', 'admin_general'].includes(req.usuario.rol)) {
+    throw new AppError(403, 'Sin permisos para eliminar moderadores');
+  }
+  const data = await eliminarModeradorTienda(req.params.usuarioId, req.tiendasPermitidas);
   res.json(data);
 });

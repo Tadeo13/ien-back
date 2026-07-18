@@ -346,3 +346,170 @@ exports.crearModeradorTienda = async ({ nombre, email, password, tienda_id }, cr
     tienda_moderada: usuario.tienda_moderada
   };
 };
+
+// ─── CRUD Admin Negocio ──────────────────────────────────────────────────────
+
+exports.listarAdminsNegocio = async () => {
+  return Usuario.find({ rol: 'admin_negocio' })
+    .select('nombre email tiendas_administradas fecha_registro')
+    .populate('tiendas_administradas', 'nombre_tienda ciudad')
+    .sort({ fecha_registro: -1 })
+    .lean();
+};
+
+exports.getAdminNegocio = async (usuarioId) => {
+  if (!mongoose.Types.ObjectId.isValid(usuarioId)) {
+    throw new AppError(400, 'ID de usuario inválido');
+  }
+  const usuario = await Usuario.findOne({ _id: usuarioId, rol: 'admin_negocio' })
+    .select('nombre email tiendas_administradas fecha_registro')
+    .populate('tiendas_administradas', 'nombre_tienda ciudad')
+    .lean();
+  if (!usuario) throw new AppError(404, 'Administrador de negocio no encontrado');
+  return usuario;
+};
+
+exports.actualizarAdminNegocio = async (usuarioId, { nombre, email, tiendas_administradas }) => {
+  if (!mongoose.Types.ObjectId.isValid(usuarioId)) {
+    throw new AppError(400, 'ID de usuario inválido');
+  }
+
+  const usuario = await Usuario.findOne({ _id: usuarioId, rol: 'admin_negocio' });
+  if (!usuario) throw new AppError(404, 'Administrador de negocio no encontrado');
+
+  if (email && email !== usuario.email) {
+    const existe = await Usuario.findOne({ email });
+    if (existe) throw new AppError(409, 'El email ya está registrado');
+  }
+
+  if (tiendas_administradas !== undefined) {
+    if (!Array.isArray(tiendas_administradas) || tiendas_administradas.length === 0) {
+      throw new AppError(400, 'Debe asignar al menos una tienda');
+    }
+    const tiendasExistentes = await Tienda.find({ _id: { $in: tiendas_administradas } }).lean();
+    if (tiendasExistentes.length !== tiendas_administradas.length) {
+      throw new AppError(400, 'Una o más tiendas no existen');
+    }
+  }
+
+  const updates = {};
+  if (nombre) updates.nombre = nombre;
+  if (email) updates.email = email;
+  if (tiendas_administradas) updates.tiendas_administradas = tiendas_administradas;
+
+  const actualizado = await Usuario.findByIdAndUpdate(usuarioId, updates, { new: true })
+    .select('nombre email tiendas_administradas fecha_registro')
+    .populate('tiendas_administradas', 'nombre_tienda ciudad')
+    .lean();
+
+  return actualizado;
+};
+
+exports.eliminarAdminNegocio = async (usuarioId, adminActualId) => {
+  if (!mongoose.Types.ObjectId.isValid(usuarioId)) {
+    throw new AppError(400, 'ID de usuario inválido');
+  }
+  if (usuarioId === adminActualId) {
+    throw new AppError(400, 'No podés eliminarte a vos mismo');
+  }
+  const usuario = await Usuario.findOneAndDelete({ _id: usuarioId, rol: 'admin_negocio' });
+  if (!usuario) throw new AppError(404, 'Administrador de negocio no encontrado');
+  return { mensaje: 'Administrador eliminado' };
+};
+
+// ─── CRUD Moderador Tienda ───────────────────────────────────────────────────
+
+exports.listarModeradoresTienda = async (tiendasPermitidas) => {
+  const filtro = tiendasPermitidas === null
+    ? { rol: 'moderador_tienda' }
+    : { rol: 'moderador_tienda', tienda_moderada: { $in: tiendasPermitidas } };
+
+  return Usuario.find(filtro)
+    .select('nombre email tienda_moderada fecha_registro')
+    .populate('tienda_moderada', 'nombre_tienda ciudad')
+    .sort({ fecha_registro: -1 })
+    .lean();
+};
+
+exports.getModeradorTienda = async (usuarioId, tiendasPermitidas) => {
+  if (!mongoose.Types.ObjectId.isValid(usuarioId)) {
+    throw new AppError(400, 'ID de usuario inválido');
+  }
+  const usuario = await Usuario.findOne({ _id: usuarioId, rol: 'moderador_tienda' })
+    .select('nombre email tienda_moderada fecha_registro')
+    .populate('tienda_moderada', 'nombre_tienda ciudad')
+    .lean();
+  if (!usuario) throw new AppError(404, 'Moderador de tienda no encontrado');
+
+  if (tiendasPermitidas !== null && usuario.tienda_moderada) {
+    const enScope = tiendasPermitidas.some(
+      (t) => t.toString() === usuario.tienda_moderada._id.toString()
+    );
+    if (!enScope) throw new AppError(404, 'Moderador de tienda no encontrado');
+  }
+
+  return usuario;
+};
+
+exports.actualizarModeradorTienda = async (usuarioId, { nombre, email, tienda_id }, tiendasPermitidas) => {
+  if (!mongoose.Types.ObjectId.isValid(usuarioId)) {
+    throw new AppError(400, 'ID de usuario inválido');
+  }
+
+  const usuario = await Usuario.findOne({ _id: usuarioId, rol: 'moderador_tienda' });
+  if (!usuario) throw new AppError(404, 'Moderador de tienda no encontrado');
+
+  if (tiendasPermitidas !== null && usuario.tienda_moderada) {
+    const enScope = tiendasPermitidas.some(
+      (t) => t.toString() === usuario.tienda_moderada.toString()
+    );
+    if (!enScope) throw new AppError(404, 'Moderador de tienda no encontrado');
+  }
+
+  if (email && email !== usuario.email) {
+    const existe = await Usuario.findOne({ email });
+    if (existe) throw new AppError(409, 'El email ya está registrado');
+  }
+
+  if (tienda_id !== undefined) {
+    if (tiendasPermitidas !== null) {
+      const enScope = tiendasPermitidas.some(
+        (t) => t.toString() === tienda_id.toString()
+      );
+      if (!enScope) throw new AppError(403, 'La tienda no está dentro de tu scope');
+    }
+    const tiendaExiste = await Tienda.findById(tienda_id).lean();
+    if (!tiendaExiste) throw new AppError(400, 'La tienda no existe');
+  }
+
+  const updates = {};
+  if (nombre) updates.nombre = nombre;
+  if (email) updates.email = email;
+  if (tienda_id !== undefined) updates.tienda_moderada = tienda_id;
+
+  const actualizado = await Usuario.findByIdAndUpdate(usuarioId, updates, { new: true })
+    .select('nombre email tienda_moderada fecha_registro')
+    .populate('tienda_moderada', 'nombre_tienda ciudad')
+    .lean();
+
+  return actualizado;
+};
+
+exports.eliminarModeradorTienda = async (usuarioId, tiendasPermitidas) => {
+  if (!mongoose.Types.ObjectId.isValid(usuarioId)) {
+    throw new AppError(400, 'ID de usuario inválido');
+  }
+
+  const usuario = await Usuario.findOne({ _id: usuarioId, rol: 'moderador_tienda' });
+  if (!usuario) throw new AppError(404, 'Moderador de tienda no encontrado');
+
+  if (tiendasPermitidas !== null && usuario.tienda_moderada) {
+    const enScope = tiendasPermitidas.some(
+      (t) => t.toString() === usuario.tienda_moderada.toString()
+    );
+    if (!enScope) throw new AppError(404, 'Moderador de tienda no encontrado');
+  }
+
+  await Usuario.findByIdAndDelete(usuarioId);
+  return { mensaje: 'Moderador eliminado' };
+};

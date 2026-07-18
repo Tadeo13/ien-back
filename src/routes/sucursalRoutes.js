@@ -2,10 +2,12 @@ const { Router } = require('express');
 const authMiddleware = require('../middlewares/authMiddleware');
 const adminMiddleware = require('../middlewares/adminMiddleware');
 const scopeTiendaMiddleware = require('../middlewares/scopeTiendaMiddleware');
+const { requireRol } = require('../middlewares/moderadorMiddleware');
 const sucursalCtrl = require('../controllers/sucursalController');
 
 const router = Router();
-router.use(authMiddleware, adminMiddleware, scopeTiendaMiddleware);
+router.use(authMiddleware, adminMiddleware, scopeTiendaMiddleware,
+  requireRol('admin_negocio', 'admin_general'));
 
 /**
  * @swagger

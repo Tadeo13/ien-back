@@ -1215,6 +1215,16 @@ async function seed() {
   });
   console.log('Admin Negocio creado: admin_negocio@ien.test / admin123 (tiendas: Centro, Norte)');
 
+  // moderador_tienda asociado únicamente a Tienda Centro
+  await Usuario.create({
+    nombre: 'Moderador Centro',
+    email: 'moderador@ien.test',
+    password_hash,
+    rol: 'moderador_tienda',
+    tienda_moderada: tCentro._id
+  });
+  console.log('Moderador Tienda creado: moderador@ien.test / admin123 (tienda: Centro)');
+
   // 5. Contenidos diarios: transforma cada paso con su respuesta_tipo individual
   const ESCALA_LIKERT = [
     { valor: 1, etiqueta: 'Nunca' },
