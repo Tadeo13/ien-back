@@ -17,7 +17,8 @@ const options = {
       { name: 'Admin - Tiendas', description: 'Gestión de sucursales' },
       { name: 'Admin - Productos', description: 'Gestión de productos y alcances' },
       { name: 'Admin - Códigos', description: 'Códigos de activación' },
-      { name: 'Admin - Reportes', description: 'Métricas y perfiles de pacientes' },
+      { name: 'Admin - Usuarios', description: 'CRUD de administradores y moderadores' },
+      { name: 'Admin - Reportes', description: 'Dashboard, métricas y perfiles de pacientes' },
       { name: 'Jobs', description: 'Tareas internas (cron)' }
     ],
     components: {
