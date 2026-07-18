@@ -1,4 +1,4 @@
-const { detectarHito } = require('../src/services/planService');
+const { detectarHito } = require('../src/modules/plan/plan.service');
 
 describe('detectarHito', () => {
   // --- hitos que SÍ existen en HITOS_RACHA = [7, 14, 21] ---

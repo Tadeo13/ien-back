@@ -1,9 +1,9 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
-const { enviarCorreo } = require('../src/services/emailService');
+const { enviarCorreo } = require('../src/modules/email/email.service');
 const {
   bienvenida, recordatorioDiario, hito, rachaRota,
   urgenciaActivacion, recuperacionInactividad, recuperacionContrasena
-} = require('../src/emailTemplates');
+} = require('../src/modules/email/templates');
 
 const DESTINATARIO = process.argv[2] || 'tadeofrr13@gmail.com';
 const USUARIO_ID = '000000000000000000000001';
