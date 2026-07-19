@@ -6,7 +6,13 @@ const contenidoDiarioSchema = new Schema({
   titulo_modulo: String,
   tipo_contenido: { type: String, required: true },
   emociones_objetivo: [String],
-  datos_leccion: { type: Schema.Types.Mixed, required: true }
+  respuesta_tipo: {
+    type: String,
+    enum: ['abierta', 'escala', 'estructurado'],
+    default: 'abierta'
+  },
+  datos_leccion: { type: Schema.Types.Mixed, required: true },
+  cabecera: { type: String, default: null }
 });
 
 module.exports = mongoose.model('ContenidoDiario', contenidoDiarioSchema, 'contenidos_diarios');
