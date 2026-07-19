@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const rateLimit = require('express-rate-limit');
-const { validateCode, register, login, refresh, logout, profile, forgotPassword, verifyResetToken, resetPassword } = require('./auth.controller');
+const { validateCode, register, login, refresh, logout, profile, forgotPassword, verifyResetToken, resetPassword, changePassword } = require('./auth.controller');
 const authMiddleware = require('../../middlewares/authMiddleware');
 
 const router = Router();
@@ -412,5 +412,33 @@ router.get('/verify-reset-token', verifyResetLimiter, verifyResetToken);
  *         description: Token inválido o expirado
  */
 router.post('/reset-password', resetPasswordLimiter, resetPassword);
+
+/**
+ * @swagger
+ * /api/auth/change-password:
+ *   post:
+ *     summary: Cambiar contraseña (usuario autenticado)
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [current_password, nueva_password]
+ *             properties:
+ *               current_password:
+ *                 type: string
+ *               nueva_password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Contraseña actualizada y sesiones anteriores cerradas
+ *       401:
+ *         description: Contraseña actual incorrecta
+ */
+router.post('/change-password', authMiddleware, resetPasswordLimiter, changePassword);
 
 module.exports = router;

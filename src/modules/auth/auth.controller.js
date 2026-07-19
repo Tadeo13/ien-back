@@ -1,4 +1,4 @@
-const { validateCode, register, login, refreshToken, logout, forgotPassword, verifyResetToken, resetPassword } = require('./auth.service');
+const { validateCode, register, login, refreshToken, logout, forgotPassword, verifyResetToken, resetPassword, changePassword } = require('./auth.service');
 const { tryCatch } = require('../../middlewares/errorHandler');
 const AppError = require('../../utils/AppError');
 const Usuario = require('../../models/Usuario');
@@ -123,5 +123,16 @@ exports.resetPassword = tryCatch(async (req, res) => {
   }
 
   const result = await resetPassword(token, nueva_password);
+  res.json(result);
+});
+
+exports.changePassword = tryCatch(async (req, res) => {
+  const { current_password, nueva_password } = req.body;
+
+  if (!current_password || !nueva_password) {
+    throw new AppError(400, 'Contraseña actual y nueva contraseña requeridas');
+  }
+
+  const result = await changePassword(req.usuario.id, current_password, nueva_password);
   res.json(result);
 });

@@ -228,3 +228,29 @@ exports.resetPassword = async (token, nuevaPassword) => {
 
   return { mensaje: 'Contraseña actualizada' };
 };
+
+exports.changePassword = async (userId, currentPassword, nuevaPassword) => {
+  if (typeof currentPassword !== 'string' || typeof nuevaPassword !== 'string') {
+    throw new AppError(400, 'Contraseña actual y nueva contraseña requeridas');
+  }
+
+  const usuario = await Usuario.findById(userId);
+  if (!usuario) {
+    throw new AppError(404, 'Usuario no encontrado');
+  }
+
+  const coincide = await bcrypt.compare(currentPassword, usuario.password_hash);
+  if (!coincide) {
+    throw new AppError(401, 'La contraseña actual es incorrecta');
+  }
+
+  usuario.password_hash = await bcrypt.hash(nuevaPassword, 12);
+  await usuario.save();
+
+  await RefreshToken.updateMany(
+    { usuario_id: usuario._id, revocado: false },
+    { revocado: true }
+  );
+
+  return { mensaje: 'Contraseña actualizada. Todas las sesiones anteriores fueron cerradas.' };
+};
