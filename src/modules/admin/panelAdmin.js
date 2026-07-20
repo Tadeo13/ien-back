@@ -1,16 +1,21 @@
 const PlanProgreso = require('../../models/PlanProgreso');
+const Tienda = require('../../models/Tienda');
 const { getInicioDeDiaDeAyer, getInicioDeDiaDeHoy } = require('../../utils/fechas');
 
 async function panelAdminPorTienda(tiendasPermitidas = null) {
   const inicioDeDiaDeAyer = getInicioDeDiaDeAyer();
   const inicioDeDiaDeHoy = getInicioDeDiaDeHoy();
 
-  // Etapas de scoping: admin_negocio sólo ve sus tiendas, admin_general ve todo.
-  const scopeStages = tiendasPermitidas !== null
-    ? [{ $match: { tienda_id: { $in: tiendasPermitidas } } }]
-    : [];
+  const scopeTienda = tiendasPermitidas === null ? {} : { _id: { $in: tiendasPermitidas } };
+  const activas = await Tienda.find({ ...scopeTienda, activo: true }).select('_id').lean();
+  const activasIds = activas.map(t => t._id);
 
-  return PlanProgreso.aggregate([...scopeStages,
+  if (activasIds.length === 0) {
+    return [];
+  }
+
+  return PlanProgreso.aggregate([
+    { $match: { tienda_id: { $in: activasIds } } },
     {
       $group: {
         _id: '$tienda_id',

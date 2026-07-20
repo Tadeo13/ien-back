@@ -130,5 +130,6 @@ router.put('/:id', sucursalCtrl.actualizar);
  *         description: Sucursal no encontrada
  */
 router.delete('/:id', sucursalCtrl.eliminar);
+router.patch('/:id/reactivar', sucursalCtrl.reactivar);
 
 module.exports = router;

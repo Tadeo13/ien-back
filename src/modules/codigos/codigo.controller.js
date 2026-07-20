@@ -16,7 +16,7 @@ exports.listar = tryCatch(async (req, res) => {
     filtro.tienda_id = { $in: req.tiendasPermitidas };
   }
   const codigos = await Codigo.find(filtro)
-    .populate('tienda_id', 'nombre_tienda ciudad')
+    .populate('tienda_id', 'nombre_tienda ciudad activo')
     .populate('producto_id', 'nombre');
   res.json(codigos);
 });

@@ -37,6 +37,9 @@ exports.validateCode = async (codigo_activacion) => {
   if (!codDoc) {
     throw new AppError(404, 'Código inválido');
   }
+  if (codDoc.tienda_id && codDoc.tienda_id.activo === false) {
+    throw new AppError(403, 'La tienda asociada a este código ya no está activa');
+  }
 
   return {
     tienda: codDoc.tienda_id,
@@ -52,6 +55,11 @@ exports.register = async ({ nombre, email, password, codigo_activacion }) => {
   const codDoc = await Codigo.findOne({ codigo: codigo_activacion, activo: true });
   if (!codDoc) {
     throw new AppError(404, 'Código de activación inválido');
+  }
+
+  const tiendaDoc = await Tienda.findById(codDoc.tienda_id).select('activo').lean();
+  if (!tiendaDoc || tiendaDoc.activo === false) {
+    throw new AppError(403, 'La tienda asociada a este código ya no está activa');
   }
 
   const existe = await Usuario.findOne({ email });

@@ -13,8 +13,10 @@ exports.panelAdminPorTienda = panelAdminPorTienda;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function filtroTiendas(tiendasPermitidas) {
-  return tiendasPermitidas === null ? {} : { tienda_id: { $in: tiendasPermitidas } };
+async function filtroTiendas(tiendasPermitidas) {
+  const scope = tiendasPermitidas === null ? {} : { _id: { $in: tiendasPermitidas } };
+  const activas = await Tienda.find({ ...scope, activo: true }).select('_id').lean();
+  return { tienda_id: { $in: activas.map(t => t._id) } };
 }
 
 async function obtenerPacienteConScope(usuarioId, tiendasPermitidas) {
@@ -34,6 +36,10 @@ async function obtenerPacienteConScope(usuarioId, tiendasPermitidas) {
       (t) => t.toString() === usuario.tienda_id._id.toString()
     );
     if (!enScope) throw new AppError(404, 'Paciente no encontrado');
+  }
+
+  if (usuario.tienda_id?.activo === false) {
+    throw new AppError(404, 'Paciente no encontrado');
   }
 
   return usuario;
@@ -167,7 +173,7 @@ exports.getActividadesPaciente = async (usuarioId, tiendasPermitidas) => {
 exports.getReporteUsuarios = async (tiendasPermitidas) => {
   const hoy = getInicioDeDiaDeHoy();
   const hace7dias = getFechaHaceDias(7);
-  const baseFiltro = filtroTiendas(tiendasPermitidas);
+  const baseFiltro = await filtroTiendas(tiendasPermitidas);
 
   const [
     totalRegistrados,
@@ -180,9 +186,9 @@ exports.getReporteUsuarios = async (tiendasPermitidas) => {
     Usuario.countDocuments({ ...baseFiltro, rol: 'usuario' }),
     Usuario.countDocuments({ ...baseFiltro, rol: 'usuario', fecha_registro: { $gte: hoy } }),
     Usuario.countDocuments({ ...baseFiltro, rol: 'usuario', fecha_registro: { $gte: hace7dias } }),
-    PlanProgreso.countDocuments({ ...filtroTiendas(tiendasPermitidas), estado: 'activo' }),
-    PlanProgreso.countDocuments({ ...filtroTiendas(tiendasPermitidas), estado: 'activo', ultima_fecha_actividad: { $gte: hoy } }),
-    PlanProgreso.countDocuments({ ...filtroTiendas(tiendasPermitidas), estado: 'activo', ultima_fecha_actividad: { $gte: hace7dias } })
+    PlanProgreso.countDocuments({ ...baseFiltro, estado: 'activo' }),
+    PlanProgreso.countDocuments({ ...baseFiltro, estado: 'activo', ultima_fecha_actividad: { $gte: hoy } }),
+    PlanProgreso.countDocuments({ ...baseFiltro, estado: 'activo', ultima_fecha_actividad: { $gte: hace7dias } })
   ]);
 
   return {
@@ -201,7 +207,7 @@ exports.getReporteUsuarios = async (tiendasPermitidas) => {
 
 exports.getGraficaSemanal = async (tiendasPermitidas) => {
   const hoy = getInicioDeDiaDeHoy();
-  const scopeFiltro = filtroTiendas(tiendasPermitidas);
+  const scopeFiltro = await filtroTiendas(tiendasPermitidas);
 
   const dias = Array.from({ length: 7 }, (_, i) => {
     const inicio = new Date(hoy.getTime() - (6 - i) * 24 * 60 * 60 * 1000);
@@ -227,7 +233,7 @@ exports.getGraficaSemanal = async (tiendasPermitidas) => {
 
 exports.listarPacientes = async (pagina, limite, tiendasPermitidas) => {
   const skip = (pagina - 1) * limite;
-  const filtro = { ...filtroTiendas(tiendasPermitidas), rol: 'usuario' };
+  const filtro = { ...(await filtroTiendas(tiendasPermitidas)), rol: 'usuario' };
 
   const [usuarios, total] = await Promise.all([
     Usuario.find(filtro)
@@ -287,7 +293,7 @@ exports.crearAdminNegocio = async ({ nombre, email, password, tiendas_administra
   const existe = await Usuario.findOne({ email });
   if (existe) throw new AppError(409, 'El email ya está registrado');
 
-  const tiendasExistentes = await Tienda.find({ _id: { $in: tiendas_administradas } }).lean();
+  const tiendasExistentes = await Tienda.find({ _id: { $in: tiendas_administradas }, activo: true }).lean();
   if (tiendasExistentes.length !== tiendas_administradas.length) {
     throw new AppError(400, 'Una o más tiendas no existen');
   }
@@ -323,7 +329,7 @@ exports.crearModeradorTienda = async ({ nombre, email, password, tienda_id }, cr
     }
   }
 
-  const tiendaExiste = await Tienda.findById(tienda_id).lean();
+  const tiendaExiste = await Tienda.findOne({ _id: tienda_id, activo: true }).lean();
   if (!tiendaExiste) throw new AppError(400, 'La tienda no existe');
 
   const existe = await Usuario.findOne({ email });
@@ -386,7 +392,7 @@ exports.actualizarAdminNegocio = async (usuarioId, { nombre, email, tiendas_admi
     if (!Array.isArray(tiendas_administradas) || tiendas_administradas.length === 0) {
       throw new AppError(400, 'Debe asignar al menos una tienda');
     }
-    const tiendasExistentes = await Tienda.find({ _id: { $in: tiendas_administradas } }).lean();
+    const tiendasExistentes = await Tienda.find({ _id: { $in: tiendas_administradas }, activo: true }).lean();
     if (tiendasExistentes.length !== tiendas_administradas.length) {
       throw new AppError(400, 'Una o más tiendas no existen');
     }
@@ -478,7 +484,7 @@ exports.actualizarModeradorTienda = async (usuarioId, { nombre, email, tienda_id
       );
       if (!enScope) throw new AppError(403, 'La tienda no está dentro de tu scope');
     }
-    const tiendaExiste = await Tienda.findById(tienda_id).lean();
+    const tiendaExiste = await Tienda.findOne({ _id: tienda_id, activo: true }).lean();
     if (!tiendaExiste) throw new AppError(400, 'La tienda no existe');
   }
 

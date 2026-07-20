@@ -169,6 +169,9 @@ exports.setupTest = async ({ respuestas, usuarioId }) => {
   if (!tienda) {
     throw new AppError(404, 'Tienda no encontrada');
   }
+  if (tienda.activo === false) {
+    throw new AppError(403, 'No es posible iniciar el plan: la tienda asociada ya no está activa');
+  }
 
   const existe = await PlanProgreso.findOne({ usuario_id: usuarioId });
   if (existe) {
