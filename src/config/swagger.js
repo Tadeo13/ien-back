@@ -1,5 +1,7 @@
 const swaggerJsdoc = require('swagger-jsdoc');
 
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
+
 const options = {
   definition: {
     openapi: '3.0.0',
@@ -9,7 +11,7 @@ const options = {
       description: 'API del programa IEN (Inteligencia Emocional)'
     },
     servers: [
-      { url: 'http://localhost:3000', description: 'Local' }
+      { url: BACKEND_URL, description: process.env.NODE_ENV === 'production' ? 'Production' : 'Local' }
     ],
     tags: [
       { name: 'Auth', description: 'Autenticación y registro' },
