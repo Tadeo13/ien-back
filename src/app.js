@@ -16,6 +16,7 @@ const swaggerSpec = require('./config/swagger');
 const { errorHandler } = require('./middlewares/errorHandler');
 
 const app = express();
+app.set('trust proxy', 1);
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 app.use(cors({
