@@ -17,7 +17,7 @@ exports.listar = tryCatch(async (req, res) => {
   if (req.tiendasPermitidas !== null) {
     filtro._id = { $in: req.tiendasPermitidas };
   }
-  const incluirInactivas = req.query.incluir_inactivas === 'true' && req.usuario.rol === 'admin_general';
+  const incluirInactivas = req.query.incluir_inactivas === 'true' && ['admin_general', 'admin_negocio'].includes(req.usuario.rol);
   if (!incluirInactivas) {
     filtro.activo = true;
   }
