@@ -33,11 +33,13 @@ app.get('/health', (_req, res) => {
 
 // Root route
 app.get('/', (_req, res) => {
-  res.send('IEN Backend API is running. Documentation available at /api-docs');
+  res.send('IEN Backend API is running.');
 });
 
-// Docs
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Docs (solo en desarrollo)
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+}
 
 // Routes
 app.use('/api/auth', authRoutes);
