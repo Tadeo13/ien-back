@@ -36,10 +36,26 @@ app.get('/', (_req, res) => {
   res.send('IEN Backend API is running.');
 });
 
-// Docs (solo en desarrollo)
-if (process.env.NODE_ENV !== 'production') {
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-}
+// Basic Auth para proteger Swagger en produccion
+const swaggerAuth = (req, res, next) => {
+  const user = process.env.SWAGGER_USER;
+  const pass = process.env.SWAGGER_PASS;
+
+  if (!user || !pass) return next();
+
+  const auth = (req.headers.authorization || '');
+  if (!auth.startsWith('Basic ')) {
+    res.set('WWW-Authenticate', 'Basic realm="Swagger Docs"');
+    return res.status(401).json({ error: 'Acceso restringido' });
+  }
+  const [u, p] = Buffer.from(auth.slice(6), 'base64').toString().split(':');
+  if (u !== user || p !== pass) {
+    return res.status(401).json({ error: 'Credenciales invalidas' });
+  }
+  next();
+};
+
+app.use('/api-docs', swaggerAuth, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
 app.use('/api/auth', authRoutes);
