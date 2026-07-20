@@ -8,4 +8,6 @@ const tiendaSchema = new Schema({
   fecha_creacion: { type: Date, default: Date.now }
 });
 
+tiendaSchema.index({ activo: 1 });
+
 module.exports = mongoose.model('Tienda', tiendaSchema, 'tiendas');

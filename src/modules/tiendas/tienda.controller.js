@@ -21,7 +21,7 @@ exports.listar = tryCatch(async (req, res) => {
   if (!incluirInactivas) {
     filtro.activo = true;
   }
-  const tiendas = await Tienda.find(filtro).select('nombre_tienda ciudad activo');
+  const tiendas = await Tienda.find(filtro).select('nombre_tienda ciudad activo').lean();
   res.json(tiendas);
 });
 

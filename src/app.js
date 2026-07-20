@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const compression = require('compression');
 const morgan = require('morgan');
 const authMiddleware = require('./middlewares/authMiddleware');
 const authRoutes = require('./modules/auth/auth.routes');
@@ -24,8 +25,9 @@ app.use(cors({
   credentials: true,
 }));
 app.use(helmet());
+app.use(compression());
 app.use(express.json({ limit: '1mb' }));
-app.use(morgan('dev'));
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 // Health check
 app.get('/health', (_req, res) => {

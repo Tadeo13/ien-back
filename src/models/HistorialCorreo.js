@@ -14,4 +14,6 @@ const historialCorreoSchema = new Schema({
   estado: { type: String, enum: ['enviado', 'fallido'], required: true }
 });
 
+historialCorreoSchema.index({ usuario_id: 1, tipo_correo: 1, estado: 1 });
+
 module.exports = mongoose.model('HistorialCorreo', historialCorreoSchema, 'historial_correos');

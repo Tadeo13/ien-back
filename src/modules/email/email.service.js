@@ -51,6 +51,15 @@ async function yaSeEnvio(usuario_id, tipo_correo) {
   }
 }
 
+async function yaSeEnviaronBatch(usuarioIds, tipo_correo) {
+  const enviados = await HistorialCorreo.find({
+    usuario_id: { $in: usuarioIds },
+    tipo_correo,
+    estado: 'enviado'
+  }).select('usuario_id').lean();
+  return new Set(enviados.map(e => e.usuario_id.toString()));
+}
+
 async function enviarEnLote(usuarios, { tipo_correo, renderFn, skipFn }) {
   let enviados = 0, fallidos = 0, saltados = 0;
   for (const u of usuarios) {
@@ -77,4 +86,4 @@ async function enviarEnLote(usuarios, { tipo_correo, renderFn, skipFn }) {
   return { enviados, fallidos, saltados, total: usuarios.length };
 }
 
-module.exports = { enviarCorreo, yaSeEnvio, enviarEnLote };
+module.exports = { enviarCorreo, yaSeEnvio, yaSeEnviaronBatch, enviarEnLote };

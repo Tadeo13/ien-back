@@ -1,6 +1,6 @@
 const { demoledorDeRachas, findUsuariosRezagados, findUsuariosSinActivar, findUsuariosParaRecuperar } = require('./cronJobs');
 const Usuario = require('../../models/Usuario');
-const { enviarCorreo, enviarEnLote, yaSeEnvio } = require('../email/email.service');
+const { enviarCorreo, enviarEnLote, yaSeEnvio, yaSeEnviaronBatch } = require('../email/email.service');
 const { recordatorioDiario, rachaRota, urgenciaActivacion, recuperacionInactividad } = require('../email/templates');
 
 async function sendReminders() {
@@ -36,19 +36,23 @@ async function resetStreaksYNotificar() {
 
 async function enviarActivationNudges() {
   const usuarios = await findUsuariosSinActivar();
+  const ids = usuarios.map(u => (u._id || u.usuario_id).toString());
+  const yaEnviados = await yaSeEnviaronBatch(ids, 'urgencia_activacion');
   return enviarEnLote(usuarios, {
     tipo_correo: 'urgencia_activacion',
     renderFn: (u) => urgenciaActivacion(u.nombre),
-    skipFn: (u) => yaSeEnvio(u._id, 'urgencia_activacion')
+    skipFn: (u) => yaEnviados.has((u._id || u.usuario_id).toString())
   });
 }
 
 async function enviarRecoveryEmails() {
   const usuarios = await findUsuariosParaRecuperar();
+  const ids = usuarios.map(u => (u._id || u.usuario_id).toString());
+  const yaEnviados = await yaSeEnviaronBatch(ids, 'recuperacion_inactividad');
   return enviarEnLote(usuarios, {
     tipo_correo: 'recuperacion_inactividad',
     renderFn: (u) => ({ ...recuperacionInactividad(u.nombre, u.dia_actual), meta: { dia_actual: u.dia_actual } }),
-    skipFn: (u) => yaSeEnvio(u.usuario_id, 'recuperacion_inactividad')
+    skipFn: (u) => yaEnviados.has((u._id || u.usuario_id).toString())
   });
 }
 

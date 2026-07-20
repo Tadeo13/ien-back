@@ -26,8 +26,7 @@ async function obtenerPacienteConScope(usuarioId, tiendasPermitidas) {
 
   const usuario = await Usuario.findById(usuarioId)
     .select('-password_hash')
-    .populate('tienda_id', 'nombre_tienda ciudad')
-    .populate('producto_id', 'nombre descripcion');
+    .populate('tienda_id', 'nombre_tienda ciudad');
 
   if (!usuario) throw new AppError(404, 'Paciente no encontrado');
 
@@ -55,8 +54,7 @@ exports.getPerfilPaciente = async (usuarioId, tiendasPermitidas) => {
     email: usuario.email,
     rol: usuario.rol,
     fecha_registro: usuario.fecha_registro,
-    tienda: usuario.tienda_id ?? null,
-    producto: usuario.producto_id ?? null
+    tienda: usuario.tienda_id ?? null
   };
 };
 
@@ -65,7 +63,8 @@ exports.getProgresoPaciente = async (usuarioId, tiendasPermitidas) => {
 
   const plan = await PlanProgreso.findOne({ usuario_id: usuarioId })
     .sort({ fecha_inicio: -1 })
-    .select('estado dia_actual racha_dias racha_maxima hitos_alcanzados fecha_inicio ultima_fecha_actividad test_inicial progreso_diario');
+    .select('estado dia_actual racha_dias racha_maxima hitos_alcanzados fecha_inicio ultima_fecha_actividad test_inicial progreso_diario')
+    .lean();
 
   if (!plan) throw new AppError(404, 'El paciente no tiene plan de progreso');
   return plan;
@@ -110,7 +109,8 @@ exports.getActividadesPaciente = async (usuarioId, tiendasPermitidas) => {
 
   const plan = await PlanProgreso.findOne({ usuario_id: usuarioId })
     .sort({ fecha_inicio: -1 })
-    .select('progreso_diario');
+    .select('progreso_diario')
+    .lean();
 
   if (!plan) throw new AppError(404, 'El paciente no tiene plan de progreso');
 
