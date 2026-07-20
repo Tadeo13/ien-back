@@ -9,6 +9,8 @@ const TestPregunta = require('./models/TestPregunta');
 const ContenidoEspecial = require('./models/ContenidoEspecial');
 const Producto = require('./models/Producto');
 const Codigo = require('./models/Codigo');
+const PlanProgreso = require('./models/PlanProgreso');
+const HistorialCorreo = require('./models/HistorialCorreo');
 
 
 // ---------------------------------------------------------------------------
@@ -1143,7 +1145,6 @@ async function seed() {
   await mongoose.connect(process.env.MONGO_URI);
   console.log('Conectado a MongoDB');
 
-  // Limpiar todas las coleciones antes de insertar (evita duplicados)
   await Promise.all([
     Tienda.deleteMany({}),
     Usuario.deleteMany({}),
@@ -1151,32 +1152,34 @@ async function seed() {
     TestPregunta.deleteMany({}),
     ContenidoEspecial.deleteMany({}),
     Producto.deleteMany({}),
-    Codigo.deleteMany({})
+    Codigo.deleteMany({}),
+    PlanProgreso.deleteMany({}),
+    HistorialCorreo.deleteMany({})
   ]);
   console.log('Colecciones limpiadas');
 
-  // 1. Tiendas (sin campo codigo_activacion)
+  // 1. Tiendas
   const tiendas = await Tienda.insertMany([
-    { nombre_tienda: 'Tienda Centro', ciudad: 'Ciudad de México' },
-    { nombre_tienda: 'Tienda Norte', ciudad: 'Monterrey' },
-    { nombre_tienda: 'Tienda Sur', ciudad: 'Guadalajara' }
+    { nombre_tienda: 'CardioSmille', ciudad: 'Asunción, Paraguay' },
+    { nombre_tienda: 'The Vitamin Shoppe', ciudad: 'Asunción, Paraguay' },
+    { nombre_tienda: 'Lic. Gladys', ciudad: 'Asunción, Paraguay' }
   ]);
   console.log(`${tiendas.length} tiendas creadas`);
-  const tCentro = tiendas[0];
-  const tNorte = tiendas[1];
-  const tSur = tiendas[2];
+  const tCardio = tiendas[0];
+  const tVitamin = tiendas[1];
+  const tGladys = tiendas[2];
 
   // 2. Productos
   const productos = await Producto.insertMany([
     {
       nombre: 'Programa 30 días Cardiosmile',
       descripcion: 'Plan cardiovascular completo',
-      tiendas: [tCentro._id, tNorte._id, tSur._id]
+      tiendas: [tCardio._id, tVitamin._id, tGladys._id]
     },
     {
       nombre: 'Programa Especial Ashwagandha',
       descripcion: 'Plan de autogestión y reducción de estrés',
-      tiendas: [tCentro._id, tNorte._id]
+      tiendas: [tCardio._id, tVitamin._id]
     }
   ]);
   console.log(`${productos.length} productos creados`);
@@ -1185,18 +1188,17 @@ async function seed() {
 
   // 3. Códigos
   const codigos = await Codigo.insertMany([
-    { codigo: 'IEN-001', producto_id: prodCardio._id, tienda_id: tCentro._id, activo: true },
-    { codigo: 'IEN-002', producto_id: prodCardio._id, tienda_id: tNorte._id, activo: true },
-    { codigo: 'IEN-003', producto_id: prodCardio._id, tienda_id: tSur._id, activo: true },
-    { codigo: 'IEN-004', producto_id: prodAshwa._id, tienda_id: tCentro._id, activo: true },
-    { codigo: 'IEN-005', producto_id: prodAshwa._id, tienda_id: tNorte._id, activo: true }
+    { codigo: 'IEN-001', producto_id: prodCardio._id, tienda_id: tCardio._id, activo: true },
+    { codigo: 'IEN-002', producto_id: prodCardio._id, tienda_id: tVitamin._id, activo: true },
+    { codigo: 'IEN-003', producto_id: prodCardio._id, tienda_id: tGladys._id, activo: true },
+    { codigo: 'IEN-004', producto_id: prodAshwa._id, tienda_id: tCardio._id, activo: true },
+    { codigo: 'IEN-005', producto_id: prodAshwa._id, tienda_id: tVitamin._id, activo: true }
   ]);
   console.log(`${codigos.length} códigos de activación creados`);
 
   // 4. Usuarios Administradores
   const password_hash = await bcrypt.hash('admin123', 10);
-  
-  // admin_general
+
   await Usuario.create({
     nombre: 'Admin General',
     email: 'admin@ien.test',
@@ -1205,27 +1207,340 @@ async function seed() {
   });
   console.log('Admin General creado: admin@ien.test / admin123');
 
-  // admin_negocio asociado a Centro y Norte
   await Usuario.create({
-    nombre: 'Admin Negocio Centro-Norte',
+    nombre: 'Admin Negocio Cardio-Vitamin',
     email: 'admin_negocio@ien.test',
     password_hash,
     rol: 'admin_negocio',
-    tiendas_administradas: [tCentro._id, tNorte._id]
+    tiendas_administradas: [tCardio._id, tVitamin._id]
   });
-  console.log('Admin Negocio creado: admin_negocio@ien.test / admin123 (tiendas: Centro, Norte)');
+  console.log('Admin Negocio creado: admin_negocio@ien.test / admin123');
 
-  // moderador_tienda asociado únicamente a Tienda Centro
   await Usuario.create({
-    nombre: 'Moderador Centro',
+    nombre: 'Moderador CardioSmille',
     email: 'moderador@ien.test',
     password_hash,
     rol: 'moderador_tienda',
-    tienda_moderada: tCentro._id
+    tienda_moderada: tCardio._id
   });
-  console.log('Moderador Tienda creado: moderador@ien.test / admin123 (tienda: Centro)');
+  console.log('Moderador Tienda creado: moderador@ien.test / admin123');
 
-  // 5. Contenidos diarios: transforma cada paso con su respuesta_tipo individual
+  // 5. Usuarios regulares (12 usuarios paraguayos con distribución variada de progreso)
+  const userPassword = await bcrypt.hash('demo123', 10);
+
+  const usuariosDemo = [
+    { nombre: 'Liz Román',      email: 'liz.roman@demo.com',      tienda: tCardio,  producto: prodCardio, codigo: 'IEN-001' },
+    { nombre: 'Carlos Benítez', email: 'carlos.benitez@demo.com', tienda: tVitamin, producto: prodCardio, codigo: 'IEN-002' },
+    { nombre: 'María Ferreira', email: 'maria.ferreira@demo.com', tienda: tGladys,  producto: prodCardio, codigo: 'IEN-003' },
+    { nombre: 'Juan Rojas',     email: 'juan.rojas@demo.com',     tienda: tCardio,  producto: prodAshwa,  codigo: 'IEN-004' },
+    { nombre: 'Ana López',      email: 'ana.lopez@demo.com',      tienda: tVitamin, producto: prodAshwa,  codigo: 'IEN-005' },
+    { nombre: 'Pedro Martínez', email: 'pedro.martinez@demo.com',  tienda: tGladys,  producto: prodCardio, codigo: 'IEN-003' },
+    { nombre: 'Lucía González', email: 'lucia.gonzalez@demo.com',  tienda: tCardio,  producto: prodCardio, codigo: 'IEN-001' },
+    { nombre: 'Diego Agüero',   email: 'diego.aguero@demo.com',   tienda: tVitamin, producto: prodAshwa,  codigo: 'IEN-005' },
+    { nombre: 'Carla Duarte',   email: 'carla.duarte@demo.com',   tienda: tGladys,  producto: prodCardio, codigo: 'IEN-003' },
+    { nombre: 'José Riveros',   email: 'jose.riveros@demo.com',   tienda: tCardio,  producto: prodAshwa,  codigo: 'IEN-004' },
+    { nombre: 'Natalia Ruiz',   email: 'natalia.ruiz@demo.com',   tienda: tVitamin, producto: prodCardio, codigo: 'IEN-002' },
+    { nombre: 'Ricardo Vera',   email: 'ricardo.vera@demo.com',   tienda: tGladys,  producto: prodAshwa,  codigo: 'IEN-005' },
+    { nombre: 'Sofía Cáceres',  email: 'sofia.caceres@demo.com',  tienda: tCardio,  producto: prodCardio, codigo: 'IEN-001' },
+    { nombre: 'Miguel Ayala',   email: 'miguel.ayala@demo.com',   tienda: tVitamin, producto: prodAshwa,  codigo: 'IEN-002' },
+    { nombre: 'Raquel Insfrán', email: 'raquel.insfran@demo.com', tienda: tGladys,  producto: prodCardio, codigo: 'IEN-003' }
+  ];
+
+  const usuariosCreados = [];
+  const createdDates = [];
+
+  const today = new Date('2026-07-20');
+  for (let i = 0; i < usuariosDemo.length; i++) {
+    const u = usuariosDemo[i];
+    const fechaReg = new Date('2026-07-20');
+    fechaReg.setDate(fechaReg.getDate() - (14 - i));
+    createdDates.push(fechaReg);
+
+    const usuario = await Usuario.create({
+      nombre: u.nombre,
+      email: u.email,
+      password_hash: userPassword,
+      rol: 'usuario',
+      tienda_id: u.tienda._id,
+      producto_id: u.producto._id,
+      codigo_activacion: u.codigo,
+      fecha_registro: fechaReg
+    });
+    usuariosCreados.push(usuario);
+    console.log(`Usuario creado: ${u.email} / demo123`);
+  }
+
+  // 6. Planes de Progreso (distribución variada)
+  const COMPETENCIA_KEYS = ['autoconciencia', 'autoconfianza', 'autocontrol', 'empatia', 'motivacion', 'competencia_social'];
+
+  const planesConfig = [
+    { idx: 0,  dia_actual: 4,  fecha_inicio: '2026-07-17', estado: 'activo',     racha_max: 4,  hitos: [], ultima_fecha: '2026-07-20' },
+    { idx: 1,  dia_actual: 5,  fecha_inicio: '2026-07-16', estado: 'activo',     racha_max: 5,  hitos: [5], ultima_fecha: '2026-07-19' },
+    { idx: 2,  dia_actual: 10, fecha_inicio: '2026-07-11', estado: 'activo',     racha_max: 8,  hitos: [5, 10], ultima_fecha: '2026-07-18' },
+    { idx: 3,  dia_actual: 12, fecha_inicio: '2026-07-09', estado: 'activo',     racha_max: 10, hitos: [5, 10], ultima_fecha: '2026-07-17' },
+    { idx: 4,  dia_actual: 16, fecha_inicio: '2026-07-05', estado: 'activo',     racha_max: 12, hitos: [5, 10, 15], ultima_fecha: '2026-07-16' },
+    { idx: 5,  dia_actual: 18, fecha_inicio: '2026-07-03', estado: 'activo',     racha_max: 14, hitos: [5, 10, 15], ultima_fecha: '2026-07-15' },
+    { idx: 6,  dia_actual: 23, fecha_inicio: '2026-06-28', estado: 'activo',     racha_max: 16, hitos: [5, 10, 15, 20], ultima_fecha: '2026-07-14' },
+    { idx: 7,  dia_actual: 25, fecha_inicio: '2026-06-26', estado: 'activo',     racha_max: 18, hitos: [5, 10, 15, 20, 25], ultima_fecha: '2026-07-20' },
+    { idx: 8,  dia_actual: 28, fecha_inicio: '2026-06-23', estado: 'activo',     racha_max: 20, hitos: [5, 10, 15, 20, 25], ultima_fecha: '2026-07-19' },
+    { idx: 9,  dia_actual: 29, fecha_inicio: '2026-06-22', estado: 'activo',     racha_max: 22, hitos: [5, 10, 15, 20, 25], ultima_fecha: '2026-07-18' },
+    { idx: 10, dia_actual: 30, fecha_inicio: '2026-06-21', estado: 'completado', racha_max: 24, hitos: [5, 10, 15, 20, 25, 30], ultima_fecha: '2026-07-17' },
+    { idx: 11, dia_actual: 30, fecha_inicio: '2026-06-21', estado: 'completado', racha_max: 26, hitos: [5, 10, 15, 20, 25, 30], ultima_fecha: '2026-07-16' },
+    { idx: 12, dia_actual: 2,  fecha_inicio: '2026-07-19', estado: 'activo',     racha_max: 2,  hitos: [], ultima_fecha: '2026-07-20' },
+    { idx: 13, dia_actual: 1,  fecha_inicio: '2026-07-20', estado: 'activo',     racha_max: 1,  hitos: [], ultima_fecha: '2026-07-20' },
+    { idx: 14, dia_actual: 3,  fecha_inicio: '2026-07-18', estado: 'activo',     racha_max: 3,  hitos: [], ultima_fecha: '2026-07-20' }
+  ];
+
+  function diaFecha(dia, fechaInicioStr) {
+    const d = new Date(fechaInicioStr);
+    d.setDate(d.getDate() + dia - 1);
+    return d;
+  }
+
+  function generarRespuesta(dia, userIdx, diaActual) {
+    const nivel = diaActual >= 25 ? 'avanzado' : diaActual >= 15 ? 'intermedio' : 'principiante';
+    const nombres = ['Liz', 'Carlos', 'María', 'Juan', 'Ana', 'Pedro', 'Lucía', 'Diego', 'Carla', 'José', 'Natalia', 'Ricardo', 'Sofía', 'Miguel', 'Raquel'];
+    const n = nombres[userIdx % nombres.length];
+    const rnd = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+    // Tipos de cada paso por día (mismo mapping que mapContenidoALeccion en plan.service.js)
+    // respuesta_tipo → tipo: escala→escala, accion→accion, demás→texto
+    const tiposPorDia = {
+      1:  ['escala','texto','texto','texto'],
+      2:  ['escala','escala','escala'],
+      3:  ['accion','accion','accion'],
+      4:  ['accion','accion','accion','accion','accion'],
+      5:  ['texto','texto','texto','texto'],
+      6:  ['texto','texto','texto'],
+      7:  ['accion','accion','accion','accion'],
+      8:  ['texto','texto','texto','texto','texto'],
+      9:  ['accion','accion','accion'],
+      10: ['texto','texto','texto'],
+      11: ['accion','accion','accion','accion'],
+      12: ['accion','accion','accion'],
+      13: ['accion','accion','accion'],
+      14: ['accion','accion','accion'],
+      15: ['accion','accion','accion'],
+      16: ['accion','accion','accion'],
+      17: ['texto','texto','texto','texto'],
+      18: ['accion','accion','accion'],
+      19: ['accion','accion','accion'],
+      20: ['texto','texto','texto'],
+      21: ['texto','texto','texto'],
+      22: ['texto','texto','accion','accion'],
+      23: ['accion','accion','accion'],
+      24: ['accion','accion','accion'],
+      25: ['escala','escala','escala','escala','accion'],
+      26: ['accion','accion','accion'],
+      27: ['accion','accion','accion','accion'],
+      28: ['accion','accion','accion'],
+      29: ['texto','texto','texto'],
+      30: ['texto','texto','texto']
+    };
+
+    // Valores crudos por día
+    const raw = {
+      1:  [rnd(5,9), 'Sentí tensión moderada en hombros al despertar', 'Ligereza en piernas, cierta pesadez mental por el calor', 'Respiración algo superficial, mejoró tras unos minutos'],
+      2:  [rnd(3,7), rnd(4,8), rnd(3,6)],
+      3:  [true, true, true],
+      4:  [true, true, true, true, true],
+      5:  ['Generalmente entre 8 y 10 AM, antes del calor fuerte', 'Después del almuerzo, entre 2-4 PM cuando baja la energía', 'Ansiedad cuando hay presión laboral, y aburrimiento en la tarde', 'Energía más alta por la mañana (7-8/10), baja al mediodía'],
+      6:  ['"No tengo disciplina para mantener una rutina"', 'La taché y escribí al lado mi nueva identidad', '"Soy una persona que elige cuidar su energía y salud cada día, incluso empezando con pasos pequeños"'],
+      7:  [true, true, true, true],
+      8:  ['Sí, noté menos fatiga al subir las escaleras del trabajo', 'Un poco más de concentración, aunque todavía me distraigo', 'Los brazos y piernas se sienten un poco más tonificados', 'Dormí mejor esta semana, me desperté más renovado', 'Más optimista, siento que estoy avanzando'],
+      9:  [true, true, true],
+      10: ['En la cena familiar del sábado, elegí una porción consciente y me sentí orgulloso al servirme lo justo', 'En el trabajo rechacé amablemente el postre de cumpleaños sin sentir culpa, fue liberador', 'Que estoy aprendiendo a decir "no" sin dureza y "sí" con gratitud'],
+      11: [true, true, true, true],
+      12: [true, true, true],
+      13: [true, true, true],
+      14: [true, true, true],
+      15: [true, true, true],
+      16: [true, true, true],
+      17: ['Mi familia y mi salud, porque sin salud no puedo disfrutar de los míos', 'Cuidarme me permite estar presente y activo para mis hijos y nietos', 'quiero vivir con energía plena para disfrutar de mi familia y mis proyectos', 'Lo pegué en el espejo del baño, lo veo cada mañana'],
+      18: [true, true, true],
+      19: [true, true, true],
+      20: ['Noto más energía, menos antojos compulsivos y más confianza al decidir', 'Repetí la declaración en voz alta frente al espejo, me emocionó', 'Mantendré Ashwagandha en la mañana, Cardiosmile después del almuerzo, y caminata consciente cada tarde'],
+      21: ['"Otra vez fallé, no tengo voluntad para esto"', 'Te diría que un tropezón no borra el camino, que sos humano y que cada día es una nueva oportunidad', 'Me dije: ' + n + ', un día difícil no define tu proceso; mañana retomás con amor y paciencia'],
+      22: ['Ayer comí de más en el almuerzo familiar, me sentí culpable y casi abandono', 'Que no necesito castigarme; puedo reconocerlo, aprender y seguir sin culpa', true, true],
+      23: [true, true, true],
+      24: [true, true, true],
+      25: [rnd(2,6), rnd(1,5), rnd(1,5), rnd(2,5), true],
+      26: [true, true, true],
+      27: [true, true, true, true],
+      28: [true, true, true],
+      29: ['Mi compañero de oficina siempre ofrece facturas y dice que "uno no hace nada"', '"Gracias por pensar en mí, pero estoy cuidando mi salud y me hace bien. Acompañame con un café sin culpa."', 'Me visualicé firme pero amable, y después en la práctica real salió natural'],
+      30: ['Autoconciencia: aprendí a escuchar mi cuerpo antes de comer. Motivación: mi porqué es mi familia', 'Ashwagandha mañana, Cardiosmile almuerzo, Omega-3 cena, caminata diaria, gratitud antes de dormir', 'Querido yo del futuro: hoy elegiste cuidarte. Nunca olvides que merecés salud y bienestar pleno. Seguí eligiéndote.']
+    };
+
+    const indices = tiposPorDia[dia] || [];
+    const valores = raw[dia] || [];
+    const result = [];
+
+    for (let i = 0; i < indices.length; i++) {
+      const tipo = indices[i];
+      let valor = valores[i];
+
+      if (tipo === 'escala' && typeof valor === 'number') {
+        if (dia === 1 && nivel === 'principiante') valor = rnd(3, 6);
+        if (dia === 5 && nivel === 'avanzado') {
+          if (typeof raw[5][0] === 'number') raw[5][0] = rnd(7, 9);
+          valor = i === 0 ? rnd(7, 9) : raw[5][i] || valor;
+        }
+      }
+
+      result.push({ id: 'paso_' + (i + 1), valor, tipo });
+    }
+
+    return result;
+  }
+
+  for (const cfg of planesConfig) {
+    const usuario = usuariosCreados[cfg.idx];
+    const userDemo = usuariosDemo[cfg.idx];
+    const fechaInicio = new Date(cfg.fecha_inicio);
+
+    const progresoDiario = [];
+    for (let d = 1; d <= 30; d++) {
+      const completado = d <= cfg.dia_actual;
+      progresoDiario.push({
+        dia_numero: d,
+        completado,
+        fecha_completado: completado ? diaFecha(d, cfg.fecha_inicio) : null,
+        respuesta_usuario: completado ? generarRespuesta(d, cfg.idx, cfg.dia_actual) : null
+      });
+    }
+
+    // Generar puntuaciones de test_inicial (5 preguntas por competencia, score 1-5)
+    const testRespuestas = [];
+    let preguntaNum = 0;
+    const puntuacionesPorCompetencia = [];
+
+    for (const comp of COMPETENCIA_KEYS) {
+      let sumScore = 0;
+      for (let r = 0; r < 5; r++) {
+        preguntaNum++;
+        const score = 2 + Math.floor(Math.random() * 4);
+        sumScore += score;
+        testRespuestas.push({
+          pregunta_numero: preguntaNum,
+          competencia: comp,
+          score
+        });
+      }
+      puntuacionesPorCompetencia.push({
+        competencia: comp,
+        competencia_label: COMPETENCIA_LABELS[comp],
+        puntuacion: sumScore
+      });
+    }
+
+    const competenciasMejora = puntuacionesPorCompetencia
+      .filter(p => p.puntuacion < 20)
+      .map(p => p.competencia_label);
+
+    const rachaDias = Math.min(cfg.racha_max, cfg.dia_actual);
+    const ultima = cfg.ultima_fecha ? new Date(cfg.ultima_fecha) : diaFecha(cfg.dia_actual, cfg.fecha_inicio);
+    if (ultima > today) ultima.setTime(today.getTime());
+
+    await PlanProgreso.create({
+      usuario_id: usuario._id,
+      tienda_id: userDemo.tienda._id,
+      codigo_utilizado: userDemo.codigo,
+      fecha_inicio: fechaInicio,
+      dia_actual: cfg.dia_actual,
+      racha_dias: rachaDias,
+      racha_maxima: cfg.racha_max,
+      hitos_alcanzados: cfg.hitos,
+      ultima_fecha_actividad: ultima > today ? today : ultima,
+      estado: cfg.estado,
+      test_inicial: {
+        fecha_completado: diaFecha(1, cfg.fecha_inicio),
+        respuestas: testRespuestas,
+        puntuaciones_por_competencia: puntuacionesPorCompetencia,
+        competencias_a_mejorar: competenciasMejora
+      },
+      progreso_diario: progresoDiario
+    });
+    console.log(`PlanProgreso creado para ${usuario.nombre} (día ${cfg.dia_actual}, ${cfg.estado})`);
+  }
+
+  // 7. Historial de Correos
+  const historialData = [];
+
+  for (let i = 0; i < usuariosCreados.length; i++) {
+    const u = usuariosCreados[i];
+    const cfg = planesConfig[i];
+
+    historialData.push({
+      usuario_id: u._id,
+      email_destino: u.email,
+      tipo_correo: 'bienvenida',
+      meta: { programa: 'IEN 30 Días', tienda: usuariosDemo[i].tienda.nombre_tienda },
+      fecha_envio: new Date(cfg.fecha_inicio),
+      estado: 'enviado'
+    });
+
+    if (cfg.hitos.length > 0) {
+      const ultimoHito = cfg.hitos[cfg.hitos.length - 1];
+      historialData.push({
+        usuario_id: u._id,
+        email_destino: u.email,
+        tipo_correo: 'hito',
+        meta: { dia: ultimoHito, racha: cfg.racha_max },
+        fecha_envio: diaFecha(ultimoHito, cfg.fecha_inicio),
+        estado: 'enviado'
+      });
+    }
+  }
+
+  // Correos de esta semana (14-20 Julio 2026) – mucha actividad
+  // Recordatorio diario: 2-3 usuarios por día de la semana
+  const semana = [
+    { dia: 14, usuarios: [2, 5, 8] },
+    { dia: 15, usuarios: [0, 3, 6, 9] },
+    { dia: 16, usuarios: [1, 4, 7, 10] },
+    { dia: 17, usuarios: [2, 5, 8, 11] },
+    { dia: 18, usuarios: [0, 3, 6, 9] },
+    { dia: 19, usuarios: [1, 4, 7, 10, 12] },
+    { dia: 20, usuarios: [0, 2, 3, 6, 8, 9, 13] }
+  ];
+
+  for (const s of semana) {
+    for (const uid of s.usuarios) {
+      const userCfg = planesConfig.find(p => p.idx === uid);
+      if (userCfg) {
+        historialData.push({
+          usuario_id: usuariosCreados[uid]._id,
+          email_destino: usuariosCreados[uid].email,
+          tipo_correo: 'recordatorio_diario',
+          meta: { dia: userCfg.dia_actual },
+          fecha_envio: new Date(`2026-07-${String(s.dia).padStart(2, '0')}T10:00:00`),
+          estado: 'enviado'
+        });
+      }
+    }
+  }
+
+  // Otros tipos de correo esta semana
+  historialData.push(
+    { usuario_id: usuariosCreados[1]._id, email_destino: usuariosCreados[1].email, tipo_correo: 'racha_rota',             meta: { dia: 3 },  fecha_envio: new Date('2026-07-14T09:00:00'), estado: 'enviado' },
+    { usuario_id: usuariosCreados[3]._id, email_destino: usuariosCreados[3].email, tipo_correo: 'racha_rota',             meta: { dia: 7 },  fecha_envio: new Date('2026-07-15T09:00:00'), estado: 'enviado' },
+    { usuario_id: usuariosCreados[6]._id, email_destino: usuariosCreados[6].email, tipo_correo: 'racha_rota',             meta: { dia: 14 }, fecha_envio: new Date('2026-07-16T09:00:00'), estado: 'enviado' },
+    { usuario_id: usuariosCreados[7]._id, email_destino: usuariosCreados[7].email, tipo_correo: 'urgencia_activacion',    meta: { inactivo: '3 días' }, fecha_envio: new Date('2026-07-17T11:00:00'), estado: 'enviado' },
+    { usuario_id: usuariosCreados[8]._id, email_destino: usuariosCreados[8].email, tipo_correo: 'recuperacion_inactividad', meta: { inactivo: '5 días' }, fecha_envio: new Date('2026-07-18T11:00:00'), estado: 'enviado' },
+    { usuario_id: usuariosCreados[4]._id, email_destino: usuariosCreados[4].email, tipo_correo: 'hito',                  meta: { dia: 15 }, fecha_envio: new Date('2026-07-19T08:00:00'), estado: 'enviado' },
+    { usuario_id: usuariosCreados[5]._id, email_destino: usuariosCreados[5].email, tipo_correo: 'hito',                  meta: { dia: 15 }, fecha_envio: new Date('2026-07-17T08:00:00'), estado: 'enviado' },
+    { usuario_id: usuariosCreados[9]._id, email_destino: usuariosCreados[9].email, tipo_correo: 'hito',                  meta: { dia: 25 }, fecha_envio: new Date('2026-07-14T08:00:00'), estado: 'enviado' },
+    { usuario_id: usuariosCreados[10]._id, email_destino: usuariosCreados[10].email, tipo_correo: 'hito',                meta: { dia: 30 }, fecha_envio: new Date('2026-07-19T08:00:00'), estado: 'enviado' },
+    { usuario_id: usuariosCreados[11]._id, email_destino: usuariosCreados[11].email, tipo_correo: 'hito',                meta: { dia: 30 }, fecha_envio: new Date('2026-07-20T08:00:00'), estado: 'enviado' },
+    { usuario_id: usuariosCreados[12]._id, email_destino: usuariosCreados[12].email, tipo_correo: 'recordatorio_diario', meta: { dia: 1 },  fecha_envio: new Date('2026-07-19T10:00:00'), estado: 'enviado' },
+    { usuario_id: usuariosCreados[13]._id, email_destino: usuariosCreados[13].email, tipo_correo: 'bienvenida',          meta: { programa: 'IEN 30 Días' }, fecha_envio: new Date('2026-07-20T08:00:00'), estado: 'enviado' }
+  );
+
+  await HistorialCorreo.insertMany(historialData);
+  console.log(`${historialData.length} correos de historial creados`);
+
+  // 8. Contenidos diarios
   const ESCALA_LIKERT = [
     { valor: 1, etiqueta: 'Nunca' },
     { valor: 2, etiqueta: 'Raramente' },
@@ -1282,22 +1597,27 @@ async function seed() {
   await ContenidoDiario.insertMany(contenidosConTipo);
   console.log(`${CONTENIDOS.length} contenidos diarios creados`);
 
-  // 7. Contenidos especiales (4 registros)
   await ContenidoEspecial.insertMany(CONTENIDOS_ESPECIALES);
   console.log(`${CONTENIDOS_ESPECIALES.length} contenidos especiales creados`);
 
   // Verificación de conteos
-  const [countPreguntas, countEspeciales, countProductos, countCodigos] = await Promise.all([
+  const [countPreguntas, countEspeciales, countProductos, countCodigos, countPlanes, countUsuarios, countHistorial] = await Promise.all([
     TestPregunta.countDocuments(),
     ContenidoEspecial.countDocuments(),
     Producto.countDocuments(),
-    Codigo.countDocuments()
+    Codigo.countDocuments(),
+    PlanProgreso.countDocuments(),
+    Usuario.countDocuments(),
+    HistorialCorreo.countDocuments()
   ]);
-  console.log(`\n--- Verificación de conteos ---`);
-  console.log(`TestPregunta.countDocuments() = ${countPreguntas}`);
-  console.log(`ContenidoEspecial.countDocuments() = ${countEspeciales}`);
-  console.log(`Producto.countDocuments() = ${countProductos}`);
-  console.log(`Codigo.countDocuments() = ${countCodigos}`);
+  console.log('\n--- Verificación de conteos ---');
+  console.log(`Usuarios = ${countUsuarios}`);
+  console.log(`TestPregunta = ${countPreguntas}`);
+  console.log(`ContenidoEspecial = ${countEspeciales}`);
+  console.log(`Producto = ${countProductos}`);
+  console.log(`Código = ${countCodigos}`);
+  console.log(`PlanProgreso = ${countPlanes}`);
+  console.log(`HistorialCorreo = ${countHistorial}`);
 
   console.log('\nSeed completado exitosamente');
   await mongoose.disconnect();
