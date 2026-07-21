@@ -6,7 +6,7 @@ const PlanProgreso = require('../../models/PlanProgreso');
 const TestPregunta = require('../../models/TestPregunta');
 const ContenidoDiario = require('../../models/ContenidoDiario');
 const AppError = require('../../utils/AppError');
-const { getInicioDeDiaDeHoy, getFechaHaceDias } = require('../../utils/fechas');
+const { getInicioDeDiaDeAyer, getInicioDeDiaDeHoy, getFechaHaceDias } = require('../../utils/fechas');
 const { panelAdminPorTienda } = require('./panelAdmin');
 
 exports.panelAdminPorTienda = panelAdminPorTienda;
@@ -249,7 +249,7 @@ exports.listarPacientes = async (pagina, limite, tiendasPermitidas) => {
   const ids = usuarios.map(u => u._id);
   const planes = await PlanProgreso.find({ usuario_id: { $in: ids } })
     .sort({ fecha_inicio: -1 })
-    .select('usuario_id estado dia_actual racha_dias')
+    .select('usuario_id estado dia_actual racha_dias ultima_fecha_actividad')
     .lean();
 
   const planesMap = new Map();
@@ -259,21 +259,31 @@ exports.listarPacientes = async (pagina, limite, tiendasPermitidas) => {
     }
   }
 
+  const inicioAyer = getInicioDeDiaDeAyer();
+  const inicioHoy = getInicioDeDiaDeHoy();
+
   return {
-    pacientes: usuarios.map(u => ({
-      id: u._id,
-      nombre: u.nombre,
-      email: u.email,
-      fecha_registro: u.fecha_registro,
-      tienda: u.tienda_id ? { id: u.tienda_id._id, nombre: u.tienda_id.nombre_tienda } : null,
-      plan: planesMap.has(u._id.toString())
-        ? {
-            estado: planesMap.get(u._id.toString()).estado,
-            dia_actual: planesMap.get(u._id.toString()).dia_actual,
-            racha_dias: planesMap.get(u._id.toString()).racha_dias
-          }
-        : null
-    })),
+    pacientes: usuarios.map(u => {
+      const plan = planesMap.get(u._id.toString());
+      return {
+        id: u._id,
+        nombre: u.nombre,
+        email: u.email,
+        fecha_registro: u.fecha_registro,
+        tienda: u.tienda_id ? { id: u.tienda_id._id, nombre: u.tienda_id.nombre_tienda } : null,
+        plan: plan
+          ? {
+              estado: plan.estado,
+              dia_actual: plan.dia_actual,
+              racha_dias: plan.racha_dias,
+              en_riesgo: plan.estado === 'activo'
+                && plan.ultima_fecha_actividad
+                && plan.ultima_fecha_actividad >= inicioAyer
+                && plan.ultima_fecha_actividad < inicioHoy
+            }
+          : null
+      };
+    }),
     total,
     pagina
   };
