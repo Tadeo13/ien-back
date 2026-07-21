@@ -260,7 +260,6 @@ exports.listarPacientes = async (pagina, limite, tiendasPermitidas) => {
   }
 
   const inicioAyer = getInicioDeDiaDeAyer();
-  const inicioHoy = getInicioDeDiaDeHoy();
 
   return {
     pacientes: usuarios.map(u => {
@@ -278,8 +277,7 @@ exports.listarPacientes = async (pagina, limite, tiendasPermitidas) => {
               racha_dias: plan.racha_dias,
               en_riesgo: plan.estado === 'activo'
                 && plan.ultima_fecha_actividad
-                && plan.ultima_fecha_actividad >= inicioAyer
-                && plan.ultima_fecha_actividad < inicioHoy
+                && plan.ultima_fecha_actividad < inicioAyer
             }
           : null
       };

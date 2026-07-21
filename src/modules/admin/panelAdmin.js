@@ -1,10 +1,9 @@
 const PlanProgreso = require('../../models/PlanProgreso');
 const Tienda = require('../../models/Tienda');
-const { getInicioDeDiaDeAyer, getInicioDeDiaDeHoy } = require('../../utils/fechas');
+const { getInicioDeDiaDeAyer } = require('../../utils/fechas');
 
 async function panelAdminPorTienda(tiendasPermitidas = null) {
   const inicioDeDiaDeAyer = getInicioDeDiaDeAyer();
-  const inicioDeDiaDeHoy = getInicioDeDiaDeHoy();
 
   const scopeTienda = tiendasPermitidas === null ? {} : { _id: { $in: tiendasPermitidas } };
   const activas = await Tienda.find({ ...scopeTienda, activo: true }).select('_id').lean();
@@ -24,16 +23,15 @@ async function panelAdminPorTienda(tiendasPermitidas = null) {
         completados: { $sum: { $cond: [{ $eq: ['$estado', 'completado'] }, 1, 0] } },
         promedio_dia_progreso: { $avg: '$dia_actual' },
         racha_promedio: { $avg: '$racha_dias' },
-        // usuarios_en_riesgo: planes activos con ultima_fecha_actividad en "ayer UTC"
-        // (completaron ayer pero todavía no completaron hoy — si no lo hacen, el cron resetea).
+        // usuarios_en_riesgo: planes activos con 2+ dias sin completar
+        // (ultima_fecha_actividad < inicioDelDiaDeAyer).
         usuarios_en_riesgo: {
           $sum: {
             $cond: [
               {
                 $and: [
                   { $eq: ['$estado', 'activo'] },
-                  { $gte: ['$ultima_fecha_actividad', inicioDeDiaDeAyer] },
-                  { $lt: ['$ultima_fecha_actividad', inicioDeDiaDeHoy] }
+                  { $lt: ['$ultima_fecha_actividad', inicioDeDiaDeAyer] }
                 ]
               },
               1,
