@@ -21,3 +21,12 @@ exports.sendRecovery = tryCatch(async (_req, res) => {
   const result = await enviarRecoveryEmails();
   res.json(result);
 });
+
+exports.runDaily = tryCatch(async (_req, res) => {
+  const [reset, nudges, recovery] = await Promise.all([
+    resetStreaksYNotificar(),
+    enviarActivationNudges(),
+    enviarRecoveryEmails()
+  ]);
+  res.json({ reset, nudges, recovery });
+});

@@ -1,7 +1,7 @@
   const { Router } = require('express');
   const rateLimit = require('express-rate-limit');
 const apiKeyMiddleware = require('../../middlewares/apiKeyMiddleware');
-const { resetStreaks, sendReminders, sendActivationNudge, sendRecovery } = require('./job.controller');
+const { resetStreaks, sendReminders, sendActivationNudge, sendRecovery, runDaily } = require('./job.controller');
 
   const router = Router();
 
@@ -119,5 +119,32 @@ router.post('/send-activation-nudge', sendActivationNudge);
  *         description: API key inválida
  */
 router.post('/send-recovery', sendRecovery);
+
+/**
+ * @swagger
+ * /api/jobs/run-daily:
+ *   post:
+ *     summary: Ejecutar las tareas diarias nocturnas (reset streaks, activation nudges, recovery emails)
+ *     tags: [Jobs]
+ *     security:
+ *       - apiKeyAuth: []
+ *     responses:
+ *       200:
+ *         description: Resultado combinado de las 3 tareas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 reset:
+ *                   type: object
+ *                 nudges:
+ *                   type: object
+ *                 recovery:
+ *                   type: object
+ *       401:
+ *         description: API key inválida
+ */
+router.post('/run-daily', runDaily);
 
 module.exports = router;
