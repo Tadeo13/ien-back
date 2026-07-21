@@ -22,10 +22,8 @@ async function panelAdminPorTienda(tiendasPermitidas = null) {
         total_activaciones: { $sum: 1 },
         usuarios_activos: { $sum: { $cond: [{ $eq: ['$estado', 'activo'] }, 1, 0] } },
         completados: { $sum: { $cond: [{ $eq: ['$estado', 'completado'] }, 1, 0] } },
-        abandonados: { $sum: { $cond: [{ $eq: ['$estado', 'abandonado'] }, 1, 0] } },
         promedio_dia_progreso: { $avg: '$dia_actual' },
         racha_promedio: { $avg: '$racha_dias' },
-        racha_maxima_promedio: { $avg: '$racha_maxima' },
         // usuarios_en_riesgo: planes activos con ultima_fecha_actividad en "ayer UTC"
         // (completaron ayer pero todavía no completaron hoy — si no lo hacen, el cron resetea).
         usuarios_en_riesgo: {
@@ -62,10 +60,8 @@ async function panelAdminPorTienda(tiendasPermitidas = null) {
         total_activaciones: 1,
         usuarios_activos: 1,
         completados: 1,
-        abandonados: 1,
         promedio_dia_progreso: { $round: ['$promedio_dia_progreso', 2] },
         racha_promedio: { $round: ['$racha_promedio', 2] },
-        racha_maxima_promedio: { $round: ['$racha_maxima_promedio', 2] },
         usuarios_en_riesgo: 1
       }
     },

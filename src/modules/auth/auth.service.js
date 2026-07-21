@@ -101,7 +101,7 @@ exports.login = async ({ email, password }) => {
     throw new AppError(400, 'Email y contraseña requeridos');
   }
 
-  const usuario = await Usuario.findOne({ email });
+  const usuario = await Usuario.findOne({ email }).lean();
   if (!usuario) {
     throw new AppError(401, 'Credenciales inválidas');
   }

@@ -339,7 +339,7 @@ exports.getToday = async (usuarioId) => {
     };
   }
 
-  const contenido = await ContenidoDiario.findOne({ dia_numero: plan.dia_actual });
+  const contenido = await ContenidoDiario.findOne({ dia_numero: plan.dia_actual }).lean();
   if (!contenido) {
     throw new AppError(404, 'Contenido no disponible para este día');
   }
