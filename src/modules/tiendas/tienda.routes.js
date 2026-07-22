@@ -6,8 +6,7 @@ const { requireRol } = require('../../middlewares/moderadorMiddleware');
 const sucursalCtrl = require('./tienda.controller');
 
 const router = Router();
-router.use(authMiddleware, adminMiddleware, scopeTiendaMiddleware,
-  requireRol('admin_negocio', 'admin_general'));
+router.use(authMiddleware, adminMiddleware, scopeTiendaMiddleware);
 
 /**
  * @swagger
@@ -70,7 +69,7 @@ router.get('/', sucursalCtrl.listar);
  *       403:
  *         description: Denegado (solo admin_general)
  */
-router.post('/', sucursalCtrl.crear);
+router.post('/', requireRol('admin_general'), sucursalCtrl.crear);
 
 /**
  * @swagger
@@ -105,7 +104,7 @@ router.post('/', sucursalCtrl.crear);
  *       404:
  *         description: Sucursal no encontrada
  */
-router.put('/:id', sucursalCtrl.actualizar);
+router.put('/:id', requireRol('admin_negocio', 'admin_general'), sucursalCtrl.actualizar);
 
 /**
  * @swagger
@@ -129,7 +128,7 @@ router.put('/:id', sucursalCtrl.actualizar);
  *       404:
  *         description: Sucursal no encontrada
  */
-router.delete('/:id', sucursalCtrl.eliminar);
-router.patch('/:id/reactivar', sucursalCtrl.reactivar);
+router.delete('/:id', requireRol('admin_negocio', 'admin_general'), sucursalCtrl.eliminar);
+router.patch('/:id/reactivar', requireRol('admin_negocio', 'admin_general'), sucursalCtrl.reactivar);
 
 module.exports = router;
