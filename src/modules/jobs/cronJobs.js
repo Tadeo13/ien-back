@@ -57,7 +57,9 @@ async function demoledorDeRachas() {
     .select('usuario_id racha_dias')
     .lean();
 
-  const resultado = await PlanProgreso.updateMany(filtro, { $set: { racha_dias: 0 } });
+  const resultado = await PlanProgreso.updateMany(filtro, {
+    $set: { racha_dias: 0, racha_rota_en: new Date() }
+  });
 
   return {
     matchedCount: resultado.matchedCount,

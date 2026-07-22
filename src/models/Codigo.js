@@ -10,4 +10,6 @@ const codigoSchema = new Schema({
   fecha_activacion: { type: Date, default: null }
 });
 
+codigoSchema.index({ tienda_id: 1 });
+
 module.exports = mongoose.model('Codigo', codigoSchema, 'codigos');

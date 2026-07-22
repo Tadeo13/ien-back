@@ -489,12 +489,12 @@ exports.getDays = async (usuarioId, soloCompletados = false) => {
   // el Map se queda con el último. No rompe pero puede ser confuso.
   const especialesPorTipo = new Map(especiales.map(e => [e.tipo, e]));
 
-  const diasMapeados = await Promise.all(dias.map(async d => ({
+  const diasMapeados = dias.map(d => ({
     dia_numero: d.dia_numero,
     completado: d.completado,
     fecha_completado: d.fecha_completado,
     respuesta_usuario: d.respuesta_usuario || null,
-    cabecera: await getCabeceraSiEsInicioDeBloque(d.dia_numero),
+    cabecera: contenidoMap.get(d.dia_numero)?.cabecera ?? null,
     contenido_especial: (() => {
       const tipo = CONTENIDO_ESPECIAL_POR_DIA[d.dia_numero];
       if (!tipo || d.completado) return null;
@@ -505,7 +505,7 @@ exports.getDays = async (usuarioId, soloCompletados = false) => {
       if (!c) return null;
       return mapContenidoALeccion(c);
     })()
-  })));
+  }));
 
   return { dias: diasMapeados };
 };

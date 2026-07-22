@@ -17,5 +17,7 @@ const usuarioSchema = new Schema({
 usuarioSchema.index({ rol: 1 });
 usuarioSchema.index({ tienda_id: 1 });
 usuarioSchema.index({ fecha_registro: 1 });
+usuarioSchema.index({ tienda_moderada: 1 });
+usuarioSchema.index({ tienda_id: 1, rol: 1 });
 
 module.exports = mongoose.model('Usuario', usuarioSchema, 'usuarios');
