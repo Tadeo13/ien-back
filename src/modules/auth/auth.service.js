@@ -155,7 +155,7 @@ exports.forgotPassword = async (email) => {
     throw new AppError(400, 'Email requerido');
   }
 
-  const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
   const usuario = await Usuario.findOne({ email });
 

@@ -1,6 +1,7 @@
 const { C, wrap, header, footer, card, spacer, btn, label, title, body } = require('./base');
 
-function recuperacionInactividad(nombre, dia) {
+function recuperacionInactividad(nombre, dia, baseUrl) {
+  const frontUrl = baseUrl || process.env.FRONTEND_URL || 'https://ien.app';
   const html = wrap(`
     ${header()}
     ${card(`
@@ -9,7 +10,7 @@ function recuperacionInactividad(nombre, dia) {
       ${body('Hola, <strong>' + nombre + '</strong>,')}
       ${body('Notamos que llevás varios días sin completar una actividad. Estás en el <strong>Día ' + dia + '</strong> — retomarlo hoy hace toda la diferencia.')}
       ${body('No importa cuántos días hayan pasado. Lo que importa es que hoy elegís volver.')}
-      ${btn('Reanudar mi programa', 'https://ien.app/dashboard', C.teal)}
+      ${btn('Reanudar mi programa', frontUrl + '/dashboard', C.teal)}
     `, C.teal)}
     ${spacer()}
     ${footer()}
