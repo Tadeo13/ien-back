@@ -1293,19 +1293,19 @@ async function seed() {
 
   const planesConfig = [
     { idx: 0,  dia_actual: 4,  fecha_inicio: '2026-07-17', estado: 'activo',     racha_max: 4,  hitos: [], ultima_fecha: '2026-07-20' },
-    { idx: 1,  dia_actual: 5,  fecha_inicio: '2026-07-16', estado: 'activo',     racha_max: 5,  hitos: [5], ultima_fecha: '2026-07-19' },
-    { idx: 2,  dia_actual: 10, fecha_inicio: '2026-07-11', estado: 'activo',     racha_max: 8,  hitos: [5, 10], ultima_fecha: '2026-07-18' },
-    { idx: 3,  dia_actual: 12, fecha_inicio: '2026-07-09', estado: 'activo',     racha_max: 10, hitos: [5, 10], ultima_fecha: '2026-07-17' },
-    { idx: 4,  dia_actual: 16, fecha_inicio: '2026-07-05', estado: 'activo',     racha_max: 12, hitos: [5, 10, 15], ultima_fecha: '2026-07-16' },
-    { idx: 5,  dia_actual: 18, fecha_inicio: '2026-07-03', estado: 'activo',     racha_max: 14, hitos: [5, 10, 15], ultima_fecha: '2026-07-15' },
-    { idx: 6,  dia_actual: 23, fecha_inicio: '2026-06-28', estado: 'activo',     racha_max: 16, hitos: [5, 10, 15, 20], ultima_fecha: '2026-07-14' },
+    { idx: 1,  dia_actual: 5,  fecha_inicio: '2026-07-16', estado: 'activo',     racha_max: 5,  hitos: [5], ultima_fecha: '2026-07-20' },
+    { idx: 2,  dia_actual: 10, fecha_inicio: '2026-07-11', estado: 'activo',     racha_max: 8,  hitos: [5, 10], ultima_fecha: '2026-07-19' },
+    { idx: 3,  dia_actual: 12, fecha_inicio: '2026-07-09', estado: 'activo',     racha_max: 10, hitos: [5, 10], ultima_fecha: '2026-07-20' },
+    { idx: 4,  dia_actual: 16, fecha_inicio: '2026-07-05', estado: 'activo',     racha_max: 12, hitos: [5, 10, 15], ultima_fecha: '2026-07-17' },
+    { idx: 5,  dia_actual: 18, fecha_inicio: '2026-07-03', estado: 'activo',     racha_max: 14, hitos: [5, 10, 15], ultima_fecha: '2026-07-16' },
+    { idx: 6,  dia_actual: 8,  fecha_inicio: '2026-07-03', estado: 'abandonado', racha_max: 8,  hitos: [5], ultima_fecha: '2026-07-10', racha_dias: 0 },
     { idx: 7,  dia_actual: 25, fecha_inicio: '2026-06-26', estado: 'activo',     racha_max: 18, hitos: [5, 10, 15, 20, 25], ultima_fecha: '2026-07-20' },
     { idx: 8,  dia_actual: 28, fecha_inicio: '2026-06-23', estado: 'activo',     racha_max: 20, hitos: [5, 10, 15, 20, 25], ultima_fecha: '2026-07-19' },
     { idx: 9,  dia_actual: 29, fecha_inicio: '2026-06-22', estado: 'activo',     racha_max: 22, hitos: [5, 10, 15, 20, 25], ultima_fecha: '2026-07-18' },
     { idx: 10, dia_actual: 30, fecha_inicio: '2026-06-21', estado: 'completado', racha_max: 24, hitos: [5, 10, 15, 20, 25, 30], ultima_fecha: '2026-07-17' },
     { idx: 11, dia_actual: 30, fecha_inicio: '2026-06-21', estado: 'completado', racha_max: 26, hitos: [5, 10, 15, 20, 25, 30], ultima_fecha: '2026-07-16' },
     { idx: 12, dia_actual: 2,  fecha_inicio: '2026-07-19', estado: 'activo',     racha_max: 2,  hitos: [], ultima_fecha: '2026-07-20' },
-    { idx: 13, dia_actual: 1,  fecha_inicio: '2026-07-20', estado: 'activo',     racha_max: 1,  hitos: [], ultima_fecha: '2026-07-20' },
+    { idx: 13, dia_actual: 5,  fecha_inicio: '2026-07-05', estado: 'abandonado', racha_max: 5,  hitos: [5], ultima_fecha: '2026-07-09', racha_dias: 0 },
     { idx: 14, dia_actual: 3,  fecha_inicio: '2026-07-18', estado: 'activo',     racha_max: 3,  hitos: [], ultima_fecha: '2026-07-20' }
   ];
 
@@ -1456,7 +1456,7 @@ async function seed() {
       .filter(p => p.puntuacion < 20)
       .map(p => p.competencia_label);
 
-    const rachaDias = Math.min(cfg.racha_max, cfg.dia_actual);
+    const rachaDias = cfg.racha_dias !== undefined ? cfg.racha_dias : Math.min(cfg.racha_max, cfg.dia_actual);
     const ultima = cfg.ultima_fecha ? new Date(cfg.ultima_fecha) : diaFecha(cfg.dia_actual, cfg.fecha_inicio);
     if (ultima > today) ultima.setTime(today.getTime());
 
