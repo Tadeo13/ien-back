@@ -1267,10 +1267,11 @@ async function seed() {
   const usuariosCreados = [];
   const createdDates = [];
 
-  const today = new Date('2026-07-20');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   for (let i = 0; i < usuariosDemo.length; i++) {
     const u = usuariosDemo[i];
-    const fechaReg = new Date('2026-07-20');
+    const fechaReg = new Date(today);
     fechaReg.setDate(fechaReg.getDate() - (14 - i));
     createdDates.push(fechaReg);
 
@@ -1292,25 +1293,25 @@ async function seed() {
   const COMPETENCIA_KEYS = ['autoconciencia', 'autoconfianza', 'autocontrol', 'empatia', 'motivacion', 'competencia_social'];
 
   const planesConfig = [
-    { idx: 0,  dia_actual: 4,  fecha_inicio: '2026-07-17', estado: 'activo',     racha_max: 4,  hitos: [], ultima_fecha: '2026-07-20' },
-    { idx: 1,  dia_actual: 5,  fecha_inicio: '2026-07-16', estado: 'activo',     racha_max: 5,  hitos: [5], ultima_fecha: '2026-07-20' },
-    { idx: 2,  dia_actual: 10, fecha_inicio: '2026-07-11', estado: 'activo',     racha_max: 8,  hitos: [5, 10], ultima_fecha: '2026-07-19' },
-    { idx: 3,  dia_actual: 12, fecha_inicio: '2026-07-09', estado: 'activo',     racha_max: 10, hitos: [5, 10], ultima_fecha: '2026-07-20' },
-    { idx: 4,  dia_actual: 16, fecha_inicio: '2026-07-05', estado: 'activo',     racha_max: 12, hitos: [5, 10, 15], ultima_fecha: '2026-07-17' },
-    { idx: 5,  dia_actual: 18, fecha_inicio: '2026-07-03', estado: 'activo',     racha_max: 14, hitos: [5, 10, 15], ultima_fecha: '2026-07-16' },
-    { idx: 6,  dia_actual: 8,  fecha_inicio: '2026-07-03', estado: 'abandonado', racha_max: 8,  hitos: [5], ultima_fecha: '2026-07-10', racha_dias: 0 },
-    { idx: 7,  dia_actual: 25, fecha_inicio: '2026-06-26', estado: 'activo',     racha_max: 18, hitos: [5, 10, 15, 20, 25], ultima_fecha: '2026-07-20' },
-    { idx: 8,  dia_actual: 28, fecha_inicio: '2026-06-23', estado: 'activo',     racha_max: 20, hitos: [5, 10, 15, 20, 25], ultima_fecha: '2026-07-19' },
-    { idx: 9,  dia_actual: 29, fecha_inicio: '2026-06-22', estado: 'activo',     racha_max: 22, hitos: [5, 10, 15, 20, 25], ultima_fecha: '2026-07-18' },
-    { idx: 10, dia_actual: 30, fecha_inicio: '2026-06-21', estado: 'completado', racha_max: 24, hitos: [5, 10, 15, 20, 25, 30], ultima_fecha: '2026-07-17' },
-    { idx: 11, dia_actual: 30, fecha_inicio: '2026-06-21', estado: 'completado', racha_max: 26, hitos: [5, 10, 15, 20, 25, 30], ultima_fecha: '2026-07-16' },
-    { idx: 12, dia_actual: 2,  fecha_inicio: '2026-07-19', estado: 'activo',     racha_max: 2,  hitos: [], ultima_fecha: '2026-07-20' },
-    { idx: 13, dia_actual: 5,  fecha_inicio: '2026-07-05', estado: 'abandonado', racha_max: 5,  hitos: [5], ultima_fecha: '2026-07-09', racha_dias: 0 },
-    { idx: 14, dia_actual: 3,  fecha_inicio: '2026-07-18', estado: 'activo',     racha_max: 3,  hitos: [], ultima_fecha: '2026-07-20' }
+    { idx: 0,  dia_actual: 4,  inicio_hace: 3,  estado: 'activo',     racha_max: 4,  hitos: [], ultima_hace: 0 },
+    { idx: 1,  dia_actual: 5,  inicio_hace: 4,  estado: 'activo',     racha_max: 5,  hitos: [5], ultima_hace: 0 },
+    { idx: 2,  dia_actual: 10, inicio_hace: 9,  estado: 'activo',     racha_max: 8,  hitos: [5, 10], ultima_hace: 1 },
+    { idx: 3,  dia_actual: 12, inicio_hace: 11, estado: 'activo',     racha_max: 10, hitos: [5, 10], ultima_hace: 0 },
+    { idx: 4,  dia_actual: 16, inicio_hace: 15, estado: 'activo',     racha_max: 12, hitos: [5, 10, 15], ultima_hace: 3 },
+    { idx: 5,  dia_actual: 18, inicio_hace: 17, estado: 'activo',     racha_max: 14, hitos: [5, 10, 15], ultima_hace: 4 },
+    { idx: 6,  dia_actual: 8,  inicio_hace: 17, estado: 'abandonado', racha_max: 8,  hitos: [5], ultima_hace: 10, racha_dias: 0 },
+    { idx: 7,  dia_actual: 25, inicio_hace: 24, estado: 'activo',     racha_max: 18, hitos: [5, 10, 15, 20, 25], ultima_hace: 0 },
+    { idx: 8,  dia_actual: 28, inicio_hace: 27, estado: 'activo',     racha_max: 20, hitos: [5, 10, 15, 20, 25], ultima_hace: 1 },
+    { idx: 9,  dia_actual: 29, inicio_hace: 28, estado: 'activo',     racha_max: 22, hitos: [5, 10, 15, 20, 25], ultima_hace: 2 },
+    { idx: 10, dia_actual: 30, inicio_hace: 29, estado: 'completado', racha_max: 24, hitos: [5, 10, 15, 20, 25, 30], ultima_hace: 3 },
+    { idx: 11, dia_actual: 30, inicio_hace: 29, estado: 'completado', racha_max: 26, hitos: [5, 10, 15, 20, 25, 30], ultima_hace: 4 },
+    { idx: 12, dia_actual: 2,  inicio_hace: 1,  estado: 'activo',     racha_max: 2,  hitos: [], ultima_hace: 0 },
+    { idx: 13, dia_actual: 5,  inicio_hace: 15, estado: 'abandonado', racha_max: 5,  hitos: [5], ultima_hace: 11, racha_dias: 0 },
+    { idx: 14, dia_actual: 3,  inicio_hace: 2,  estado: 'activo',     racha_max: 3,  hitos: [], ultima_hace: 0 }
   ];
 
-  function diaFecha(dia, fechaInicioStr) {
-    const d = new Date(fechaInicioStr);
+  function diaFecha(dia, fechaInicio) {
+    const d = new Date(fechaInicio);
     d.setDate(d.getDate() + dia - 1);
     return d;
   }
@@ -1415,7 +1416,8 @@ async function seed() {
   for (const cfg of planesConfig) {
     const usuario = usuariosCreados[cfg.idx];
     const userDemo = usuariosDemo[cfg.idx];
-    const fechaInicio = new Date(cfg.fecha_inicio);
+    const fechaInicio = new Date(today);
+    fechaInicio.setDate(fechaInicio.getDate() - cfg.inicio_hace);
 
     const progresoDiario = [];
     for (let d = 1; d <= 30; d++) {
@@ -1423,7 +1425,7 @@ async function seed() {
       progresoDiario.push({
         dia_numero: d,
         completado,
-        fecha_completado: completado ? diaFecha(d, cfg.fecha_inicio) : null,
+        fecha_completado: completado ? diaFecha(d, fechaInicio) : null,
         respuesta_usuario: completado ? generarRespuesta(d, cfg.idx, cfg.dia_actual) : null
       });
     }
@@ -1457,8 +1459,8 @@ async function seed() {
       .map(p => p.competencia_label);
 
     const rachaDias = cfg.racha_dias !== undefined ? cfg.racha_dias : Math.min(cfg.racha_max, cfg.dia_actual);
-    const ultima = cfg.ultima_fecha ? new Date(cfg.ultima_fecha) : diaFecha(cfg.dia_actual, cfg.fecha_inicio);
-    if (ultima > today) ultima.setTime(today.getTime());
+    const ultima = new Date(today);
+    ultima.setDate(ultima.getDate() - cfg.ultima_hace);
 
     await PlanProgreso.create({
       usuario_id: usuario._id,
@@ -1472,7 +1474,7 @@ async function seed() {
       ultima_fecha_actividad: ultima > today ? today : ultima,
       estado: cfg.estado,
       test_inicial: {
-        fecha_completado: diaFecha(1, cfg.fecha_inicio),
+        fecha_completado: diaFecha(1, fechaInicio),
         respuestas: testRespuestas,
         puntuaciones_por_competencia: puntuacionesPorCompetencia,
         competencias_a_mejorar: competenciasMejora
@@ -1488,13 +1490,15 @@ async function seed() {
   for (let i = 0; i < usuariosCreados.length; i++) {
     const u = usuariosCreados[i];
     const cfg = planesConfig[i];
+    const inicioPlan = new Date(today);
+    inicioPlan.setDate(inicioPlan.getDate() - cfg.inicio_hace);
 
     historialData.push({
       usuario_id: u._id,
       email_destino: u.email,
       tipo_correo: 'bienvenida',
       meta: { programa: 'IEN 30 Días', tienda: usuariosDemo[i].tienda.nombre_tienda },
-      fecha_envio: new Date(cfg.fecha_inicio),
+      fecha_envio: inicioPlan,
       estado: 'enviado'
     });
 
@@ -1505,7 +1509,7 @@ async function seed() {
         email_destino: u.email,
         tipo_correo: 'hito',
         meta: { dia: ultimoHito, racha: cfg.racha_max },
-        fecha_envio: diaFecha(ultimoHito, cfg.fecha_inicio),
+        fecha_envio: diaFecha(ultimoHito, inicioPlan),
         estado: 'enviado'
       });
     }
