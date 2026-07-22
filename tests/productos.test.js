@@ -37,7 +37,7 @@ describe('Productos - admin_general', () => {
     const res = await request(app)
       .post('/api/admin/productos')
       .set('Authorization', `Bearer ${token}`)
-      .send({ nombre: 'Nuevo Plan', descripcion: 'Desc', tiendas: [data.tienda1Id] });
+      .send({ nombre: 'Nuevo Plan', descripcion: 'Desc', tienda_id: data.tienda1Id });
     expect(res.status).toBe(201);
     expect(res.body.nombre).toBe('Nuevo Plan');
   });
@@ -72,5 +72,62 @@ describe('Productos - admin_general', () => {
       .delete(`/api/admin/productos/${fakeId}`)
       .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(404);
+  });
+});
+
+describe('Productos - admin_negocio (scoped)', () => {
+  let data, tokenNegocio, tokenOtroNegocio;
+  beforeEach(async () => {
+    data = await seed();
+    tokenNegocio = generateToken(data.adminNegocio);
+    tokenOtroNegocio = generateToken(data.adminGeneral2);
+  });
+
+  test('GET /api/admin/productos - solo ve productos de su tienda', async () => {
+    const res = await request(app)
+      .get('/api/admin/productos')
+      .set('Authorization', `Bearer ${tokenNegocio}`);
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBe(1);
+    expect(res.body[0].tienda_id).toBeDefined();
+  });
+
+  test('POST /api/admin/productos - con tienda_id dentro de scope', async () => {
+    const res = await request(app)
+      .post('/api/admin/productos')
+      .set('Authorization', `Bearer ${tokenNegocio}`)
+      .send({ nombre: 'Producto Scoped', descripcion: 'Test', tienda_id: data.tienda1Id });
+    expect(res.status).toBe(201);
+  });
+
+  test('POST /api/admin/productos - con tienda_id fuera de scope → 403', async () => {
+    const res = await request(app)
+      .post('/api/admin/productos')
+      .set('Authorization', `Bearer ${tokenNegocio}`)
+      .send({ nombre: 'Producto Fuera', descripcion: 'Test', tienda_id: data.tienda2Id });
+    expect(res.status).toBe(403);
+  });
+
+  test('PUT /api/admin/productos/:id - solo accede al de su tienda', async () => {
+    const res = await request(app)
+      .put(`/api/admin/productos/${data.producto2Id}`)
+      .set('Authorization', `Bearer ${tokenNegocio}`)
+      .send({ nombre: 'No deberia funcionar' });
+    expect(res.status).toBe(403);
+  });
+
+  test('PUT /api/admin/productos/:id - edita su propio producto', async () => {
+    const res = await request(app)
+      .put(`/api/admin/productos/${data.producto1Id}`)
+      .set('Authorization', `Bearer ${tokenNegocio}`)
+      .send({ nombre: 'Editado por admin_negocio' });
+    expect(res.status).toBe(200);
+  });
+
+  test('DELETE /api/admin/productos/:id - no puede eliminar producto de otra tienda', async () => {
+    const res = await request(app)
+      .delete(`/api/admin/productos/${data.producto2Id}`)
+      .set('Authorization', `Bearer ${tokenNegocio}`);
+    expect(res.status).toBe(403);
   });
 });

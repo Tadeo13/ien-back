@@ -46,7 +46,7 @@ async function run() {
 
   // Crear tienda, producto, código
   const tienda = await Tienda.create({ nombre_tienda: 'Tienda Jobs Test', ciudad: 'Ciudad Test' });
-  const producto = await Producto.create({ nombre: 'Producto Jobs Test', tiendas: [tienda._id] });
+  const producto = await Producto.create({ nombre: 'Producto Jobs Test', tienda_id: tienda._id });
   const codigo = await Codigo.create({
     codigo: `JOBS-${Date.now()}`,
     producto_id: producto._id,

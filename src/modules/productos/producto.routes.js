@@ -31,17 +31,15 @@ router.use(authMiddleware, adminMiddleware, scopeTiendaMiddleware);
  *                     type: string
  *                   descripcion:
  *                     type: string
- *                   tiendas:
- *                     type: array
- *                     items:
- *                       type: object
- *                       properties:
- *                         _id:
- *                           type: string
- *                         nombre_tienda:
- *                           type: string
- *                         ciudad:
- *                           type: string
+ *                   tienda_id:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       nombre_tienda:
+ *                         type: string
+ *                       ciudad:
+ *                         type: string
  */
 router.get('/', productoCtrl.listar);
 
@@ -66,18 +64,16 @@ router.get('/', productoCtrl.listar);
  *                 type: string
  *               descripcion:
  *                 type: string
- *               tiendas:
- *                 type: array
- *                 items:
- *                   type: string
- *                   description: ID de la tienda a asociar
+ *               tienda_id:
+ *                 type: string
+ *                 description: ID de la tienda a asociar
  *     responses:
  *       201:
  *         description: Producto creado
  *       400:
  *         description: Falta nombre
  *       403:
- *         description: Intento de asignar tiendas fuera de scope
+ *         description: Intento de asignar tienda fuera de scope
  */
 router.post('/', productoCtrl.crear);
 
@@ -106,15 +102,13 @@ router.post('/', productoCtrl.crear);
  *                 type: string
  *               descripcion:
  *                 type: string
- *               tiendas:
- *                 type: array
- *                 items:
- *                   type: string
+ *               tienda_id:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Producto actualizado
  *       403:
- *         description: Fuera de scope o intento de asignar tiendas fuera de scope
+ *         description: Fuera de scope o intento de asignar tienda fuera de scope
  *       404:
  *         description: Producto no encontrado
  */

@@ -28,8 +28,8 @@ async function seed() {
   const tienda1 = await Tienda.create({ nombre_tienda: `Sucursal Norte ${uid}`, ciudad: 'Bogota' });
   const tienda2 = await Tienda.create({ nombre_tienda: `Sucursal Sur ${uid}`, ciudad: 'Medellin' });
 
-  const producto1 = await Producto.create({ nombre: `Plan Premium ${uid}`, descripcion: 'Plan completo', tiendas: [tienda1._id] });
-  const producto2 = await Producto.create({ nombre: `Plan Basico ${uid}`, descripcion: 'Plan basico', tiendas: [tienda2._id] });
+  const producto1 = await Producto.create({ nombre: `Plan Premium ${uid}`, descripcion: 'Plan completo', tienda_id: tienda1._id });
+  const producto2 = await Producto.create({ nombre: `Plan Basico ${uid}`, descripcion: 'Plan basico', tienda_id: tienda2._id });
 
   const codigo1 = await Codigo.create({ codigo: `COD-${uid}-001`, producto_id: producto1._id, tienda_id: tienda1._id, activo: true });
   const codigo2 = await Codigo.create({ codigo: `COD-${uid}-002`, producto_id: producto2._id, tienda_id: tienda2._id, activo: true });

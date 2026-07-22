@@ -1172,27 +1172,45 @@ async function seed() {
   // 2. Productos
   const productos = await Producto.insertMany([
     {
-      nombre: 'Programa 30 días Cardiosmile',
+      nombre: 'Programa 30 días Cardiosmile — CardioSmille',
       descripcion: 'Plan cardiovascular completo',
-      tiendas: [tCardio._id, tVitamin._id, tGladys._id]
+      tienda_id: tCardio._id
     },
     {
-      nombre: 'Programa Especial Ashwagandha',
+      nombre: 'Programa 30 días Cardiosmile — The Vitamin Shoppe',
+      descripcion: 'Plan cardiovascular completo',
+      tienda_id: tVitamin._id
+    },
+    {
+      nombre: 'Programa 30 días Cardiosmile — Lic. Gladys',
+      descripcion: 'Plan cardiovascular completo',
+      tienda_id: tGladys._id
+    },
+    {
+      nombre: 'Programa Especial Ashwagandha — CardioSmille',
       descripcion: 'Plan de autogestión y reducción de estrés',
-      tiendas: [tCardio._id, tVitamin._id]
+      tienda_id: tCardio._id
+    },
+    {
+      nombre: 'Programa Especial Ashwagandha — The Vitamin Shoppe',
+      descripcion: 'Plan de autogestión y reducción de estrés',
+      tienda_id: tVitamin._id
     }
   ]);
   console.log(`${productos.length} productos creados`);
-  const prodCardio = productos[0];
-  const prodAshwa = productos[1];
+  const prodCardio1 = productos[0];
+  const prodCardio2 = productos[1];
+  const prodCardio3 = productos[2];
+  const prodAshwa1 = productos[3];
+  const prodAshwa2 = productos[4];
 
   // 3. Códigos
   const codigos = await Codigo.insertMany([
-    { codigo: 'IEN-001', producto_id: prodCardio._id, tienda_id: tCardio._id, activo: true },
-    { codigo: 'IEN-002', producto_id: prodCardio._id, tienda_id: tVitamin._id, activo: true },
-    { codigo: 'IEN-003', producto_id: prodCardio._id, tienda_id: tGladys._id, activo: true },
-    { codigo: 'IEN-004', producto_id: prodAshwa._id, tienda_id: tCardio._id, activo: true },
-    { codigo: 'IEN-005', producto_id: prodAshwa._id, tienda_id: tVitamin._id, activo: true }
+    { codigo: 'IEN-001', producto_id: prodCardio1._id, tienda_id: tCardio._id, activo: true },
+    { codigo: 'IEN-002', producto_id: prodCardio2._id, tienda_id: tVitamin._id, activo: true },
+    { codigo: 'IEN-003', producto_id: prodCardio3._id, tienda_id: tGladys._id, activo: true },
+    { codigo: 'IEN-004', producto_id: prodAshwa1._id, tienda_id: tCardio._id, activo: true },
+    { codigo: 'IEN-005', producto_id: prodAshwa2._id, tienda_id: tVitamin._id, activo: true }
   ]);
   console.log(`${codigos.length} códigos de activación creados`);
 
@@ -1229,21 +1247,21 @@ async function seed() {
   const userPassword = await bcrypt.hash('demo123', 10);
 
   const usuariosDemo = [
-    { nombre: 'Liz Román',      email: 'liz.roman@demo.com',      tienda: tCardio,  producto: prodCardio, codigo: 'IEN-001' },
-    { nombre: 'Carlos Benítez', email: 'carlos.benitez@demo.com', tienda: tVitamin, producto: prodCardio, codigo: 'IEN-002' },
-    { nombre: 'María Ferreira', email: 'maria.ferreira@demo.com', tienda: tGladys,  producto: prodCardio, codigo: 'IEN-003' },
-    { nombre: 'Juan Rojas',     email: 'juan.rojas@demo.com',     tienda: tCardio,  producto: prodAshwa,  codigo: 'IEN-004' },
-    { nombre: 'Ana López',      email: 'ana.lopez@demo.com',      tienda: tVitamin, producto: prodAshwa,  codigo: 'IEN-005' },
-    { nombre: 'Pedro Martínez', email: 'pedro.martinez@demo.com',  tienda: tGladys,  producto: prodCardio, codigo: 'IEN-003' },
-    { nombre: 'Lucía González', email: 'lucia.gonzalez@demo.com',  tienda: tCardio,  producto: prodCardio, codigo: 'IEN-001' },
-    { nombre: 'Diego Agüero',   email: 'diego.aguero@demo.com',   tienda: tVitamin, producto: prodAshwa,  codigo: 'IEN-005' },
-    { nombre: 'Carla Duarte',   email: 'carla.duarte@demo.com',   tienda: tGladys,  producto: prodCardio, codigo: 'IEN-003' },
-    { nombre: 'José Riveros',   email: 'jose.riveros@demo.com',   tienda: tCardio,  producto: prodAshwa,  codigo: 'IEN-004' },
-    { nombre: 'Natalia Ruiz',   email: 'natalia.ruiz@demo.com',   tienda: tVitamin, producto: prodCardio, codigo: 'IEN-002' },
-    { nombre: 'Ricardo Vera',   email: 'ricardo.vera@demo.com',   tienda: tGladys,  producto: prodAshwa,  codigo: 'IEN-005' },
-    { nombre: 'Sofía Cáceres',  email: 'sofia.caceres@demo.com',  tienda: tCardio,  producto: prodCardio, codigo: 'IEN-001' },
-    { nombre: 'Miguel Ayala',   email: 'miguel.ayala@demo.com',   tienda: tVitamin, producto: prodAshwa,  codigo: 'IEN-002' },
-    { nombre: 'Raquel Insfrán', email: 'raquel.insfran@demo.com', tienda: tGladys,  producto: prodCardio, codigo: 'IEN-003' }
+    { nombre: 'Liz Román',      email: 'liz.roman@demo.com',      tienda: tCardio,  producto: prodCardio1, codigo: 'IEN-001' },
+    { nombre: 'Carlos Benítez', email: 'carlos.benitez@demo.com', tienda: tVitamin, producto: prodCardio2, codigo: 'IEN-002' },
+    { nombre: 'María Ferreira', email: 'maria.ferreira@demo.com', tienda: tGladys,  producto: prodCardio3, codigo: 'IEN-003' },
+    { nombre: 'Juan Rojas',     email: 'juan.rojas@demo.com',     tienda: tCardio,  producto: prodAshwa1,  codigo: 'IEN-004' },
+    { nombre: 'Ana López',      email: 'ana.lopez@demo.com',      tienda: tVitamin, producto: prodAshwa2,  codigo: 'IEN-005' },
+    { nombre: 'Pedro Martínez', email: 'pedro.martinez@demo.com',  tienda: tGladys,  producto: prodCardio3, codigo: 'IEN-003' },
+    { nombre: 'Lucía González', email: 'lucia.gonzalez@demo.com',  tienda: tCardio,  producto: prodCardio1, codigo: 'IEN-001' },
+    { nombre: 'Diego Agüero',   email: 'diego.aguero@demo.com',   tienda: tVitamin, producto: prodAshwa2,  codigo: 'IEN-005' },
+    { nombre: 'Carla Duarte',   email: 'carla.duarte@demo.com',   tienda: tGladys,  producto: prodCardio3, codigo: 'IEN-003' },
+    { nombre: 'José Riveros',   email: 'jose.riveros@demo.com',   tienda: tCardio,  producto: prodAshwa1,  codigo: 'IEN-004' },
+    { nombre: 'Natalia Ruiz',   email: 'natalia.ruiz@demo.com',   tienda: tVitamin, producto: prodCardio2, codigo: 'IEN-002' },
+    { nombre: 'Ricardo Vera',   email: 'ricardo.vera@demo.com',   tienda: tGladys,  producto: prodAshwa2,  codigo: 'IEN-005' },
+    { nombre: 'Sofía Cáceres',  email: 'sofia.caceres@demo.com',  tienda: tCardio,  producto: prodCardio1, codigo: 'IEN-001' },
+    { nombre: 'Miguel Ayala',   email: 'miguel.ayala@demo.com',   tienda: tVitamin, producto: prodCardio2, codigo: 'IEN-002' },
+    { nombre: 'Raquel Insfrán', email: 'raquel.insfran@demo.com', tienda: tGladys,  producto: prodCardio3, codigo: 'IEN-003' }
   ];
 
   const usuariosCreados = [];
