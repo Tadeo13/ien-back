@@ -10,7 +10,7 @@ function urgenciaActivacion(nombre, baseUrl) {
       ${body('Hola, <strong>' + nombre + '</strong>,')}
       ${body('Te registraste pero todavía no activaste tu programa. Los primeros 7 días son clave.')}
       ${body('Quienes empiezan en los primeros 7 días tienen <strong>3x más probabilidad</strong> de completar la transformación.')}
-      ${btn('Activar mi programa', frontUrl + '/activar', C.gold)}
+      ${btn('Activar mi programa', frontUrl + '/dashboard', C.gold)}
     `, C.gold)}
     ${spacer()}
     ${footer()}
