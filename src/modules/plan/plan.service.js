@@ -507,9 +507,7 @@ exports.retreatDay = async (usuarioId) => {
             }
           }
         },
-        ultima_fecha_actividad: anterior
-          ? anterior.fecha_completado
-          : new Date(0),
+        ultima_fecha_actividad: new Date(0),
         dia_actual: { $max: [{ $subtract: ['$dia_actual', 1] }, 1] },
         racha_dias: { $max: [{ $subtract: ['$racha_dias', 1] }, 0] },
         estado: {
