@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const authMiddleware = require('../../middlewares/authMiddleware');
-const { setupTest, getTestInicial, today, profile, days, completeDay, advanceDay, autocompleteTest, getTestPreguntas, getBienvenida } = require('./plan.controller');
+const { setupTest, getTestInicial, today, profile, days, completeDay, advanceDay, retreatDay, autocompleteTest, getTestPreguntas, getBienvenida } = require('./plan.controller');
 
 const router = Router();
 
@@ -467,6 +467,7 @@ router.post('/complete-day', completeDay);
  *         description: No hay plan activo
  */
 router.post('/testing/advance', advanceDay);
+router.post('/testing/retreat', retreatDay);
 
 /**
  * @swagger

@@ -459,6 +459,93 @@ exports.advanceDay = async (usuarioId) => {
 };
 
 /**
+ * Retrocede al día anterior deshaciendo el último día completado.
+ */
+exports.retreatDay = async (usuarioId) => {
+  const plan = await PlanProgreso
+    .findOne({ usuario_id: usuarioId, estado: { $in: ['activo', 'completado'] } })
+    .select('_id dia_actual racha_dias racha_maxima progreso_diario hitos_alcanzados estado')
+    .lean();
+  if (!plan) throw new AppError(404, 'No hay un plan activo');
+
+  const completados = plan.progreso_diario
+    .filter(d => d.completado)
+    .sort((a, b) => b.dia_numero - a.dia_numero);
+
+  if (completados.length === 0) {
+    throw new AppError(409, 'No hay días completados para retroceder');
+  }
+
+  const ultimo = completados[0];
+  const anterior = completados[1] || null;
+
+  const planActualizado = await PlanProgreso.findOneAndUpdate(
+    {
+      _id: plan._id,
+      progreso_diario: {
+        $elemMatch: { dia_numero: ultimo.dia_numero, completado: true }
+      }
+    },
+    [{
+      $set: {
+        progreso_diario: {
+          $map: {
+            input: '$progreso_diario',
+            as: 'dia',
+            in: {
+              $cond: {
+                if: { $eq: ['$$dia.dia_numero', ultimo.dia_numero] },
+                then: {
+                  $mergeObjects: ['$$dia', {
+                    completado: false,
+                    fecha_completado: null,
+                    respuesta_usuario: null
+                  }]
+                },
+                else: '$$dia'
+              }
+            }
+          }
+        },
+        ultima_fecha_actividad: anterior
+          ? anterior.fecha_completado
+          : new Date(0),
+        dia_actual: { $max: [{ $subtract: ['$dia_actual', 1] }, 1] },
+        racha_dias: { $max: [{ $subtract: ['$racha_dias', 1] }, 0] },
+        estado: {
+          $cond: {
+            if: { $eq: ['$estado', 'completado'] },
+            then: 'activo',
+            else: '$estado'
+          }
+        }
+      }
+    }],
+    { new: true }
+  );
+
+  if (!planActualizado) {
+    throw new AppError(409, 'No se pudo retroceder el día');
+  }
+
+  // Remove hito milestone if current racha was a milestone
+  if ([7, 14, 21, 28].includes(plan.racha_dias)) {
+    await PlanProgreso.updateOne(
+      { _id: plan._id },
+      { $pull: { hitos_alcanzados: plan.racha_dias } }
+    );
+  }
+
+  return {
+    dia_retrocedido: ultimo.dia_numero,
+    dia_actual: planActualizado.dia_actual,
+    racha_dias: planActualizado.racha_dias,
+    racha_maxima: planActualizado.racha_maxima,
+    estado: planActualizado.estado
+  };
+};
+
+/**
  * Devuelve los días del plan con su contenido y respuesta del usuario.
  * @param {boolean} soloCompletados - Si true, solo devuelve días completados.
  */
