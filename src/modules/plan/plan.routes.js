@@ -466,59 +466,57 @@ router.post('/complete-day', completeDay);
  *       404:
  *         description: No hay plan activo
  */
-if (process.env.NODE_ENV !== 'production') {
-  router.post('/testing/advance', advanceDay);
+router.post('/testing/advance', advanceDay);
 
-  /**
-   * @swagger
-   * /api/plan/testing/autocomplete-test:
-   *   post:
-   *     summary: "[DEV] Autocompletar test inicial con scores aleatorios"
-   *     tags: [Plan]
-   *     security:
-   *       - bearerAuth: []
-   *     parameters:
-   *       - in: query
-   *         name: debiles
-   *         schema:
-   *           type: string
-   *         description: Competencias a marcar como débiles (scores 1-2). Separadas por coma.
-   *         example: "autocontrol,empatia"
-   *     responses:
-   *       201:
-   *         description: Plan creado con test inicial autocompletado
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 plan_id:
-   *                   type: string
-   *                 dia_actual:
-   *                   type: number
-   *                 estado:
-   *                   type: string
-   *                 puntuaciones_por_competencia:
-   *                   type: array
-   *                   items:
-   *                     type: object
-   *                     properties:
-   *                       competencia:
-   *                         type: string
-   *                       competencia_label:
-   *                         type: string
-   *                       puntuacion:
-   *                         type: number
-   *                 competencias_a_mejorar:
-   *                   type: array
-   *                   items:
-   *                     type: string
-   *       400:
-   *         description: Competencia(s) inválida(s) en el parámetro debiles
-   *       409:
-   *         description: El usuario ya tiene un plan
-   */
-  router.post('/testing/autocomplete-test', autocompleteTest);
-}
+/**
+ * @swagger
+ * /api/plan/testing/autocomplete-test:
+ *   post:
+ *     summary: "Autocompletar test inicial con scores aleatorios"
+ *     tags: [Plan]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: debiles
+ *         schema:
+ *           type: string
+ *         description: Competencias a marcar como débiles (scores 1-2). Separadas por coma.
+ *         example: "autocontrol,empatia"
+ *     responses:
+ *       201:
+ *         description: Plan creado con test inicial autocompletado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 plan_id:
+ *                   type: string
+ *                 dia_actual:
+ *                   type: number
+ *                 estado:
+ *                   type: string
+ *                 puntuaciones_por_competencia:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       competencia:
+ *                         type: string
+ *                       competencia_label:
+ *                         type: string
+ *                       puntuacion:
+ *                         type: number
+ *                 competencias_a_mejorar:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       400:
+ *         description: Competencia(s) inválida(s) en el parámetro debiles
+ *       409:
+ *         description: El usuario ya tiene un plan
+ */
+router.post('/testing/autocomplete-test', autocompleteTest);
 
 module.exports = router;
