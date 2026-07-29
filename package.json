@@ -10,6 +10,7 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "seed": "node src/seed.js",
+    "seed-content": "node src/seed.js --only-content",
     "test": "jest --runInBand --forceExit"
   },
   "dependencies": {

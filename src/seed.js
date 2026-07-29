@@ -26,10 +26,12 @@ const COMPETENCIA_LABELS = {
 };
 
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
 // ContenidoDiario: 30 días con estructura enriquecida y respuesta_tipo en ejercicio
 // ---------------------------------------------------------------------------
 const CONTENIDOS = [
-  {
+{
     dia_numero: 1, tipo_contenido: 'instructivo',
     titulo_modulo: 'Día 1: El Escáner de Energía Vital',
     emociones_objetivo: ['alegría', 'tristeza', 'ira', 'miedo'],
@@ -99,7 +101,7 @@ const CONTENIDOS = [
         instruccion: 'Cuando sientas la urgencia de comer algo procesado sin hambre real, aplica este protocolo de 3 pasos.',
         pasos: [
           { texto: 'DETENTE por 30 segundos', respuesta_tipo: 'accion' },
-          { texto: 'NOMBRA en voz alta: "No es hambre/cansancio real, lo que siento es [emoción específica]"', respuesta_tipo: 'accion' },
+          { texto: 'NOMBRA en voz alta: "No es hambre/cansancio real, lo que siento es:"', respuesta_tipo: 'accion' },
           { texto: 'ELIGE una acción que realmente sane esa emoción', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
@@ -188,7 +190,7 @@ const CONTENIDOS = [
         instruccion: 'Identifica una etiqueta limitante, elimínala simbólicamente y crea una nueva narrativa en presente.',
         pasos: [
           { texto: 'Escribe una etiqueta limitante específica (ej: "Soy perezoso para el ejercicio")', respuesta_tipo: 'abierta' },
-          { texto: 'Táchala físicamente con una línea roja gruesa', respuesta_tipo: 'abierta' },
+          { texto: 'Táchala físicamente con una línea roja gruesa', respuesta_tipo: 'accion' },
           { texto: 'Redacta tu nueva identidad en presente: "Soy una persona que elige cuidar su energía y su salud cada día"', respuesta_tipo: 'abierta' }
         ],
         tipo: 'reflexion',
@@ -213,7 +215,7 @@ const CONTENIDOS = [
       ejercicio: {
         nombre: 'Micro-Contrato Diario',
         instruccion: 'Elige UN solo micro-compromiso para hoy y firma tu contrato personal.',
-        pasos: [
+            pasos: [
           { texto: 'Tomar mi dosis de suplemento todos los días', respuesta_tipo: 'accion' },
           { texto: 'Hacer 5 minutos de estiramientos al despertar', respuesta_tipo: 'accion' },
           { texto: 'Leer una página al día de un libro de crecimiento personal', respuesta_tipo: 'accion' },
@@ -240,23 +242,23 @@ const CONTENIDOS = [
       bloque: 'Autoconfianza',
       concepto: 'La obsesión con el peso suele erosionar la confianza; buscamos éxitos en el bienestar global.',
       ejercicio: {
-        nombre: 'Auditor�a de Bienestar Integral',
-        instruccion: 'Ignora la balanza. Eval�a estas �reas de bienestar.',
+        nombre: 'Auditoria de Bienestar Integral',
+        instruccion: 'Ignora la balanza. Evalua estas areas de bienestar.',
         pasos: [
-          { texto: 'Energ�a F�sica: �Subiste escaleras con menos fatiga?', respuesta_tipo: 'abierta' },
-          { texto: 'Claridad Mental: �Te sientes m�s enfocado/a durante el trabajo?', respuesta_tipo: 'abierta' },
-          { texto: 'Fuerza Muscular: �Tus m�sculos se sienten m�s firmes?', respuesta_tipo: 'abierta' },
-          { texto: 'Calidad de Sue�o: �Despertaste m�s descansado/a?', respuesta_tipo: 'abierta' },
-          { texto: 'Estado de �nimo: �Te sientes m�s optimista que la semana pasada?', respuesta_tipo: 'abierta' }
+          { texto: 'Energia Fisica: Subiste escaleras con menos fatiga?', respuesta_tipo: 'abierta' },
+          { texto: 'Claridad Mental: Te sientes mas enfocado/a durante el trabajo?', respuesta_tipo: 'abierta' },
+          { texto: 'Fuerza Muscular: Tus musculos se sienten mas firmes?', respuesta_tipo: 'abierta' },
+          { texto: 'Calidad de Sueño: Despertaste mas descansado/a?', respuesta_tipo: 'abierta' },
+          { texto: 'Estado de animo: Te sientes mas optimista que la semana pasada?', respuesta_tipo: 'abierta' }
         ],
         tipo: 'reflexion',
         respuesta_tipo: 'abierta',
         registro: {
-          energia_fisica: { pregunta: '�Subiste escaleras con menos fatiga?', observacion: '' },
-          claridad_mental: { pregunta: '�Te sientes m�s enfocado/a durante el trabajo?', observacion: '' },
-          fuerza_muscular: { pregunta: '�Tus m�sculos se sienten m�s firmes?', observacion: '' },
-          calidad_sueno: { pregunta: '�Despertaste m�s descansado/a?', observacion: '' },
-          estado_animo: { pregunta: '�Te sientes m�s optimista que la semana pasada?', observacion: '' }
+          energia_fisica: { pregunta: 'Subiste escaleras con menos fatiga?', observacion: '' },
+          claridad_mental: { pregunta: 'Te sientes mas enfocado/a durante el trabajo?', observacion: '' },
+          fuerza_muscular: { pregunta: 'Tus musculos se sienten mas firmes?', observacion: '' },
+          calidad_sueno: { pregunta: 'Despertaste mas descansado/a?', observacion: '' },
+          estado_animo: { pregunta: 'Te sientes mas optimista que la semana pasada?', observacion: '' }
         },
       },
       contenido: 'Reconocer que tu corazón late con más fuerza y tu cuerpo se siente más ágil es el verdadero indicador de una salud funcional.',
@@ -304,12 +306,12 @@ const CONTENIDOS = [
       bloque: 'Autoconfianza',
       concepto: 'Visualizar el progreso acumulado en todas las áreas refuerza la creencia en la propia capacidad de cambio.',
       ejercicio: {
-        nombre: 'Revisi�n de Transformaci�n',
-        instruccion: 'Haz una lista de 3 momentos espec�ficos donde actuaste como el "protagonista" de tu salud integral.',
+        nombre: 'Revisión de Transformación',
+        instruccion: 'Haz una lista de 3 momentos específicos donde actuaste como el "protagonista" de tu salud integral.',
         pasos: [
-          { texto: 'Identifica un momento donde actuaste como protagonista de tu salud: �qu� situaci�n, qu� acci�n tomaste y c�mo te sentiste?', respuesta_tipo: 'abierta' },
-          { texto: 'Reconoce un segundo momento de transformaci�n: �qu� hiciste diferente esta vez?', respuesta_tipo: 'abierta' },
-          { texto: 'Identifica un tercer momento: �qu� patr�n de cambio positivo empiezas a notar?', respuesta_tipo: 'abierta' }
+          { texto: 'Identifica un momento donde actuaste como protagonista de tu salud: ¿qué situación, qué acción tomaste y cómo te sentiste?', respuesta_tipo: 'abierta' },
+          { texto: 'Reconoce un segundo momento de transformación: ¿qué hiciste diferente esta vez?', respuesta_tipo: 'abierta' },
+          { texto: 'Identifica un tercer momento: ¿qué patrón de cambio positivo empiezas a notar?', respuesta_tipo: 'abierta' }
         ],
         tipo: 'reflexion',
         respuesta_tipo: 'abierta',
@@ -392,12 +394,12 @@ const CONTENIDOS = [
       bloque: 'Autocontrol',
       concepto: 'La gestión del impulso es más efectiva cuando diseñamos un ambiente que no nos sabotea.',
       ejercicio: {
-        nombre: 'Redise�o Estrat�gico del Ambiente',
-        instruccion: 'Identifica saboteadores ambientales y reub�calos estrat�gicamente.',
+        nombre: 'Rediseño Estratégico del Ambiente',
+        instruccion: 'Identifica saboteadores ambientales y reubícalos estratégicamente.',
         pasos: [
           { texto: 'Identifica un objeto o alimento en tu entorno que sabotea tus decisiones saludables', respuesta_tipo: 'accion' },
           { texto: 'Reubica ese elemento en un lugar menos accesible o visible', respuesta_tipo: 'accion' },
-          { texto: 'Coloca un sustituto saludable en el lugar original para facilitar tu mejor elecci�n', respuesta_tipo: 'accion' }
+          { texto: 'Coloca un sustituto saludable en el lugar original para facilitar tu mejor elección', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
         respuesta_tipo: 'abierta',
@@ -543,12 +545,12 @@ const CONTENIDOS = [
       bloque: 'Motivación',
       concepto: 'La proactividad es la responsabilidad de diseñar las condiciones necesarias para que las decisiones saludables sean las más fáciles.',
       ejercicio: {
-        nombre: 'Redise�o de Ecosistema Personal',
-        instruccion: 'Identifica puntos de fricci�n y redise�a tu entorno para eliminar barreras.',
+        nombre: 'Rediseño de Ecosistema Personal',
+        instruccion: 'Identifica puntos de fricción y rediseña tu entorno para eliminar barreras.',
         pasos: [
-          { texto: 'Crea tu estaci�n de bienestar matutina con suplementos organizados, agua y tu recordatorio visual del porqu�', respuesta_tipo: 'accion' },
-          { texto: 'Dise�a un sistema de hidrataci�n autom�tica colocando tu botella de agua en un lugar visible y estrat�gico', respuesta_tipo: 'accion' },
-          { texto: 'Prepara tu espacio para activar el movimiento sin fricci�n: deja ropa y zapatos listos', respuesta_tipo: 'accion' }
+          { texto: 'Crea tu estación de bienestar matutina con suplementos organizados, agua y tu recordatorio visual del porqué', respuesta_tipo: 'accion' },
+          { texto: 'Diseña un sistema de hidratación automática colocando tu botella de agua en un lugar visible y estratégico', respuesta_tipo: 'accion' },
+          { texto: 'Prepara tu espacio para activar el movimiento sin fricción: deja ropa y zapatos listos', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
         respuesta_tipo: 'abierta',
@@ -665,13 +667,13 @@ const CONTENIDOS = [
       bloque: 'Empatía',
       concepto: 'Un "desliz" es solo un dato, no una definición de quién eres.',
       ejercicio: {
-        nombre: 'Nota de Redirecci�n Consciente',
+        nombre: 'Nota de Redirección Consciente',
         instruccion: 'Cuando experimentes un desliz, aplica este protocolo de re-enfoque.',
         pasos: [
-          { texto: 'Reconoce la situaci�n del desliz sin juzgarte: �qu� pas�, cu�ndo y c�mo respondiste?', respuesta_tipo: 'abierta' },
-          { texto: 'Extrae un aprendizaje compasivo: �qu� te ense�a esta experiencia sobre ti?', respuesta_tipo: 'abierta' },
-          { texto: 'Elige una acci�n concreta de autocuidado como pr�ximo paso para retomar tu rumbo', respuesta_tipo: 'accion' },
-          { texto: 'Firma un compromiso de autocompasi�n para recordarte que un desliz no define tu camino', respuesta_tipo: 'accion' }
+          { texto: 'Reconoce la situación del desliz sin juzgarte: ¿qué pasó, cuándo y cómo respondiste?', respuesta_tipo: 'abierta' },
+          { texto: 'Extrae un aprendizaje compasivo: ¿qué te enseña esta experiencia sobre ti?', respuesta_tipo: 'abierta' },
+          { texto: 'Elige una acción concreta de autocuidado como próximo paso para retomar tu rumbo', respuesta_tipo: 'accion' },
+          { texto: 'Firma un compromiso de autocompasión para recordarte que un desliz no define tu camino', respuesta_tipo: 'accion' }
         ],
         tipo: 'reflexion',
         respuesta_tipo: 'abierta',
@@ -762,13 +764,13 @@ const CONTENIDOS = [
       bloque: 'Empatía',
       concepto: 'La falta de autocompasión a menudo se disfraza de exigencia excesiva que lleva al agotamiento.',
       ejercicio: {
-        nombre: 'Auditor�a de Se�ales de Agotamiento',
-        instruccion: 'Eval�a tu nivel de agotamiento y aplica el protocolo correspondiente.',
+        nombre: 'Auditoría de Señales de Agotamiento',
+        instruccion: 'Evalúa tu nivel de agotamiento y aplica el protocolo correspondiente.',
         pasos: [
-          { texto: 'Eval�a tu nivel de fatiga f�sica hoy', respuesta_tipo: 'escala', min: 1, max: 10 },
-          { texto: 'Eval�a tu nivel de niebla mental', respuesta_tipo: 'escala', min: 1, max: 10 },
-          { texto: 'Eval�a tu nivel de irritabilidad emocional', respuesta_tipo: 'escala', min: 1, max: 10 },
-          { texto: 'Eval�a tu nivel de motivaci�n reducida', respuesta_tipo: 'escala', min: 1, max: 10 },
+          { texto: 'Evalúa tu nivel de fatiga física hoy', respuesta_tipo: 'escala', min: 1, max: 10 },
+          { texto: 'Evalúa tu nivel de niebla mental', respuesta_tipo: 'escala', min: 1, max: 10 },
+          { texto: 'Evalúa tu nivel de irritabilidad emocional', respuesta_tipo: 'escala', min: 1, max: 10 },
+          { texto: 'Evalúa tu nivel de motivación reducida', respuesta_tipo: 'escala', min: 1, max: 10 },
           { texto: 'Suma tus puntuaciones totales y aplica el protocolo de descanso correspondiente', respuesta_tipo: 'accion' }
         ],
         tipo: 'registro',
@@ -834,11 +836,11 @@ const CONTENIDOS = [
       concepto: 'El entorno social es a menudo el mayor saboteador de los hábitos; la planificación proactiva es tu mejor defense.',
       ejercicio: {
         nombre: 'Protocolo de Pre-Carga Integral',
-        instruccion: 'Prepara estrat�gicamente tu cuerpo y mente antes de eventos sociales.',
+        instruccion: 'Prepara estratégicamente tu cuerpo y mente antes de eventos sociales.',
         pasos: [
-          { texto: 'Pre-carga nutricional: consume comida equilibrada + hidrataci�n + suplementaci�n 2-3 horas antes del evento', respuesta_tipo: 'accion' },
-          { texto: 'Pre-carga mental: revisa tus guiones asertivos, visualiza el evento con confianza y conecta con tu porqu�', respuesta_tipo: 'accion' },
-          { texto: 'Pre-carga emocional: realiza 5 ciclos de respiraci�n 4-6-8 y repite tu afirmaci�n de bienestar', respuesta_tipo: 'accion' },
+          { texto: 'Pre-carga nutricional: consume comida equilibrada + hidratación + suplementación 2-3 horas antes del evento', respuesta_tipo: 'accion' },
+          { texto: 'Pre-carga mental: revisa tus guiones asertivos, visualiza el evento con confianza y conecta con tu porqué', respuesta_tipo: 'accion' },
+          { texto: 'Pre-carga emocional: realiza 5 ciclos de respiración 4-6-8 y repite tu afirmación de bienestar', respuesta_tipo: 'accion' },
           { texto: 'Prepara tu kit de emergencia social: agua, L-Teanina, snack saludable y recordatorio visual', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
@@ -956,7 +958,6 @@ const CONTENIDOS = [
   }
 ];
 
-// ---------------------------------------------------------------------------
 // Test inicial: 30 preguntas, 5 por competencia
 // Orden: interleaved — ciclo de 6 competencias, 5 rondas (preguntas 1-30)
 // ---------------------------------------------------------------------------
@@ -1145,18 +1146,28 @@ async function seed() {
   await mongoose.connect(process.env.MONGO_URI);
   console.log('Conectado a MongoDB');
 
-  await Promise.all([
-    Tienda.deleteMany({}),
-    Usuario.deleteMany({}),
-    ContenidoDiario.deleteMany({}),
-    TestPregunta.deleteMany({}),
-    ContenidoEspecial.deleteMany({}),
-    Producto.deleteMany({}),
-    Codigo.deleteMany({}),
-    PlanProgreso.deleteMany({}),
-    HistorialCorreo.deleteMany({})
-  ]);
-  console.log('Colecciones limpiadas');
+  const onlyContent = process.argv.includes('--only-content');
+
+  if (onlyContent) {
+    await Promise.all([
+      ContenidoDiario.deleteMany({}),
+      TestPregunta.deleteMany({}),
+      ContenidoEspecial.deleteMany({})
+    ]);
+    console.log('Colecciones de contenido limpiadas (--only-content)');
+  } else {
+    await Promise.all([
+      Tienda.deleteMany({}),
+      Usuario.deleteMany({}),
+      ContenidoDiario.deleteMany({}),
+      TestPregunta.deleteMany({}),
+      ContenidoEspecial.deleteMany({}),
+      Producto.deleteMany({}),
+      Codigo.deleteMany({}),
+      PlanProgreso.deleteMany({}),
+      HistorialCorreo.deleteMany({})
+    ]);
+    console.log('Colecciones limpiadas');
 
   // 1. Tiendas
   const tiendas = await Tienda.insertMany([
@@ -1561,6 +1572,7 @@ async function seed() {
 
   await HistorialCorreo.insertMany(historialData);
   console.log(`${historialData.length} correos de historial creados`);
+  }
 
   // 8. Contenidos diarios
   const ESCALA_LIKERT = [
@@ -1571,41 +1583,12 @@ async function seed() {
     { valor: 5, etiqueta: 'Siempre' }
   ];
 
-  function inferirTipoPaso(texto, ejercicioTipo) {
-    if (ejercicioTipo === 'practica') {
-      return { respuesta_tipo: 'accion' };
-    }
-    const match = texto.match(/\(escala\s*(\d+)\s*[-–]\s*(\d+)\)/i);
-    if (match) {
-      return { respuesta_tipo: 'escala', min: parseInt(match[1]), max: parseInt(match[2]) };
-    }
-    if (/escala\s*1-10/i.test(texto) || /nivel\s*1-10/i.test(texto) || /___\/10/.test(texto)) {
-      return { respuesta_tipo: 'escala', min: 1, max: 10 };
-    }
-    if (ejercicioTipo === 'reflexion') {
-      return { respuesta_tipo: 'abierta' };
-    }
-    return { respuesta_tipo: 'abierta' };
-  }
+  
 
-  const contenidosConTipo = CONTENIDOS.map(c => {
-    const ejercicio = c.datos_leccion?.ejercicio;
-
-    if (ejercicio?.pasos && Array.isArray(ejercicio.pasos)) {
-      ejercicio.pasos = ejercicio.pasos.map(p => {
-        if (typeof p === 'string') {
-          const tipo = inferirTipoPaso(p, ejercicio.tipo);
-          return { texto: p, ...tipo };
-        }
-        return p;
-      });
-    }
-
-    return {
-      ...c,
-      respuesta_tipo: ejercicio?.respuesta_tipo ?? 'abierta'
-    };
-  });
+  const contenidosConTipo = CONTENIDOS.map(c => ({
+    ...c,
+    respuesta_tipo: c.datos_leccion?.ejercicio?.respuesta_tipo ?? 'abierta'
+  }));
 
   const preguntasConLabel = TEST_PREGUNTAS.map(p => ({
     ...p,
