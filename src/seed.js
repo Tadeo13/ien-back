@@ -127,7 +127,7 @@ const CONTENIDOS = [
         nombre: 'Entrenamiento Sin Distracciones',
         instruccion: 'Durante 10-15 minutos de tu actividad física, elimina distracciones y enfócate en las sensaciones corporales.',
         pasos: [
-          { texto: 'Apaga música, podcasts and notificaciones', respuesta_tipo: 'accion' },
+          { texto: 'Apaga la música, los podcasts y las notificaciones', respuesta_tipo: 'accion' },
           { texto: 'Concéntrate en el ritmo de tu respiración', respuesta_tipo: 'accion' },
           { texto: 'Siente el contacto consciente de tus pies con el suelo', respuesta_tipo: 'accion' },
           { texto: 'Percibe la contracción y relajación muscular', respuesta_tipo: 'accion' },
@@ -190,7 +190,7 @@ const CONTENIDOS = [
         instruccion: 'Identifica una etiqueta limitante, elimínala simbólicamente y crea una nueva narrativa en presente.',
         pasos: [
           { texto: 'Escribe una etiqueta limitante específica (ej: "Soy perezoso para el ejercicio")', respuesta_tipo: 'abierta' },
-          { texto: 'Táchala físicamente con una línea roja gruesa', respuesta_tipo: 'accion' },
+          { texto: 'Táchala en tu mente con una línea roja y reescríbela aquí', respuesta_tipo: 'accion' },
           { texto: 'Redacta tu nueva identidad en presente: "Soy una persona que elige cuidar su energía y su salud cada día"', respuesta_tipo: 'abierta' }
         ],
         tipo: 'reflexion',
@@ -242,23 +242,23 @@ const CONTENIDOS = [
       bloque: 'Autoconfianza',
       concepto: 'La obsesión con el peso suele erosionar la confianza; buscamos éxitos en el bienestar global.',
       ejercicio: {
-        nombre: 'Auditoria de Bienestar Integral',
-        instruccion: 'Ignora la balanza. Evalua estas areas de bienestar.',
+        nombre: 'Auditoría de Bienestar Integral',
+        instruccion: 'Ignora la balanza. Evalúa estas áreas de bienestar.',
         pasos: [
-          { texto: 'Energia Fisica: Subiste escaleras con menos fatiga?', respuesta_tipo: 'abierta' },
-          { texto: 'Claridad Mental: Te sientes mas enfocado/a durante el trabajo?', respuesta_tipo: 'abierta' },
-          { texto: 'Fuerza Muscular: Tus musculos se sienten mas firmes?', respuesta_tipo: 'abierta' },
-          { texto: 'Calidad de Sueño: Despertaste mas descansado/a?', respuesta_tipo: 'abierta' },
-          { texto: 'Estado de animo: Te sientes mas optimista que la semana pasada?', respuesta_tipo: 'abierta' }
+          { texto: 'Energía Física: ¿Subiste escaleras con menos fatiga?', respuesta_tipo: 'abierta' },
+          { texto: 'Claridad Mental: ¿Te sientes más enfocado/a durante el trabajo?', respuesta_tipo: 'abierta' },
+          { texto: 'Fuerza Muscular: ¿Tus músculos se sienten más firmes?', respuesta_tipo: 'abierta' },
+          { texto: 'Calidad de Sueño: ¿Despertaste más descansado/a?', respuesta_tipo: 'abierta' },
+          { texto: 'Estado de ánimo: ¿Te sientes más optimista que la semana pasada?', respuesta_tipo: 'abierta' }
         ],
         tipo: 'reflexion',
         respuesta_tipo: 'abierta',
         registro: {
-          energia_fisica: { pregunta: 'Subiste escaleras con menos fatiga?', observacion: '' },
-          claridad_mental: { pregunta: 'Te sientes mas enfocado/a durante el trabajo?', observacion: '' },
-          fuerza_muscular: { pregunta: 'Tus musculos se sienten mas firmes?', observacion: '' },
-          calidad_sueno: { pregunta: 'Despertaste mas descansado/a?', observacion: '' },
-          estado_animo: { pregunta: 'Te sientes mas optimista que la semana pasada?', observacion: '' }
+          energia_fisica: { pregunta: '¿Subiste escaleras con menos fatiga?', observacion: '' },
+          claridad_mental: { pregunta: '¿Te sientes más enfocado/a durante el trabajo?', observacion: '' },
+          fuerza_muscular: { pregunta: '¿Tus músculos se sienten más firmes?', observacion: '' },
+          calidad_sueno: { pregunta: '¿Despertaste más descansado/a?', observacion: '' },
+          estado_animo: { pregunta: '¿Te sientes más optimista que la semana pasada?', observacion: '' }
         },
       },
       contenido: 'Reconocer que tu corazón late con más fuerza y tu cuerpo se siente más ágil es el verdadero indicador de una salud funcional.',
@@ -456,12 +456,12 @@ const CONTENIDOS = [
       bloque: 'Autocontrol',
       concepto: 'Aprender a tolerar emociones incómodas sin buscar gratificación instantánea.',
       ejercicio: {
-        nombre: 'Protocolo de Tolerancia Emocional "ABLANDAR-PERMITIR-AMAR"',
-        instruccion: 'Cuando aparezca tensión, ansiedad o incomodidad, aplica este protocolo.',
+        nombre: 'Protocolo de Tolerancia Emocional',
+        instruccion: 'Cuando aparezca tensión/ansiedad/incomodidad, aplica la técnica "ABLANDAR-PERMITIR-AMAR".',
         pasos: [
-          { texto: 'ABLANDAR (30s): Localiza la tensión corporal, respira hacia esa zona, relaja conscientemente', respuesta_tipo: 'accion' },
-          { texto: 'PERMITIR (60s): Observa pensamientos sin juzgarlos, describe la emoción, permite que exista como "nube pasajera"', respuesta_tipo: 'accion' },
-          { texto: 'AMAR (30s): Coloca mano en corazón, repite "Puedo estar con esto ahora", ofrécete compasión', respuesta_tipo: 'accion' }
+          { texto: 'ABLANDAR (Nivel Físico - 30s): Siéntate cómodamente, localiza la tensión corporal específica, respira hacia esa zona, relaja conscientemente los músculos contraídos', respuesta_tipo: 'accion' },
+          { texto: 'PERMITIR (Nivel Mental - 60s): Observa pensamientos sin juzgarlos, describe la emoción ("Siento ansiedad en el pecho"), no busques distraerte inmediatamente, permite que la sensación exista como "nube pasajera"', respuesta_tipo: 'accion' },
+          { texto: 'AMAR (Nivel Emocional - 30s): Coloca mano en corazón, repite "Puedo estar con esto ahora", ofrécete compasión ("Es normal sentir esto"), reconoce tu valentía por no huir', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
         registro: { emocion: '', intensidad: '', duracion_real: '', estrategia_usada: '' },
@@ -481,18 +481,18 @@ const CONTENIDOS = [
     dia_numero: 16, tipo_contenido: 'instructivo',
     titulo_modulo: 'Día 16: El Viaje al Futuro (Visualización Neuroplástica)',
     emociones_objetivo: ['alegría', 'tristeza'],
-    cabecera: `Bloque 4: Motivación y Proactividad (Días 16-20)\n\nTema Central: "Encontrando el Motor Interno: Del 'Tengo que' al 'Quiero'"\n\nTransformación Definitiva: Este bloque consolida la transición de la motivación externa volátil hacia un motor interno sostenible. Basado en la neurociencia de la motivación intrínseca, desarrollarás la capacidad de mantener el compromiso con tu bienestar desde valores profundos, no desde presión externa.\n\nLa motivación basada únicamente en la estética o en la presión social es volátil y suele desvanecerse ante el primer obstáculo. Para lograr un cambio de paradigma real en tu salud, necesitamos anclar tus acciones en valores intrínsecos profundos.\n\nEn este bloque, dejaremos atrás el "tengo que adelgazar" para abrazar el "quiero vivir con energía". La automotivación no es esperar a tener ganas de cuidarte; es la proactividad de asumir la responsabilidad de hacer que las cosas sucedan.`,
+    cabecera: `Bloque 4: Motivación y Proactividad (Días 16-20)\n\nTema Central: "Encontrando el Motor Interno: Del 'Tengo que' al 'Quiero'"\n\nTransformación Definitiva: Este bloque consolida la transición de la motivación externa volátil hacia un motor interno sostenible. Basado en la neurociencia de la motivación intrínseca, desarrollarás la capacidad de mantener el compromiso con tu bienestar desde valores profundos, no desde presión externa.\n\nLa motivación basada únicamente en la estética o en la presión social es volátil y suele desvanecerse ante el primer obstáculo. Para lograr un cambio de paradigma real en tu salud, necesitamos anclar tus acciones en valores intrínsecos profundos.\n\nEn este bloque, dejaremos atrás el "tengo que adelgazar" para abrazar el "quiero vivir con energía". La automotivación no es esperar a tener ganas de cuidarte; es la proactividad de asumir la responsabilidad de hacer que las cosas sucedan.\n\nAl conectar tu alimentación y tu movimiento con tu "porqué" profundo, dejas de ver los hábitos como una restricción y empiezas a verlos como el combustible necesario para alcanzar tus metas de vida y proteger la salud de tu corazón a largo plazo.`,
     datos_leccion: {
       titulo: 'El Viaje al Futuro (Visualización Neuroplástica)',
       bloque: 'Motivación',
       concepto: 'La motivación intrínseca se fortalece cuando visualizamos los beneficios de una salud óptima a largo plazo.',
       ejercicio: {
-        nombre: 'Técnica de Visualización Multisensorial',
-        instruccion: 'Encuentra una posición cómoda y realiza esta visualización científica de 10-15 minutos.',
+        nombre: 'Preparación para Visualización Neuroplástica',
+        instruccion: 'Realiza esta preparación antes de la visualización para activar el estado mental óptimo.',
         pasos: [
-          { texto: 'Proyección Temporal (5 min): Visualízate exactamente 10 años en el futuro en un lugar específico', respuesta_tipo: 'accion' },
-          { texto: 'Experiencia Sensorial Completa (5 min): Siente la fuerza de tus latidos, profundidad respiratoria, agilidad muscular', respuesta_tipo: 'accion' },
-          { texto: 'Conexión Emocional (3-5 min): Siente gratitud hacia tu "yo actual", orgullo por tus decisiones', respuesta_tipo: 'accion' }
+          { texto: 'Posición: Siéntate cómodamente, espalda recta', respuesta_tipo: 'accion' },
+          { texto: 'Respiración: 3 ciclos de respiración 4-6-8 para activar estado alfa', respuesta_tipo: 'accion' },
+          { texto: 'Intención: "Voy a programar mi cerebro para el éxito a largo plazo"', respuesta_tipo: 'accion' }
         ],
         tipo: 'practica',
         respuesta_tipo: 'abierta'
@@ -642,7 +642,7 @@ const CONTENIDOS = [
         pasos: [
           { texto: 'Identifica el diálogo interno destructivo: pensamiento, emoción y sensación física', respuesta_tipo: 'abierta' },
           { texto: 'Imagina que tu mejor amigo te confiesa el mismo fallo: ¿qué le dirías?', respuesta_tipo: 'abierta' },
-          { texto: 'Lée en voz alta tu respuesta compasiva dirigiéndola hacia ti', respuesta_tipo: 'abierta' }
+          { texto: 'Lee en voz alta tu respuesta compasiva dirigiéndola hacia ti', respuesta_tipo: 'abierta' }
         ],
         tipo: 'reflexion',
         registro: { pensamiento_autocritico: '', emocion: '', sensacion_fisica: '', respuesta_compasiva: '' },
@@ -833,7 +833,7 @@ const CONTENIDOS = [
     datos_leccion: {
       titulo: 'La "Estrategia de Pre-Carga" (Bienestar Proactivo)',
       bloque: 'Competencia Social',
-      concepto: 'El entorno social es a menudo el mayor saboteador de los hábitos; la planificación proactiva es tu mejor defense.',
+      concepto: 'El entorno social es a menudo el mayor saboteador de los hábitos; la planificación proactiva es tu mejor defensa.',
       ejercicio: {
         nombre: 'Protocolo de Pre-Carga Integral',
         instruccion: 'Prepara estratégicamente tu cuerpo y mente antes de eventos sociales.',
