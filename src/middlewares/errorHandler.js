@@ -31,7 +31,8 @@ function errorHandler(err, _req, res, _next) {
     return res.status(400).json({ error: 'JSON malformado' });
   }
 
-  console.error(err);
+  if (process.env.NODE_ENV !== 'production') console.error(err);
+  else console.error('[ErrorHandler]', err.message || 'Error desconocido');
   return res.status(500).json({ error: 'Error interno del servidor' });
 }
 

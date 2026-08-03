@@ -1,6 +1,7 @@
 const Tienda = require('../../models/Tienda');
 const AppError = require('../../utils/AppError');
 const { tryCatch } = require('../../middlewares/errorHandler');
+const { toResponse } = require('../../utils/toResponse');
 
 const { enScope } = require('../../utils/scope');
 /**
@@ -17,7 +18,7 @@ exports.listar = tryCatch(async (req, res) => {
     filtro.activo = true;
   }
   const tiendas = await Tienda.find(filtro).select('nombre_tienda ciudad activo').lean();
-  res.json(tiendas);
+  res.json(tiendas.map(toResponse));
 });
 
 /**
@@ -32,8 +33,7 @@ exports.crear = tryCatch(async (req, res) => {
     throw new AppError(400, 'nombre_tienda y ciudad son requeridos');
   }
   const tienda = await Tienda.create({ nombre_tienda, ciudad });
-  const { _id, ...rest } = tienda.toObject();
-  res.status(201).json({ id: _id, ...rest });
+  res.status(201).json(toResponse(tienda));
 });
 
 /**
@@ -54,8 +54,7 @@ exports.actualizar = tryCatch(async (req, res) => {
 
   const tienda = await Tienda.findByIdAndUpdate(id, campos, { new: true, runValidators: true });
   if (!tienda) throw new AppError(404, 'Sucursal no encontrada');
-  const { _id: tid, ...trest } = tienda.toObject();
-  res.json({ id: tid, ...trest });
+  res.json(toResponse(tienda));
 });
 
 /**
@@ -67,8 +66,7 @@ exports.eliminar = tryCatch(async (req, res) => {
   }
   const tienda = await Tienda.findByIdAndUpdate(req.params.id, { activo: false }, { new: true });
   if (!tienda) throw new AppError(404, 'Sucursal no encontrada');
-  const { _id: eid, ...erest } = tienda.toObject();
-  res.json({ mensaje: 'Sucursal desactivada', tienda: { id: eid, ...erest } });
+  res.json({ mensaje: 'Sucursal desactivada', tienda: toResponse(tienda) });
 });
 
 /**
@@ -80,6 +78,5 @@ exports.reactivar = tryCatch(async (req, res) => {
   }
   const tienda = await Tienda.findByIdAndUpdate(req.params.id, { activo: true }, { new: true });
   if (!tienda) throw new AppError(404, 'Sucursal no encontrada');
-  const { _id: rid, ...rrest } = tienda.toObject();
-  res.json({ mensaje: 'Sucursal reactivada', tienda: { id: rid, ...rrest } });
+  res.json({ mensaje: 'Sucursal reactivada', tienda: toResponse(tienda) });
 });

@@ -65,6 +65,18 @@ describe('Sucursales - admin_general', () => {
       .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
   });
+
+  test('PATCH /api/admin/sucursales/:id/reactivar - success', async () => {
+    await request(app)
+      .delete(`/api/admin/sucursales/${data.tienda1Id}`)
+      .set('Authorization', `Bearer ${token}`);
+
+    const res = await request(app)
+      .patch(`/api/admin/sucursales/${data.tienda1Id}/reactivar`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.mensaje).toMatch(/reactivada/i);
+  });
 });
 
 describe('Sucursales - admin_negocio (scoped)', () => {
@@ -80,7 +92,7 @@ describe('Sucursales - admin_negocio (scoped)', () => {
       .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.length).toBe(1);
-    expect(res.body[0]._id).toBe(data.tienda1Id);
+    expect(res.body[0].id).toBe(data.tienda1Id);
   });
 
   test('POST /api/admin/sucursales - forbidden for admin_negocio', async () => {
@@ -88,6 +100,13 @@ describe('Sucursales - admin_negocio (scoped)', () => {
       .post('/api/admin/sucursales')
       .set('Authorization', `Bearer ${token}`)
       .send({ nombre_tienda: 'X', ciudad: 'Y' });
+    expect(res.status).toBe(403);
+  });
+
+  test('PATCH /api/admin/sucursales/:id/reactivar - forbidden fuera de scope', async () => {
+    const res = await request(app)
+      .patch(`/api/admin/sucursales/${data.tienda2Id}/reactivar`)
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(403);
   });
 });

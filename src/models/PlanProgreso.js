@@ -61,4 +61,6 @@ planProgresoSchema.index(
   { unique: true, partialFilterExpression: { estado: 'activo' } }
 );
 
+planProgresoSchema.index({ racha_rota_en: 1 });
+
 module.exports = mongoose.model('PlanProgreso', planProgresoSchema, 'planes_progreso');

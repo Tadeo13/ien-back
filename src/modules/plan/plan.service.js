@@ -9,8 +9,7 @@ const { hito } = require('../email/templates');
 
 const AppError = require('../../utils/AppError');
 const { esMismoDiaCalendarioUTC } = require('../../utils/fechas');
-
-const CONTENIDO_ESPECIAL_POR_DIA = {
+const { mapearCamposRespuesta } = require('../../utils/camposRespuesta');const CONTENIDO_ESPECIAL_POR_DIA = {
   1: 'presentacion',
   15: 'reflexion_15_dias',
   30: 'reflexion_30_dias'
@@ -40,19 +39,7 @@ function detectarHito(racha_dias, hitos_alcanzados = []) {
 
 function mapContenidoALeccion(contenido) {
   const pasos = contenido.datos_leccion?.ejercicio?.pasos;
-  const campos_respuesta = Array.isArray(pasos)
-    ? pasos
-        .filter(p => p.respuesta_tipo !== 'accion' || p.texto)
-        .map((p, i) => ({
-          id: p.id || `paso_${i + 1}`,
-          etiqueta: (typeof p.texto === 'string' ? p.texto : `Paso ${i + 1}`).substring(0, 300),
-          tipo: p.respuesta_tipo === 'escala' ? 'escala'
-            : p.respuesta_tipo === 'accion' ? 'accion'
-            : 'texto',
-          min: p.min,
-          max: p.max
-        }))
-    : [];
+  const campos_respuesta = mapearCamposRespuesta(pasos);
 
   return {
     titulo: contenido.titulo_modulo,

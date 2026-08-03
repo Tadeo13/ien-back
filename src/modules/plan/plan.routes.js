@@ -467,6 +467,38 @@ router.post('/complete-day', completeDay);
  *         description: No hay plan activo
  */
 router.post('/testing/advance', advanceDay);
+
+/**
+ * @swagger
+ * /api/plan/testing/retreat:
+ *   post:
+ *     summary: "[DEV] Retroceder al día anterior deshaciendo el último día completado"
+ *     tags: [Plan]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Día retrocedido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 dia_retrocedido:
+ *                   type: number
+ *                 dia_actual:
+ *                   type: number
+ *                 racha_dias:
+ *                   type: number
+ *                 racha_maxima:
+ *                   type: number
+ *                 estado:
+ *                   type: string
+ *       404:
+ *         description: No hay plan activo
+ *       409:
+ *         description: No hay días completados para retroceder
+ */
 router.post('/testing/retreat', retreatDay);
 
 /**

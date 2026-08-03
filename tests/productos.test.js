@@ -73,6 +73,26 @@ describe('Productos - admin_general', () => {
       .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(404);
   });
+
+  test('POST /api/admin/productos - tienda_id inexistente → 400', async () => {
+    const fakeId = '507f1f77bcf86cd799439011';
+    const res = await request(app)
+      .post('/api/admin/productos')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ nombre: 'Test', tienda_id: fakeId });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('La tienda indicada no existe');
+  });
+
+  test('PUT /api/admin/productos/:id - cambiar a tienda_id inexistente → 400', async () => {
+    const fakeId = '507f1f77bcf86cd799439011';
+    const res = await request(app)
+      .put(`/api/admin/productos/${data.producto1Id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ tienda_id: fakeId });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('La tienda indicada no existe');
+  });
 });
 
 describe('Productos - admin_negocio (scoped)', () => {

@@ -10,7 +10,7 @@ const isTest = process.env.NODE_ENV === 'test';
 
 const authLimiter = isTest ? noop : rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 5,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Demasiados intentos, intentá de nuevo en 15 minutos' }
@@ -117,7 +117,7 @@ router.post('/validate-code', authLimiter, validateCode);
  *                   description: Token JWT de acceso (15 min de expiración)
  *                 refresh_token:
  *                   type: string
- *                   description: Token de refresco (30 días de expiración, consumible una vez)
+ *                   description: Token de refresco (2 días de expiración, consumible una vez)
  *                 usuario:
  *                   type: object
  *                   properties:
@@ -128,9 +128,7 @@ router.post('/validate-code', authLimiter, validateCode);
  *                     email:
  *                       type: string
  *       400:
- *         description: Campos requeridos
- *       404:
- *         description: Código inválido
+ *         description: Código de activación inválido
  *       409:
  *         description: Email ya registrado
  */
@@ -167,7 +165,7 @@ router.post('/register', authLimiter, register);
  *                   description: Token JWT de acceso (15 min de expiración)
  *                 refresh_token:
  *                   type: string
- *                   description: Token de refresco (30 días de expiración, consumible una vez)
+ *                   description: Token de refresco (2 días de expiración, consumible una vez)
  *                 usuario:
  *                   type: object
  *                   properties:
@@ -177,10 +175,10 @@ router.post('/register', authLimiter, register);
  *                       type: string
  *                     email:
  *                       type: string
- *       400:
- *         description: Email y contraseña requeridos
  *       401:
- *         description: Credenciales inválidas
+ *         description: Credenciales incorrectas
+ *       400:
+ *         description: Faltan campos requeridos
  */
 router.post('/login', authLimiter, login);
 
@@ -249,7 +247,7 @@ router.post('/refresh', authLimiter, refresh);
  *       400:
  *         description: Refresh token requerido
  */
-router.post('/logout', logout);
+router.post('/logout', authLimiter, logout);
 
 /**
  * @swagger

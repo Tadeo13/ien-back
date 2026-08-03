@@ -2,6 +2,7 @@ const Codigo = require('../../models/Codigo');
 const Producto = require('../../models/Producto');
 const AppError = require('../../utils/AppError');
 const { tryCatch } = require('../../middlewares/errorHandler');
+const { toResponse } = require('../../utils/toResponse');
 
 const { enScope } = require('../../utils/scope');
 /**
@@ -16,12 +17,7 @@ exports.listar = tryCatch(async (req, res) => {
     .select('codigo producto_id tienda_id activo fecha_creacion fecha_activacion')
     .populate('tienda_id', 'nombre_tienda ciudad activo')
     .populate('producto_id', 'nombre');
-  const result = codigos.map(c => {
-    const obj = c.toObject();
-    const { _id, ...rest } = obj;
-    return { id: _id, ...rest };
-  });
-  res.json(result);
+  res.json(codigos.map(toResponse));
 });
 
 /**
@@ -44,8 +40,7 @@ exports.crear = tryCatch(async (req, res) => {
   }
 
   const doc = await Codigo.create({ codigo, producto_id, tienda_id, activo: true });
-  const { _id: cid, ...crest } = doc.toObject();
-  res.status(201).json({ id: cid, ...crest });
+  res.status(201).json(toResponse(doc));
 });
 
 /**
@@ -59,8 +54,7 @@ exports.activar = tryCatch(async (req, res) => {
   }
   doc.activo = true;
   await doc.save();
-  const { _id: aid, ...arest } = doc.toObject();
-  res.json({ mensaje: 'Código activado', codigo: { id: aid, ...arest } });
+  res.json({ mensaje: 'Código activado', codigo: toResponse(doc) });
 });
 
 /**
@@ -74,6 +68,5 @@ exports.desactivar = tryCatch(async (req, res) => {
   }
   doc.activo = false;
   await doc.save();
-  const { _id: did, ...drest } = doc.toObject();
-  res.json({ mensaje: 'Código desactivado', codigo: { id: did, ...drest } });
+  res.json({ mensaje: 'Código desactivado', codigo: toResponse(doc) });
 });

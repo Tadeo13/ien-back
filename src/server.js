@@ -6,7 +6,11 @@ const app = require('./app');
 const { PORT = 3000, MONGO_URI } = process.env;
 
 process.on('unhandledRejection', (err) => {
-  console.error('Unhandled Rejection:', err);
+  if (process.env.NODE_ENV !== 'production') {
+    console.error('Unhandled Rejection:', err);
+  } else {
+    console.error('Unhandled Rejection:', err.message);
+  }
 });
 
 if (!MONGO_URI) {

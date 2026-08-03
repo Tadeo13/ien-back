@@ -1305,19 +1305,19 @@ async function seed() {
 
   const planesConfig = [
     { idx: 0,  dia_actual: 4,  inicio_hace: 3,  estado: 'activo',     racha_max: 4,  hitos: [], ultima_hace: 0 },
-    { idx: 1,  dia_actual: 5,  inicio_hace: 4,  estado: 'activo',     racha_max: 5,  hitos: [5], ultima_hace: 0 },
-    { idx: 2,  dia_actual: 10, inicio_hace: 9,  estado: 'activo',     racha_max: 8,  hitos: [5, 10], ultima_hace: 1 },
-    { idx: 3,  dia_actual: 12, inicio_hace: 11, estado: 'activo',     racha_max: 10, hitos: [5, 10], ultima_hace: 0 },
-    { idx: 4,  dia_actual: 16, inicio_hace: 15, estado: 'activo',     racha_max: 12, hitos: [5, 10, 15], ultima_hace: 3 },
-    { idx: 5,  dia_actual: 18, inicio_hace: 17, estado: 'activo',     racha_max: 14, hitos: [5, 10, 15], ultima_hace: 4 },
-    { idx: 6,  dia_actual: 8,  inicio_hace: 17, estado: 'abandonado', racha_max: 8,  hitos: [5], ultima_hace: 10, racha_dias: 0 },
-    { idx: 7,  dia_actual: 25, inicio_hace: 24, estado: 'activo',     racha_max: 18, hitos: [5, 10, 15, 20, 25], ultima_hace: 0 },
-    { idx: 8,  dia_actual: 28, inicio_hace: 27, estado: 'activo',     racha_max: 20, hitos: [5, 10, 15, 20, 25], ultima_hace: 1 },
-    { idx: 9,  dia_actual: 29, inicio_hace: 28, estado: 'activo',     racha_max: 22, hitos: [5, 10, 15, 20, 25], ultima_hace: 2 },
-    { idx: 10, dia_actual: 30, inicio_hace: 29, estado: 'completado', racha_max: 24, hitos: [5, 10, 15, 20, 25, 30], ultima_hace: 3 },
-    { idx: 11, dia_actual: 30, inicio_hace: 29, estado: 'completado', racha_max: 26, hitos: [5, 10, 15, 20, 25, 30], ultima_hace: 4 },
+    { idx: 1,  dia_actual: 5,  inicio_hace: 4,  estado: 'activo',     racha_max: 5,  hitos: [], ultima_hace: 0 },
+    { idx: 2,  dia_actual: 10, inicio_hace: 9,  estado: 'activo',     racha_max: 8,  hitos: [7], ultima_hace: 1 },
+    { idx: 3,  dia_actual: 12, inicio_hace: 11, estado: 'activo',     racha_max: 10, hitos: [7], ultima_hace: 0 },
+    { idx: 4,  dia_actual: 16, inicio_hace: 15, estado: 'activo',     racha_max: 12, hitos: [7], ultima_hace: 3 },
+    { idx: 5,  dia_actual: 18, inicio_hace: 17, estado: 'activo',     racha_max: 14, hitos: [7, 14], ultima_hace: 4 },
+    { idx: 6,  dia_actual: 8,  inicio_hace: 17, estado: 'abandonado', racha_max: 8,  hitos: [7], ultima_hace: 10, racha_dias: 0 },
+    { idx: 7,  dia_actual: 25, inicio_hace: 24, estado: 'activo',     racha_max: 18, hitos: [7, 14], ultima_hace: 0 },
+    { idx: 8,  dia_actual: 28, inicio_hace: 27, estado: 'activo',     racha_max: 20, hitos: [7, 14], ultima_hace: 1 },
+    { idx: 9,  dia_actual: 29, inicio_hace: 28, estado: 'activo',     racha_max: 22, hitos: [7, 14, 21], ultima_hace: 2 },
+    { idx: 10, dia_actual: 31, inicio_hace: 29, estado: 'completado', racha_max: 24, hitos: [7, 14, 21], ultima_hace: 3 },
+    { idx: 11, dia_actual: 31, inicio_hace: 29, estado: 'completado', racha_max: 26, hitos: [7, 14, 21], ultima_hace: 4 },
     { idx: 12, dia_actual: 2,  inicio_hace: 1,  estado: 'activo',     racha_max: 2,  hitos: [], ultima_hace: 0 },
-    { idx: 13, dia_actual: 5,  inicio_hace: 15, estado: 'abandonado', racha_max: 5,  hitos: [5], ultima_hace: 11, racha_dias: 0 },
+    { idx: 13, dia_actual: 5,  inicio_hace: 15, estado: 'abandonado', racha_max: 5,  hitos: [], ultima_hace: 11, racha_dias: 0 },
     { idx: 14, dia_actual: 3,  inicio_hace: 2,  estado: 'activo',     racha_max: 3,  hitos: [], ultima_hace: 0 }
   ];
 

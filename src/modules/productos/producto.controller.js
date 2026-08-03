@@ -1,7 +1,9 @@
 const Producto = require('../../models/Producto');
+const Tienda = require('../../models/Tienda');
 const AppError = require('../../utils/AppError');
 const { tryCatch } = require('../../middlewares/errorHandler');
 const { enScope } = require('../../utils/scope');
+const { toResponse } = require('../../utils/toResponse');
 
 /**
  * GET /admin/productos
@@ -13,7 +15,7 @@ exports.listar = tryCatch(async (req, res) => {
   }
   const productos = await Producto.find(filtro)
     .populate('tienda_id', 'nombre_tienda ciudad');
-  res.json(productos);
+  res.json(productos.map(toResponse));
 });
 
 /**
@@ -27,9 +29,11 @@ exports.crear = tryCatch(async (req, res) => {
     throw new AppError(403, 'Solo puedes asignar una tienda dentro de tu scope');
   }
 
+  const tiendaExiste = await Tienda.findById(tienda_id).select('_id').lean();
+  if (!tiendaExiste) throw new AppError(400, 'La tienda indicada no existe');
+
   const producto = await Producto.create({ nombre, descripcion, tienda_id });
-  const { _id, ...prest } = producto.toObject();
-  res.status(201).json({ id: _id, ...prest });
+  res.status(201).json(toResponse(producto));
 });
 
 /**
@@ -50,11 +54,13 @@ exports.actualizar = tryCatch(async (req, res) => {
 
   if (nombre !== undefined) producto.nombre = nombre;
   if (descripcion !== undefined) producto.descripcion = descripcion;
-  if (tienda_id !== undefined) producto.tienda_id = tienda_id;
+  if (tienda_id !== undefined) {
+      const tiendaExiste = await Tienda.findById(tienda_id).select('_id').lean();
+      if (!tiendaExiste) throw new AppError(400, 'La tienda indicada no existe');
+      producto.tienda_id = tienda_id;
+  }
   await producto.save();
-
-  const { _id: pid, ...prest2 } = producto.toObject();
-  res.json({ id: pid, ...prest2 });
+  res.json(toResponse(producto));
 });
 
 /**

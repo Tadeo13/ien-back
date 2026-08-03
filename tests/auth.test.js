@@ -341,3 +341,41 @@ describe('Auth - reset-password', () => {
     expect(res.status).toBe(400);
   });
 });
+
+describe('Auth - change-password', () => {
+    let data, token;
+    beforeEach(async () => {
+        data = await seed();
+        token = generateToken(data.usuario);
+    });
+
+    test('POST /api/auth/change-password - success', async () => {
+        const res = await request(app)
+          .post('/api/auth/change-password')
+          .set('Authorization', `Bearer ${token}`)
+          .send({ current_password: 'user123', nueva_password: 'newpass456' });
+        expect(res.status).toBe(200);
+        expect(res.body.mensaje).toMatch(/actualizada/i);
+
+        const loginRes = await request(app)
+          .post('/api/auth/login')
+          .send({ email: data.usuario.email, password: 'newpass456' });
+        expect(loginRes.status).toBe(200);
+    });
+
+    test('POST /api/auth/change-password - contraseña actual incorrecta', async () => {
+        const res = await request(app)
+          .post('/api/auth/change-password')
+          .set('Authorization', `Bearer ${token}`)
+          .send({ current_password: 'wrongpass', nueva_password: 'newpass456' });
+        expect(res.status).toBe(401);
+    });
+
+    test('POST /api/auth/change-password - campos faltantes', async () => {
+        const res = await request(app)
+          .post('/api/auth/change-password')
+          .set('Authorization', `Bearer ${token}`)
+          .send({ current_password: 'user123' });
+        expect(res.status).toBe(400);
+    });
+});

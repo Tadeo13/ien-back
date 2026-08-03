@@ -8,6 +8,7 @@ const ContenidoDiario = require('../../models/ContenidoDiario');
 const AppError = require('../../utils/AppError');
 const { getInicioDeDiaDeAyer, getInicioDeDiaDeHoy, getFechaHaceDias } = require('../../utils/fechas');
 const { enScope } = require('../../utils/scope');
+const { mapearCamposRespuesta } = require('../../utils/camposRespuesta');
 const { panelAdminPorTienda } = require('./panelAdmin');
 
 exports.panelAdminPorTienda = panelAdminPorTienda;
@@ -137,19 +138,7 @@ exports.getActividadesPaciente = async (usuarioId, tiendasPermitidas) => {
       const c = contenidoMap.get(d.dia_numero);
       if (c) {
         const pasos = c.datos_leccion?.ejercicio?.pasos;
-        const campos_respuesta = Array.isArray(pasos)
-          ? pasos
-              .filter(p => p.respuesta_tipo !== 'accion' || p.texto)
-              .map((p, i) => ({
-                id: p.id || `paso_${i + 1}`,
-                etiqueta: (typeof p.texto === 'string' ? p.texto : `Paso ${i + 1}`).substring(0, 80),
-                tipo: p.respuesta_tipo === 'escala' ? 'escala'
-                  : p.respuesta_tipo === 'accion' ? 'accion'
-                  : 'texto',
-                min: p.min,
-                max: p.max
-              }))
-          : [];
+        const campos_respuesta = mapearCamposRespuesta(pasos);
         resultado.leccion = {
           titulo: c.titulo_modulo,
           tipo: c.tipo_contenido,
@@ -328,9 +317,9 @@ exports.crearModeradorTienda = async ({ nombre, email, password, tienda_id }, cr
   }
 
   if (creador.rol === 'admin_negocio') {
-    const enScope = (creador.tiendas_administradas || [])
+    const estaEnScope = (creador.tiendas_administradas || [])
       .some((t) => t.toString() === tienda_id.toString());
-    if (!enScope) {
+    if (!estaEnScope) {
       throw new AppError(403, 'La tienda no está dentro de tu scope');
     }
   }

@@ -24,8 +24,13 @@ async function enviarCorreo({ usuario_id, destinatario, asunto, html, tipo_corre
     return { success: false, error: 'RESEND_API_KEY no configurada' };
   }
   try {
+    if (!process.env.EMAIL_FROM) {
+        console.error('[CRITICAL] EMAIL_FROM sin configurar — no se puede enviar correo');
+        await registrarHistorial({ usuario_id, destinatario, tipo_correo, estado: 'fallido', meta: { error: 'EMAIL_FROM no configurado' } });
+        return { success: false, error: 'EMAIL_FROM no configurado' };
+    }
     const resend = new Resend(process.env.RESEND_API_KEY);
-    const from = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+    const from = process.env.EMAIL_FROM;
     const { data, error } = await resend.emails.send({ from, to: destinatario, subject: asunto, html });
     if (error) {
       console.error('[emailService] Error de Resend:', error.message);
