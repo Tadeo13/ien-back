@@ -6,7 +6,7 @@ const PlanProgreso = require('../../models/PlanProgreso');
 const TestPregunta = require('../../models/TestPregunta');
 const ContenidoDiario = require('../../models/ContenidoDiario');
 const AppError = require('../../utils/AppError');
-const { getInicioDeDiaDeAyer, getInicioDeDiaDeHoy, getFechaHaceDias } = require('../../utils/fechas');
+const { getInicioDeDiaDeAyer, getInicioDeDiaDeHoy, getFechaHaceDias, getInicioDeDiaDeAnteayer } = require('../../utils/fechas');
 const { enScope } = require('../../utils/scope');
 const { mapearCamposRespuesta } = require('../../utils/camposRespuesta');
 const { panelAdminPorTienda } = require('./panelAdmin');
@@ -246,7 +246,7 @@ exports.listarPacientes = async (pagina, limite, tiendasPermitidas) => {
     }
   }
 
-  const inicioAyer = getInicioDeDiaDeAyer();
+  const inicioAnteayer = getInicioDeDiaDeAnteayer();
 
   return {
     pacientes: usuarios.map(u => {
@@ -264,7 +264,7 @@ exports.listarPacientes = async (pagina, limite, tiendasPermitidas) => {
               racha_dias: plan.racha_dias,
               en_riesgo: plan.estado === 'activo'
                 && plan.ultima_fecha_actividad
-                && plan.ultima_fecha_actividad < inicioAyer
+                && plan.ultima_fecha_actividad < inicioAnteayer
             }
           : null
       };
