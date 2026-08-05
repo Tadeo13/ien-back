@@ -4,13 +4,19 @@ const { enviarCorreo, enviarEnLote, yaSeEnvio, yaSeEnviaronBatch } = require('..
 const { recordatorioDiario, rachaRota, urgenciaActivacion, recuperacionInactividad } = require('../email/templates');
 
 async function sendReminders() {
-  const usuarios = await findUsuariosRezagados();
+  const ahora = new Date();
+  const horaUtcActual = ahora.getUTCHours();
+  const minutoUtcActual = ahora.getUTCMinutes();
+  const usuarios = await findUsuariosRezagados(horaUtcActual, minutoUtcActual);
   if (usuarios.length === 0) {
     return { enviados: 0, fallidos: 0, saltados: 0, total: 0 };
   }
+  const ids = usuarios.map(u => (u.usuario_id).toString());
+  const yaEnviados = await yaSeEnviaronBatch(ids, 'recordatorio_diario', true);
   return enviarEnLote(usuarios, {
     tipo_correo: 'recordatorio_diario',
-    renderFn: (u) => ({ ...recordatorioDiario(u.nombre, u.dia_actual), meta: { dia_actual: u.dia_actual, racha_dias: u.racha_dias } })
+    renderFn: (u) => ({ ...recordatorioDiario(u.nombre, u.dia_actual), meta: { dia_actual: u.dia_actual, racha_dias: u.racha_dias } }),
+    skipFn: (u) => yaEnviados.has((u.usuario_id).toString())
   });
 }
 

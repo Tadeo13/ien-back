@@ -47,7 +47,7 @@ exports.validateCode = async (codigo_activacion) => {
   };
 };
 
-exports.register = async ({ nombre, email, password, codigo_activacion }) => {
+exports.register = async ({ nombre, email, password, codigo_activacion, hora_recordatorio, minuto_recordatorio }) => {
   if (typeof email !== 'string' || typeof password !== 'string' || typeof codigo_activacion !== 'string') {
     throw new AppError(400, 'Todos los campos son requeridos');
   }
@@ -67,6 +67,21 @@ exports.register = async ({ nombre, email, password, codigo_activacion }) => {
     throw new AppError(409, 'El email ya está registrado');
   }
 
+  let hora_recordatorio_utc = undefined;
+  let minuto_recordatorio_utc = undefined;
+  if (hora_recordatorio !== undefined) {
+    if (typeof hora_recordatorio !== 'number' || !Number.isInteger(hora_recordatorio) || hora_recordatorio < 0 || hora_recordatorio > 23) {
+      throw new AppError(400, 'La hora de recordatorio debe ser un número entero entre 0 y 23 (hora PY)');
+    }
+    hora_recordatorio_utc = (hora_recordatorio + 3) % 24;
+  }
+  if (minuto_recordatorio !== undefined) {
+    if (minuto_recordatorio !== 0 && minuto_recordatorio !== 30) {
+      throw new AppError(400, 'El minuto de recordatorio debe ser 0 o 30');
+    }
+    minuto_recordatorio_utc = minuto_recordatorio;
+  }
+
   const password_hash = await bcrypt.hash(password, 10);
   const usuario = await Usuario.create({
     nombre,
@@ -74,7 +89,9 @@ exports.register = async ({ nombre, email, password, codigo_activacion }) => {
     password_hash,
     tienda_id: codDoc.tienda_id,
     producto_id: codDoc.producto_id,
-    codigo_activacion
+    codigo_activacion,
+    ...(hora_recordatorio_utc !== undefined && { hora_recordatorio_utc }),
+    ...(minuto_recordatorio_utc !== undefined && { minuto_recordatorio_utc })
   });
 
   const access_token = generarAccessToken(usuario);

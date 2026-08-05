@@ -56,12 +56,17 @@ async function yaSeEnvio(usuario_id, tipo_correo) {
   }
 }
 
-async function yaSeEnviaronBatch(usuarioIds, tipo_correo) {
-  const enviados = await HistorialCorreo.find({
+async function yaSeEnviaronBatch(usuarioIds, tipo_correo, filtrarPorHoy = false) {
+  const query = {
     usuario_id: { $in: usuarioIds },
     tipo_correo,
     estado: 'enviado'
-  }).select('usuario_id').lean();
+  };
+  if (filtrarPorHoy) {
+    const { getInicioDeDiaDeHoy } = require('../../utils/fechas');
+    query.fecha_envio = { $gte: getInicioDeDiaDeHoy() };
+  }
+  const enviados = await HistorialCorreo.find(query).select('usuario_id').lean();
   return new Set(enviados.map(e => e.usuario_id.toString()));
 }
 

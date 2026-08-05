@@ -20,13 +20,13 @@ exports.validateCode = tryCatch(async (req, res) => {
 });
 
 exports.register = tryCatch(async (req, res) => {
-  const { nombre, email, password, codigo_activacion } = req.body;
+  const { nombre, email, password, codigo_activacion, hora_recordatorio, minuto_recordatorio } = req.body;
 
   if (!nombre || !email || !password || !codigo_activacion) {
     throw new AppError(400, 'Todos los campos son requeridos');
   }
 
-  const result = await register({ nombre, email, password, codigo_activacion });
+  const result = await register({ nombre, email, password, codigo_activacion, hora_recordatorio, minuto_recordatorio });
 
   res.status(201).json(result);
 });

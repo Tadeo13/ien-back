@@ -2,7 +2,7 @@ const PlanProgreso = require('../../models/PlanProgreso');
 const Usuario = require('../../models/Usuario');
 const { getInicioDeDiaDeAyer, getFechaHaceDias } = require('../../utils/fechas');
 
-async function findUsuariosRezagados() {
+async function findUsuariosRezagados(horaUtcActual, minutoUtcActual) {
   return PlanProgreso.aggregate([
     {
       $match: {
@@ -17,6 +17,16 @@ async function findUsuariosRezagados() {
     },
     { $lookup: { from: 'usuarios', localField: 'usuario_id', foreignField: '_id', as: 'usuario' } },
     { $unwind: '$usuario' },
+    {
+      $match: {
+        $expr: {
+          $and: [
+            { $eq: [{ $ifNull: ['$usuario.hora_recordatorio_utc', 13] }, horaUtcActual] },
+            { $eq: [{ $ifNull: ['$usuario.minuto_recordatorio_utc', 0] }, minutoUtcActual] }
+          ]
+        }
+      }
+    },
     {
       $project: {
         usuario_id: 1,
