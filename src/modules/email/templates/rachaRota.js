@@ -1,4 +1,4 @@
-const { C, wrap, header, footer, card, spacer, btn, label, title, body } = require('./base');
+const { C, wrap, header, brandFooter, card, spacer, btn, label, title, body } = require('./base');
 
 function rachaRota(nombre, racha, baseUrl) {
   const frontUrl = baseUrl || process.env.FRONTEND_URL || 'https://ien.app';
@@ -13,7 +13,7 @@ function rachaRota(nombre, racha, baseUrl) {
       ${btn('Volver a empezar hoy', frontUrl + '/dashboard', C.teal)}
     `, C.red)}
     ${spacer()}
-    ${footer()}
+    ${brandFooter()}
   `);
   return { asunto: nombre + ', se rompió tu racha de ' + racha + ' días', html };
 }

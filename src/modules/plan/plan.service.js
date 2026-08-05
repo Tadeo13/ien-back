@@ -380,7 +380,8 @@ exports.getProfile = async (usuarioId) => {
 exports.completeDay = async (usuarioId, respuestaUsuario) => {
   const plan = await PlanProgreso
     .findOne({ usuario_id: usuarioId, estado: 'activo' })
-    .select('_id')
+    .select('_id tienda_id')
+    .populate('tienda_id', 'nombre_tienda')
     .lean();
   if (!plan) {
     throw new AppError(404, 'No hay un plan activo');
@@ -392,7 +393,7 @@ exports.completeDay = async (usuarioId, respuestaUsuario) => {
     Usuario.findById(usuarioId).select('nombre email').lean()
       .then(usuario => {
         if (!usuario) return;
-        const { asunto, html } = hito(usuario.nombre, hito_alcanzado);
+        const { asunto, html } = hito(usuario.nombre, hito_alcanzado, plan.tienda_id?.nombre_tienda);
         return enviarCorreo({
           usuario_id: usuarioId,
           destinatario: usuario.email,

@@ -1,4 +1,4 @@
-const { FONT, C, wrap, header, footer, card, spacer, btn, label, title, body } = require('./base');
+const { FONT, C, wrap, header, brandFooter, card, spacer, btn, label, title, body } = require('./base');
 
 function recordatorioDiario(nombre, dia, baseUrl) {
   const frontUrl = baseUrl || process.env.FRONTEND_URL || 'https://ien.app';
@@ -13,7 +13,7 @@ function recordatorioDiario(nombre, dia, baseUrl) {
       ${btn('Completar ahora', frontUrl + '/dashboard', C.gold)}
     `, C.gold)}
     ${spacer()}
-    ${footer()}
+    ${brandFooter()}
   `);
   return { asunto: nombre + ', no olvides completar tu actividad del Día ' + dia, html };
 }

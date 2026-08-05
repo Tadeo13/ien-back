@@ -57,7 +57,7 @@ exports.register = async ({ nombre, email, password, codigo_activacion, hora_rec
     throw new AppError(404, 'Código de activación inválido');
   }
 
-  const tiendaDoc = await Tienda.findById(codDoc.tienda_id).select('activo').lean();
+  const tiendaDoc = await Tienda.findById(codDoc.tienda_id).select('activo nombre_tienda').lean();
   if (!tiendaDoc || tiendaDoc.activo === false) {
     throw new AppError(403, 'La tienda asociada a este código ya no está activa');
   }
@@ -99,7 +99,7 @@ exports.register = async ({ nombre, email, password, codigo_activacion, hora_rec
 
   Producto.findById(codDoc.producto_id).select('nombre').lean()
     .then(() => {
-      const { asunto, html } = bienvenida(usuario.nombre);
+      const { asunto, html } = bienvenida(usuario.nombre, tiendaDoc.nombre_tienda);
       return enviarCorreo({
         usuario_id: usuario._id,
         destinatario: usuario.email,

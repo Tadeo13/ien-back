@@ -1,4 +1,4 @@
-const { C, wrap, header, footer, card, spacer, btn, label, title, body } = require('./base');
+const { C, wrap, header, brandFooter, card, spacer, btn, label, title, body } = require('./base');
 
 function urgenciaActivacion(nombre, baseUrl) {
   const frontUrl = baseUrl || process.env.FRONTEND_URL || 'https://ien.app';
@@ -13,7 +13,7 @@ function urgenciaActivacion(nombre, baseUrl) {
       ${btn('Activar mi programa', frontUrl + '/dashboard', C.gold)}
     `, C.gold)}
     ${spacer()}
-    ${footer()}
+    ${brandFooter()}
   `);
   return { asunto: nombre + ', tu transformación te está esperando', html };
 }

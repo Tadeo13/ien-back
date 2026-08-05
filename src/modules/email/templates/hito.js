@@ -1,4 +1,4 @@
-const { C, wrap, header, footer, card, spacer, label, title, body, signoff } = require('./base');
+const { C, wrap, header, brandFooter, card, spacer, label, title, body, signoff } = require('./base');
 
 const HITOS = {
   7: {
@@ -27,7 +27,7 @@ const HITOS = {
   },
 };
 
-function hito(nombre, dia) {
+function hito(nombre, dia, tienda) {
   const h = HITOS[dia] || HITOS[7];
   const html = wrap(
     header() +
@@ -36,11 +36,11 @@ function hito(nombre, dia) {
       title(h.titulo) +
       body('Hola, <strong>' + nombre + '</strong>,') +
       body(h.cuerpo) +
-      signoff(),
+      signoff(tienda || null),
       h.accent
     ) +
     spacer() +
-    footer()
+    brandFooter()
   );
   return { asunto: nombre + ', ' + dia + ' días — ¡semana completada!', html };
 }

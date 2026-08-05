@@ -1,4 +1,4 @@
-const { C, wrap, header, footer, card, spacer, btn, label, title, body } = require('./base');
+const { C, wrap, header, brandFooter, card, spacer, btn, label, title, body } = require('./base');
 
 function recuperacionInactividad(nombre, dia, baseUrl) {
   const frontUrl = baseUrl || process.env.FRONTEND_URL || 'https://ien.app';
@@ -13,7 +13,7 @@ function recuperacionInactividad(nombre, dia, baseUrl) {
       ${btn('Reanudar mi programa', frontUrl + '/dashboard', C.teal)}
     `, C.teal)}
     ${spacer()}
-    ${footer()}
+    ${brandFooter()}
   `);
   return { asunto: nombre + ', te extrañamos en tu programa', html };
 }
