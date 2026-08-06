@@ -15,6 +15,9 @@ const { mapearCamposRespuesta } = require('../../utils/camposRespuesta');const C
   30: 'reflexion_30_dias'
 };
 
+// Último día de cada bloque (cierre del bloque).
+const DIAS_CIERRE_BLOQUE = [5, 10, 15, 20, 25, 30];
+
 function yaCompletoActividadHoy(plan, ahora) {
   if (!plan.ultima_fecha_actividad) return false;
   if (!esMismoDiaCalendarioUTC(plan.ultima_fecha_actividad, ahora)) return false;
@@ -54,6 +57,12 @@ function mapContenidoALeccion(contenido) {
 async function getCabeceraSiEsInicioDeBloque(diaNumero) {
   const contenido = await ContenidoDiario.findOne({ dia_numero: diaNumero }).select('cabecera').lean();
   return contenido?.cabecera || null;
+}
+
+async function getConclusionSiEsCierreDeBloque(diaNumero) {
+  if (!DIAS_CIERRE_BLOQUE.includes(diaNumero)) return null;
+  const contenido = await ContenidoDiario.findOne({ dia_numero: diaNumero }).select('conclusion').lean();
+  return contenido?.conclusion || null;
 }
 
 /**
@@ -412,6 +421,7 @@ exports.completeDay = async (usuarioId, respuestaUsuario) => {
     // sin basarnos en la variable 'plan' anterior que está en estado stale.
     dia_completado: planActualizado.dia_actual - 1,
     dia_actual: planActualizado.dia_actual,
+    conclusion: await getConclusionSiEsCierreDeBloque(planActualizado.dia_actual - 1),
     racha_dias: planActualizado.racha_dias,
     racha_maxima: planActualizado.racha_maxima,
     estado: planActualizado.estado,
@@ -439,6 +449,7 @@ exports.advanceDay = async (usuarioId) => {
   return {
     dia_completado: planActualizado.dia_actual - 1,
     dia_actual: planActualizado.dia_actual,
+    conclusion: await getConclusionSiEsCierreDeBloque(planActualizado.dia_actual - 1),
     racha_dias: planActualizado.racha_dias,
     racha_maxima: planActualizado.racha_maxima,
     estado: planActualizado.estado,

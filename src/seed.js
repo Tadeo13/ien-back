@@ -42,12 +42,12 @@ const CONTENIDOS = [
       concepto: 'La autoconciencia es la capacidad de reconocer un sentimiento o estado físico en el momento en que aparece.',
       ejercicio: {
         nombre: 'Escaneo Corporal Matutino',
-        instruccion: 'Al despertar, permanece en la cama durante 2-3 minutos adicionales escaneando tu cuerpo de pies a cabeza.',
+        instruccion: 'Al despertar, permanece en la cama durante 2-3 minutos adicionales. Luego, escanea tu cuerpo sistemáticamente de pies a cabeza.',
         pasos: [
-          { texto: 'Observa tus niveles de energía hoy', respuesta_tipo: 'escala', min: 1, max: 10 },
-          { texto: 'Identifica tensión en hombros, cuello o mandíbula', respuesta_tipo: 'abierta' },
-          { texto: 'Siente si hay ligereza en las piernas o pesadez mental', respuesta_tipo: 'abierta' },
-          { texto: 'Nota si tu respiración es superficial o profunda', respuesta_tipo: 'abierta' }
+          { texto: '¿Cómo están tus niveles de energía hoy? (Escala 1-10)', respuesta_tipo: 'escala', min: 1, max: 10 },
+          { texto: '¿Sientes tensión en hombros, cuello o mandíbula?', respuesta_tipo: 'abierta' },
+          { texto: '¿Hay ligereza en las piernas o pesadez mental?', respuesta_tipo: 'abierta' },
+          { texto: '¿Tu respiración es superficial o profunda?', respuesta_tipo: 'abierta' }
         ],
         tipo: 'reflexion',
         respuesta_tipo: 'abierta'
@@ -149,6 +149,7 @@ const CONTENIDOS = [
     dia_numero: 5, tipo_contenido: 'cuestionario',
     titulo_modulo: 'Día 5: El Mapa de Ritmos Biológicos Personales',
     emociones_objetivo: ['alegría', 'tristeza', 'ira', 'miedo'],
+    conclusion: 'Conclusión: El Despertar Continuo.\n\nLa autoconciencia integral no es un destino, sino un viaje continuo de descubrimiento personal. Este programa de 5 días establece las bases para una relación más consciente y saludable contigo mismo, integrando la sabiduría ancestral del mindfulness con la inteligencia emocional.\n\nReflexión Final: "Cuando respiras conscientemente, ya has llegado a casa" - Thich Nhat Hanh. La práctica diaria de estos principios te permitirá vivir con mayor calma, energía y bienestar auténtico.\n\nLa combinación de técnicas de autoconciencia con suplementación natural estratégica crea un enfoque holístico que honra tanto la complejidad de tu ser como la simplicidad de estar presente en cada momento.',
     datos_leccion: {
       titulo: 'El Mapa de Ritmos Biológicos Personales',
       bloque: 'Autoconciencia',
@@ -301,6 +302,7 @@ const CONTENIDOS = [
     dia_numero: 10, tipo_contenido: 'cuestionario',
     titulo_modulo: 'Día 10: Auditoría de la Nueva Identidad',
     emociones_objetivo: ['alegría', 'tristeza'],
+    conclusion: 'Conclusión: El Arquitecto de tu Nueva Historia.\n\nEn cinco días has dejado atrás la identidad del "dietante fallido" para convertirte en el autor de tu propia narrativa. Cada pequeña victoria que reconociste no fue casualidad: fue la prueba concreta de que tu mente cree lo que le dices.\n\nReflexión Final: "No eres el fracaso del pasado, eres el constructor del presente." La autoconfianza no se hereda: se construye con decisiones inteligentes y celebradas a diario.\n\nTu cerebro ya está formando los caminos que sostienen esta nueva identidad. Nutre tu cuerpo, muévete con intención y repítete a diario que sí puedes.',
     datos_leccion: {
       titulo: 'Auditoría de la Nueva Identidad',
       bloque: 'Autoconfianza',
@@ -451,6 +453,7 @@ const CONTENIDOS = [
     dia_numero: 15, tipo_contenido: 'instructivo',
     titulo_modulo: 'Día 15: El Observador de la Incomodidad',
     emociones_objetivo: ['ira', 'miedo'],
+    conclusion: 'Conclusión: La Pausa Poderosa.\n\nA lo largo de este bloque aprendiste que el autocontrol no es represión, sino la habilidad de crear un espacio consciente entre el estímulo y tu respuesta. Transformaste la teoría en disciplina consciente: gestionas estrés, sedentarismo y sueño como parte de un mismo sistema, tu bienestar integral.\n\nReflexión Final: "Entre el estímulo y la respuesta existe un espacio; en ese espacio está tu poder de elegir." Cada pausa de 5 minutos fue un acto de libertad: ya no eres pasajero de tus impulsos, eres el conductor de tu salud cardiovascular y metabólica.\n\nAl elegir con libertad y no por prohibición, dejaste de pelear contra tus deseos para guiarlos. Ese es el verdadero autocontrol: el que nace de la gestión, no de la negación.',
     datos_leccion: {
       titulo: 'El Observador de la Incomodidad',
       bloque: 'Autocontrol',
@@ -601,6 +604,7 @@ const CONTENIDOS = [
     dia_numero: 20, tipo_contenido: 'cuestionario',
     titulo_modulo: 'Día 20: El Compromiso con el "Quiero" (Consolidación Neurológica)',
     emociones_objetivo: ['alegría', 'tristeza'],
+    conclusion: 'Conclusión: El Motor Interno Encendido.\n\nDejaste atrás el "tengo que adelgazar" para abrazar el "quiero vivir con energía". Anclaste tus acciones en valores profundos, no en presión externa, y consolidaste una motivación que no se desvanece ante el primer obstáculo.\n\nReflexión Final: "La motivación no es esperar a tener ganas; es recordar el porqué que ya tienes dentro." Al conectar tu alimentación y tu movimiento con tu propósito, los hábitos dejaron de ser restricciones para convertirse en el combustible de tus metas de vida.\n\nTu cerebro ya premia el cuidado como una elección propia y no como una obligación. Ese motor interno es tuyo: mantenlo encendido con la proactividad de hacer que las cosas sucedan.',
     datos_leccion: {
       titulo: 'El Compromiso con el "Quiero" (Consolidación Neurológica)',
       bloque: 'Motivación',
@@ -759,6 +763,7 @@ const CONTENIDOS = [
     dia_numero: 25, tipo_contenido: 'cuestionario',
     titulo_modulo: 'Día 25: El Permiso del Descanso Real (Neurobiología de la Recuperación)',
     emociones_objetivo: ['alegría', 'tristeza'],
+    conclusion: 'Palabras Finales: El Poder de la Empatía Integral.\n\nEn un mundo que constantemente te invita a ser tu peor crítico, has elegido el camino más revolucionario: convertirte en tu mejor aliado.\n\nHas desarrollado la capacidad más transformadora que existe: la habilidad de amarte a ti mismo incondicionalmente mientras sigues creciendo.\n\nQue cada día de tu vida sea una expresión de esta autocompasión. Que cada decisión refleje el amor propio que has cultivado. Que cada respiración te recuerde que mereces tu propia gentileza.',
     datos_leccion: {
       titulo: 'El Permiso del Descanso Real (Neurobiología de la Recuperación)',
       bloque: 'Empatía',
@@ -923,6 +928,7 @@ const CONTENIDOS = [
     dia_numero: 30, tipo_contenido: 'cuestionario',
     titulo_modulo: 'Día 30: Recapitulación y Compromiso de Vida',
     emociones_objetivo: ['alegría', 'ira'],
+    conclusion: 'Conclusión Final: El Comienzo de Todo.\n\nCompletaste los 30 días de IEN, y no terminaste un programa: comenzaste una nueva forma de vivir. Demostraste que se puede socializar, celebrar y compartir sin renunciar a la salud, manteniendo límites asertivos y sin rastro de culpa.\n\nReflexión Final: "La verdadera libertad no es aislarse para cumplir, sino poder estar con los demás sin dejar de ser tú." Tu entorno ya no te sabotea: lo navegas con seguridad y disfrutas de cada momento.\n\nHoy cierras un ciclo con autoconciencia, confianza, autocontrol, motivación y empatía integrados en tu vida. Este es solo el comienzo de tu bienestar auténtico: cada día a partir de ahora, honra lo que construiste.',
     datos_leccion: {
       titulo: 'Recapitulación y Compromiso de Vida (Consolidación de Competencia Social)',
       bloque: 'Competencia Social',
@@ -1035,7 +1041,7 @@ const CONTENIDOS_ESPECIALES = [
         pregunta: '¿Estás listo para descubrir quién puedes llegar a ser?'
       },
       cierre: 'Tu transformación integral comienza con una sola decisión: elegir invertir en ti mismo. Bienvenido a tu nueva vida. Bienvenido a tu verdadero poder.',
-      cita_final: 'El momento en que decides transformarte es el momento en que todo cambia. No esperes el momento perfecto; crélalo.'
+      cita_final: 'El momento en que decides transformarte es el momento en que todo cambia. No esperes el momento perfecto; créalo.'
     }
   },
   {
