@@ -348,6 +348,7 @@ exports.getToday = async (usuarioId) => {
   return {
     dia_actual: plan.dia_actual,
     cabecera: await getCabeceraSiEsInicioDeBloque(plan.dia_actual),
+    conclusion: await getConclusionSiEsCierreDeBloque(plan.dia_actual),
     contenido_especial: contenidoEspecial,
     leccion: mapContenidoALeccion(contenido)
   };
