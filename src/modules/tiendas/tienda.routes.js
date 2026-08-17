@@ -6,7 +6,8 @@ const { requireRol } = require('../../middlewares/roleMiddleware');
 const sucursalCtrl = require('./tienda.controller');
 
 const router = Router();
-router.use(authMiddleware, adminMiddleware, scopeTiendaMiddleware);
+router.use(authMiddleware, adminMiddleware, scopeTiendaMiddleware,
+  requireRol('admin_negocio', 'admin_general'));
 
 /**
  * @swagger
