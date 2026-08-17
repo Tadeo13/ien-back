@@ -10,8 +10,6 @@ const C = {
   border: "rgba(62,58,56,0.1)",
 };
 
-const LOGO_SVG = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAiIGhlaWdodD0iMzYiIHZpZXdCb3g9IjAgMCAxMjAgMzYiPjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMzYiIGZpbGw9Im5vbmUiLz48dGV4dCB4PSIwIiB5PSIyOCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSBOZXVlLEhlbHZldGljYSxBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjI4IiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjM0UzQTM4IiBsZXR0ZXItc3BhY2luZz0iMiI+SUVOPC90ZXh0PjxjaXJjbGUgY3g9IjEwNSIgY3k9IjEwIiByPSI1IiBmaWxsPSIjRjBCQzQ4Ii8+PC9zdmc+";
-
 const FONT = {
   lora: "'Lora', Georgia, 'Times New Roman', serif",
   inter: "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
@@ -46,16 +44,7 @@ function header() {
   return `
   <tr>
     <td style="padding:24px 32px;background:${C.white};border-radius:16px 16px 0 0;border-bottom:1px solid ${C.border};">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-        <tr>
-          <td>
-            <img src="${LOGO_SVG}" alt="IEN" width="80" style="height:auto;" />
-          </td>
-          <td align="right" style="vertical-align:middle;">
-            <span style="font-family:${FONT.mono};font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:${C.muted};font-weight:500;">IEN</span>
-          </td>
-        </tr>
-      </table>
+      <p style="margin:0;font-family:${FONT.mono};font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:${C.muted};font-weight:500;">IEN — Inteligencia Emocional</p>
     </td>
   </tr>`;
 }
@@ -111,12 +100,36 @@ function body(text) {
   return `<p style="margin:0 0 16px;font-family:${FONT.inter};font-size:15px;color:${C.text};line-height:1.7;font-weight:400;">${text}</p>`;
 }
 
-function signoff() {
+function signoff(tienda) {
   return `
   <p style="margin:0;font-family:${FONT.inter};font-size:15px;color:${C.text};line-height:1.7;">
     Con cariño,<br/>
-    <span style="font-weight:500;">Equipo IEN</span>
+    <span style="font-weight:500;">Equipo IEN${tienda ? ' \u00B7 ' + tienda : ''}</span>
   </p>`;
 }
 
-module.exports = { C, LOGO_SVG, FONT, wrap, header, footer, card, spacer, btn, label, title, body, signoff };
+function brandFooter() {
+  const base = process.env.FRONTEND_URL || 'https://ien.app';
+  return `
+  <tr>
+    <td style="padding:16px 32px 8px;background:${C.white};">
+      <p style="margin:0 0 12px;font-family:${FONT.inter};font-size:10px;letter-spacing:0.28em;text-transform:uppercase;color:${C.muted};text-align:center;font-weight:500;">Con el apoyo de</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="center" style="padding-bottom:8px;">
+            <img src="${base}/imports/cardiosmile.jpeg" alt="Cardiosmile" style="height:60px;width:auto;border-radius:12px;display:inline-block;" />
+            <div style="display:inline-block;width:1px;height:48px;background:${C.border};margin:0 20px;vertical-align:middle;"></div>
+            <img src="${base}/imports/vitamin_shoppe.jpeg" alt="Vitamin Shoppe" style="height:60px;width:auto;border-radius:12px;display:inline-block;" />
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:8px 32px 24px;background:${C.white};border-radius:0 0 16px 16px;border-top:1px solid ${C.border};">
+      <p style="margin:0;font-family:${FONT.inter};font-size:12px;color:${C.muted};text-align:center;font-weight:400;">Cuidamos de tu mente y de tu coraz\u00F3n</p>
+    </td>
+  </tr>`;
+}
+
+module.exports = { C, FONT, wrap, header, footer, brandFooter, card, spacer, btn, label, title, body, signoff };

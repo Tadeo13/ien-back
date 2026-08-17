@@ -1,13 +1,9 @@
 const Tienda = require('../../models/Tienda');
 const AppError = require('../../utils/AppError');
 const { tryCatch } = require('../../middlewares/errorHandler');
+const { toResponse } = require('../../utils/toResponse');
 
-// Utilidad para verificar si un id está en el scope del admin
-function tiendaEnScope(id, tiendasPermitidas) {
-  if (!tiendasPermitidas) return true; // admin_general
-  return tiendasPermitidas.some((t) => t.toString() === id.toString());
-}
-
+const { enScope } = require('../../utils/scope');
 /**
  * GET /admin/sucursales
  * admin_general: todas; admin_negocio: solo sus tiendas
@@ -17,8 +13,12 @@ exports.listar = tryCatch(async (req, res) => {
   if (req.tiendasPermitidas !== null) {
     filtro._id = { $in: req.tiendasPermitidas };
   }
-  const tiendas = await Tienda.find(filtro).select('nombre_tienda ciudad');
-  res.json(tiendas);
+  const incluirInactivas = req.query.incluir_inactivas === 'true' && ['admin_general', 'admin_negocio'].includes(req.usuario.rol);
+  if (!incluirInactivas) {
+    filtro.activo = true;
+  }
+  const tiendas = await Tienda.find(filtro).select('nombre_tienda ciudad activo').lean();
+  res.json(tiendas.map(toResponse));
 });
 
 /**
@@ -33,7 +33,7 @@ exports.crear = tryCatch(async (req, res) => {
     throw new AppError(400, 'nombre_tienda y ciudad son requeridos');
   }
   const tienda = await Tienda.create({ nombre_tienda, ciudad });
-  res.status(201).json(tienda);
+  res.status(201).json(toResponse(tienda));
 });
 
 /**
@@ -43,7 +43,7 @@ exports.crear = tryCatch(async (req, res) => {
 exports.actualizar = tryCatch(async (req, res) => {
   const { id } = req.params;
 
-  if (!tiendaEnScope(id, req.tiendasPermitidas)) {
+  if (!enScope(id, req.tiendasPermitidas)) {
     throw new AppError(403, 'Sin acceso a esta sucursal');
   }
 
@@ -54,17 +54,29 @@ exports.actualizar = tryCatch(async (req, res) => {
 
   const tienda = await Tienda.findByIdAndUpdate(id, campos, { new: true, runValidators: true });
   if (!tienda) throw new AppError(404, 'Sucursal no encontrada');
-  res.json(tienda);
+  res.json(toResponse(tienda));
 });
 
 /**
  * DELETE /admin/sucursales/:id — solo admin_general
  */
 exports.eliminar = tryCatch(async (req, res) => {
-  if (req.usuario.rol !== 'admin_general') {
-    throw new AppError(403, 'Solo admin_general puede eliminar sucursales');
+  if (req.usuario.rol !== 'admin_general' && !(req.usuario.rol === 'admin_negocio' && enScope(req.params.id, req.tiendasPermitidas))) {
+    throw new AppError(403, 'Solo admin_general puede desactivar sucursales');
   }
-  const tienda = await Tienda.findByIdAndDelete(req.params.id);
+  const tienda = await Tienda.findByIdAndUpdate(req.params.id, { activo: false }, { new: true });
   if (!tienda) throw new AppError(404, 'Sucursal no encontrada');
-  res.json({ mensaje: 'Sucursal eliminada' });
+  res.json({ mensaje: 'Sucursal desactivada', tienda: toResponse(tienda) });
+});
+
+/**
+ * PATCH /admin/sucursales/:id/reactivar — solo admin_general
+ */
+exports.reactivar = tryCatch(async (req, res) => {
+  if (req.usuario.rol !== 'admin_general' && !(req.usuario.rol === 'admin_negocio' && enScope(req.params.id, req.tiendasPermitidas))) {
+    throw new AppError(403, 'Solo admin_general puede reactivar sucursales');
+  }
+  const tienda = await Tienda.findByIdAndUpdate(req.params.id, { activo: true }, { new: true });
+  if (!tienda) throw new AppError(404, 'Sucursal no encontrada');
+  res.json({ mensaje: 'Sucursal reactivada', tienda: toResponse(tienda) });
 });

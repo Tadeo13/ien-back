@@ -2,7 +2,7 @@ const { Router } = require('express');
 const authMiddleware = require('../../middlewares/authMiddleware');
 const adminMiddleware = require('../../middlewares/adminMiddleware');
 const scopeTiendaMiddleware = require('../../middlewares/scopeTiendaMiddleware');
-const { requireRol } = require('../../middlewares/moderadorMiddleware');
+const { requireRol } = require('../../middlewares/roleMiddleware');
 const sucursalCtrl = require('./tienda.controller');
 
 const router = Router();
@@ -70,7 +70,7 @@ router.get('/', sucursalCtrl.listar);
  *       403:
  *         description: Denegado (solo admin_general)
  */
-router.post('/', sucursalCtrl.crear);
+router.post('/', requireRol('admin_general'), sucursalCtrl.crear);
 
 /**
  * @swagger
@@ -105,7 +105,7 @@ router.post('/', sucursalCtrl.crear);
  *       404:
  *         description: Sucursal no encontrada
  */
-router.put('/:id', sucursalCtrl.actualizar);
+router.put('/:id', requireRol('admin_negocio', 'admin_general'), sucursalCtrl.actualizar);
 
 /**
  * @swagger
@@ -129,6 +129,39 @@ router.put('/:id', sucursalCtrl.actualizar);
  *       404:
  *         description: Sucursal no encontrada
  */
-router.delete('/:id', sucursalCtrl.eliminar);
+router.delete('/:id', requireRol('admin_negocio', 'admin_general'), sucursalCtrl.eliminar);
+
+/**
+ * @swagger
+ * /api/admin/sucursales/{id}/reactivar:
+ *   patch:
+ *     summary: "[ADMIN] Reactivar sucursal desactivada"
+ *     tags: [Admin - Tiendas]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Sucursal reactivada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 mensaje:
+ *                   type: string
+ *                 tienda:
+ *                   type: object
+ *       403:
+ *         description: Fuera de scope o sin permisos
+ *       404:
+ *         description: Sucursal no encontrada
+ */
+router.patch('/:id/reactivar', requireRol('admin_negocio', 'admin_general'), sucursalCtrl.reactivar);
 
 module.exports = router;

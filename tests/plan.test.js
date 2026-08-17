@@ -192,4 +192,40 @@ describe('Plan - testing endpoints', () => {
       .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
   });
+
+  test('POST /api/plan/testing/retreat - success', async () => {
+    const respuestas = Array.from({ length: data.totalPreguntas }, (_, i) => ({
+      numero: i + 1, score: 3
+    }));
+    await request(app)
+      .post('/api/plan/setup-test')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ respuestas });
+
+    await request(app)
+      .post('/api/plan/testing/advance')
+      .set('Authorization', `Bearer ${token}`);
+
+    const res = await request(app)
+      .post('/api/plan/testing/retreat')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.dia_retrocedido).toBeDefined();
+    expect(res.body.dia_actual).toBeDefined();
+  });
+
+  test('POST /api/plan/testing/retreat - 409 sin días completados', async () => {
+    const respuestas = Array.from({ length: data.totalPreguntas }, (_, i) => ({
+      numero: i + 1, score: 3
+    }));
+    await request(app)
+      .post('/api/plan/setup-test')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ respuestas });
+
+    const res = await request(app)
+      .post('/api/plan/testing/retreat')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(409);
+  });
 });

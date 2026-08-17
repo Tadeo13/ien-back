@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const compression = require('compression');
 const morgan = require('morgan');
 const authMiddleware = require('./middlewares/authMiddleware');
 const authRoutes = require('./modules/auth/auth.routes');
@@ -16,11 +17,17 @@ const swaggerSpec = require('./config/swagger');
 const { errorHandler } = require('./middlewares/errorHandler');
 
 const app = express();
+app.set('trust proxy', 1);
 
-app.use(cors());
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+app.use(cors({
+  origin: FRONTEND_URL,
+  credentials: true,
+}));
 app.use(helmet());
+app.use(compression());
 app.use(express.json({ limit: '1mb' }));
-app.use(morgan('dev'));
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 // Health check
 app.get('/health', (_req, res) => {
@@ -29,11 +36,29 @@ app.get('/health', (_req, res) => {
 
 // Root route
 app.get('/', (_req, res) => {
-  res.send('IEN Backend API is running. Documentation available at /api-docs');
+  res.send('IEN Backend API is running.');
 });
 
-// Docs
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Basic Auth para proteger Swagger en produccion
+const swaggerAuth = (req, res, next) => {
+  const user = process.env.SWAGGER_USER;
+  const pass = process.env.SWAGGER_PASS;
+
+  if (!user || !pass) return next();
+
+  const auth = (req.headers.authorization || '');
+  if (!auth.startsWith('Basic ')) {
+    res.set('WWW-Authenticate', 'Basic realm="Swagger Docs"');
+    return res.status(401).json({ error: 'Acceso restringido' });
+  }
+  const [u, p] = Buffer.from(auth.slice(6), 'base64').toString().split(':');
+  if (u !== user || p !== pass) {
+    return res.status(401).json({ error: 'Credenciales invalidas' });
+  }
+  next();
+};
+
+app.use('/api-docs', swaggerAuth, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
 app.use('/api/auth', authRoutes);

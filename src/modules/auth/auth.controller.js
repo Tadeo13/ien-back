@@ -1,4 +1,4 @@
-const { validateCode, register, login, refreshToken, logout, forgotPassword, verifyResetToken, resetPassword } = require('./auth.service');
+const { validateCode, register, login, refreshToken, logout, forgotPassword, verifyResetToken, resetPassword, changePassword } = require('./auth.service');
 const { tryCatch } = require('../../middlewares/errorHandler');
 const AppError = require('../../utils/AppError');
 const Usuario = require('../../models/Usuario');
@@ -20,13 +20,13 @@ exports.validateCode = tryCatch(async (req, res) => {
 });
 
 exports.register = tryCatch(async (req, res) => {
-  const { nombre, email, password, codigo_activacion } = req.body;
+  const { nombre, email, password, codigo_activacion, hora_recordatorio, minuto_recordatorio } = req.body;
 
   if (!nombre || !email || !password || !codigo_activacion) {
     throw new AppError(400, 'Todos los campos son requeridos');
   }
 
-  const result = await register({ nombre, email, password, codigo_activacion });
+  const result = await register({ nombre, email, password, codigo_activacion, hora_recordatorio, minuto_recordatorio });
 
   res.status(201).json(result);
 });
@@ -123,5 +123,16 @@ exports.resetPassword = tryCatch(async (req, res) => {
   }
 
   const result = await resetPassword(token, nueva_password);
+  res.json(result);
+});
+
+exports.changePassword = tryCatch(async (req, res) => {
+  const { current_password, nueva_password } = req.body;
+
+  if (!current_password || !nueva_password) {
+    throw new AppError(400, 'Contraseña actual y nueva contraseña requeridas');
+  }
+
+  const result = await changePassword(req.usuario.id, current_password, nueva_password);
   res.json(result);
 });

@@ -1,4 +1,4 @@
-const { C, wrap, header, footer, card, spacer, btn, label, title, body } = require('./base');
+const { C, wrap, header, brandFooter, card, spacer, btn, label, title, body } = require('./base');
 
 function recuperacionContrasena(nombre, resetUrl) {
   const html = wrap(`
@@ -12,7 +12,7 @@ function recuperacionContrasena(nombre, resetUrl) {
       ${body('<span style="font-size:13px;color:' + C.muted + ';">Este enlace expira en 15 minutos. Si no solicitaste este cambio, podés ignorar este mensaje.</span>')}
     `, C.red)}
     ${spacer()}
-    ${footer()}
+    ${brandFooter()}
   `);
   return { asunto: 'Recuperá tu contraseña', html };
 }

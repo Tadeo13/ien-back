@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const authMiddleware = require('../../middlewares/authMiddleware');
-const { setupTest, getTestInicial, today, profile, days, completeDay, advanceDay, autocompleteTest, getTestPreguntas, getBienvenida } = require('./plan.controller');
+const { setupTest, getTestInicial, today, profile, days, completeDay, advanceDay, retreatDay, autocompleteTest, getTestPreguntas, getBienvenida } = require('./plan.controller');
 
 const router = Router();
 
@@ -466,59 +466,90 @@ router.post('/complete-day', completeDay);
  *       404:
  *         description: No hay plan activo
  */
-if (process.env.NODE_ENV !== 'production') {
-  router.post('/testing/advance', advanceDay);
+router.post('/testing/advance', advanceDay);
 
-  /**
-   * @swagger
-   * /api/plan/testing/autocomplete-test:
-   *   post:
-   *     summary: "[DEV] Autocompletar test inicial con scores aleatorios"
-   *     tags: [Plan]
-   *     security:
-   *       - bearerAuth: []
-   *     parameters:
-   *       - in: query
-   *         name: debiles
-   *         schema:
-   *           type: string
-   *         description: Competencias a marcar como débiles (scores 1-2). Separadas por coma.
-   *         example: "autocontrol,empatia"
-   *     responses:
-   *       201:
-   *         description: Plan creado con test inicial autocompletado
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 plan_id:
-   *                   type: string
-   *                 dia_actual:
-   *                   type: number
-   *                 estado:
-   *                   type: string
-   *                 puntuaciones_por_competencia:
-   *                   type: array
-   *                   items:
-   *                     type: object
-   *                     properties:
-   *                       competencia:
-   *                         type: string
-   *                       competencia_label:
-   *                         type: string
-   *                       puntuacion:
-   *                         type: number
-   *                 competencias_a_mejorar:
-   *                   type: array
-   *                   items:
-   *                     type: string
-   *       400:
-   *         description: Competencia(s) inválida(s) en el parámetro debiles
-   *       409:
-   *         description: El usuario ya tiene un plan
-   */
-  router.post('/testing/autocomplete-test', autocompleteTest);
-}
+/**
+ * @swagger
+ * /api/plan/testing/retreat:
+ *   post:
+ *     summary: "[DEV] Retroceder al día anterior deshaciendo el último día completado"
+ *     tags: [Plan]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Día retrocedido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 dia_retrocedido:
+ *                   type: number
+ *                 dia_actual:
+ *                   type: number
+ *                 racha_dias:
+ *                   type: number
+ *                 racha_maxima:
+ *                   type: number
+ *                 estado:
+ *                   type: string
+ *       404:
+ *         description: No hay plan activo
+ *       409:
+ *         description: No hay días completados para retroceder
+ */
+router.post('/testing/retreat', retreatDay);
+
+/**
+ * @swagger
+ * /api/plan/testing/autocomplete-test:
+ *   post:
+ *     summary: "Autocompletar test inicial con scores aleatorios"
+ *     tags: [Plan]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: debiles
+ *         schema:
+ *           type: string
+ *         description: Competencias a marcar como débiles (scores 1-2). Separadas por coma.
+ *         example: "autocontrol,empatia"
+ *     responses:
+ *       201:
+ *         description: Plan creado con test inicial autocompletado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 plan_id:
+ *                   type: string
+ *                 dia_actual:
+ *                   type: number
+ *                 estado:
+ *                   type: string
+ *                 puntuaciones_por_competencia:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       competencia:
+ *                         type: string
+ *                       competencia_label:
+ *                         type: string
+ *                       puntuacion:
+ *                         type: number
+ *                 competencias_a_mejorar:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       400:
+ *         description: Competencia(s) inválida(s) en el parámetro debiles
+ *       409:
+ *         description: El usuario ya tiene un plan
+ */
+router.post('/testing/autocomplete-test', autocompleteTest);
 
 module.exports = router;

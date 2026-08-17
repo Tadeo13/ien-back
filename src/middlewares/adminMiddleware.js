@@ -6,7 +6,8 @@ const ROLES_ADMIN = ['admin_general', 'admin_negocio', 'moderador_tienda'];
 
 const adminMiddleware = tryCatch(async (req, _res, next) => {
   const usuario = await Usuario.findById(req.usuario.id)
-    .select('rol tiendas_administradas tienda_moderada');
+    .select('rol tiendas_administradas tienda_moderada')
+    .lean();
   if (!usuario || !ROLES_ADMIN.includes(usuario.rol)) {
     throw new AppError(403, 'Acceso denegado');
   }

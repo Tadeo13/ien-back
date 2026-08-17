@@ -2,7 +2,7 @@ const { Router } = require('express');
 const authMiddleware = require('../../middlewares/authMiddleware');
 const adminMiddleware = require('../../middlewares/adminMiddleware');
 const scopeTiendaMiddleware = require('../../middlewares/scopeTiendaMiddleware');
-const { requireRol } = require('../../middlewares/moderadorMiddleware');
+const { requireRol } = require('../../middlewares/roleMiddleware');
 const {
   metrics,
   perfilPaciente,

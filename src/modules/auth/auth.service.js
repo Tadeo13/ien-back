@@ -20,7 +20,7 @@ function generarAccessToken(usuario) {
 async function generarRefreshToken(usuarioId) {
   const token = crypto.randomBytes(40).toString('hex');
   const token_hash = crypto.createHash('sha256').update(token).digest('hex');
-  const fecha_expiracion = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  const fecha_expiracion = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
   await RefreshToken.create({ usuario_id: usuarioId, token_hash, fecha_expiracion });
   return token;
 }
@@ -37,6 +37,9 @@ exports.validateCode = async (codigo_activacion) => {
   if (!codDoc) {
     throw new AppError(404, 'Código inválido');
   }
+  if (codDoc.tienda_id && codDoc.tienda_id.activo === false) {
+    throw new AppError(403, 'La tienda asociada a este código ya no está activa');
+  }
 
   return {
     tienda: codDoc.tienda_id,
@@ -44,7 +47,7 @@ exports.validateCode = async (codigo_activacion) => {
   };
 };
 
-exports.register = async ({ nombre, email, password, codigo_activacion }) => {
+exports.register = async ({ nombre, email, password, codigo_activacion, hora_recordatorio, minuto_recordatorio }) => {
   if (typeof email !== 'string' || typeof password !== 'string' || typeof codigo_activacion !== 'string') {
     throw new AppError(400, 'Todos los campos son requeridos');
   }
@@ -54,9 +57,29 @@ exports.register = async ({ nombre, email, password, codigo_activacion }) => {
     throw new AppError(404, 'Código de activación inválido');
   }
 
+  const tiendaDoc = await Tienda.findById(codDoc.tienda_id).select('activo nombre_tienda').lean();
+  if (!tiendaDoc || tiendaDoc.activo === false) {
+    throw new AppError(403, 'La tienda asociada a este código ya no está activa');
+  }
+
   const existe = await Usuario.findOne({ email });
   if (existe) {
     throw new AppError(409, 'El email ya está registrado');
+  }
+
+  let hora_recordatorio_utc = undefined;
+  let minuto_recordatorio_utc = undefined;
+  if (hora_recordatorio !== undefined) {
+    if (typeof hora_recordatorio !== 'number' || !Number.isInteger(hora_recordatorio) || hora_recordatorio < 0 || hora_recordatorio > 23) {
+      throw new AppError(400, 'La hora de recordatorio debe ser un número entero entre 0 y 23 (hora PY)');
+    }
+    hora_recordatorio_utc = (hora_recordatorio + 3) % 24;
+  }
+  if (minuto_recordatorio !== undefined) {
+    if (minuto_recordatorio !== 0 && minuto_recordatorio !== 30) {
+      throw new AppError(400, 'El minuto de recordatorio debe ser 0 o 30');
+    }
+    minuto_recordatorio_utc = minuto_recordatorio;
   }
 
   const password_hash = await bcrypt.hash(password, 10);
@@ -66,7 +89,9 @@ exports.register = async ({ nombre, email, password, codigo_activacion }) => {
     password_hash,
     tienda_id: codDoc.tienda_id,
     producto_id: codDoc.producto_id,
-    codigo_activacion
+    codigo_activacion,
+    ...(hora_recordatorio_utc !== undefined && { hora_recordatorio_utc }),
+    ...(minuto_recordatorio_utc !== undefined && { minuto_recordatorio_utc })
   });
 
   const access_token = generarAccessToken(usuario);
@@ -74,7 +99,7 @@ exports.register = async ({ nombre, email, password, codigo_activacion }) => {
 
   Producto.findById(codDoc.producto_id).select('nombre').lean()
     .then(() => {
-      const { asunto, html } = bienvenida(usuario.nombre);
+      const { asunto, html } = bienvenida(usuario.nombre, tiendaDoc.nombre_tienda);
       return enviarCorreo({
         usuario_id: usuario._id,
         destinatario: usuario.email,
@@ -93,7 +118,7 @@ exports.login = async ({ email, password }) => {
     throw new AppError(400, 'Email y contraseña requeridos');
   }
 
-  const usuario = await Usuario.findOne({ email });
+  const usuario = await Usuario.findOne({ email }).lean();
   if (!usuario) {
     throw new AppError(401, 'Credenciales inválidas');
   }
@@ -147,7 +172,7 @@ exports.forgotPassword = async (email) => {
     throw new AppError(400, 'Email requerido');
   }
 
-  const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
   const usuario = await Usuario.findOne({ email });
 
@@ -227,4 +252,30 @@ exports.resetPassword = async (token, nuevaPassword) => {
   );
 
   return { mensaje: 'Contraseña actualizada' };
+};
+
+exports.changePassword = async (userId, currentPassword, nuevaPassword) => {
+  if (typeof currentPassword !== 'string' || typeof nuevaPassword !== 'string') {
+    throw new AppError(400, 'Contraseña actual y nueva contraseña requeridas');
+  }
+
+  const usuario = await Usuario.findById(userId);
+  if (!usuario) {
+    throw new AppError(404, 'Usuario no encontrado');
+  }
+
+  const coincide = await bcrypt.compare(currentPassword, usuario.password_hash);
+  if (!coincide) {
+    throw new AppError(401, 'La contraseña actual es incorrecta');
+  }
+
+  usuario.password_hash = await bcrypt.hash(nuevaPassword, 12);
+  await usuario.save();
+
+  await RefreshToken.updateMany(
+    { usuario_id: usuario._id, revocado: false },
+    { revocado: true }
+  );
+
+  return { mensaje: 'Contraseña actualizada. Todas las sesiones anteriores fueron cerradas.' };
 };

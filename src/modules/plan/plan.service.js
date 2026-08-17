@@ -9,12 +9,14 @@ const { hito } = require('../email/templates');
 
 const AppError = require('../../utils/AppError');
 const { esMismoDiaCalendarioUTC } = require('../../utils/fechas');
-
-const CONTENIDO_ESPECIAL_POR_DIA = {
+const { mapearCamposRespuesta } = require('../../utils/camposRespuesta');const CONTENIDO_ESPECIAL_POR_DIA = {
   1: 'presentacion',
   15: 'reflexion_15_dias',
   30: 'reflexion_30_dias'
 };
+
+// Último día de cada bloque (cierre del bloque).
+const DIAS_CIERRE_BLOQUE = [5, 10, 15, 20, 25, 30];
 
 function yaCompletoActividadHoy(plan, ahora) {
   if (!plan.ultima_fecha_actividad) return false;
@@ -40,19 +42,7 @@ function detectarHito(racha_dias, hitos_alcanzados = []) {
 
 function mapContenidoALeccion(contenido) {
   const pasos = contenido.datos_leccion?.ejercicio?.pasos;
-  const campos_respuesta = Array.isArray(pasos)
-    ? pasos
-        .filter(p => p.respuesta_tipo !== 'accion' || p.texto)
-        .map((p, i) => ({
-          id: p.id || `paso_${i + 1}`,
-          etiqueta: (typeof p.texto === 'string' ? p.texto : `Paso ${i + 1}`).substring(0, 80),
-          tipo: p.respuesta_tipo === 'escala' ? 'escala'
-            : p.respuesta_tipo === 'accion' ? 'accion'
-            : 'texto',
-          min: p.min,
-          max: p.max
-        }))
-    : [];
+  const campos_respuesta = mapearCamposRespuesta(pasos);
 
   return {
     titulo: contenido.titulo_modulo,
@@ -67,6 +57,12 @@ function mapContenidoALeccion(contenido) {
 async function getCabeceraSiEsInicioDeBloque(diaNumero) {
   const contenido = await ContenidoDiario.findOne({ dia_numero: diaNumero }).select('cabecera').lean();
   return contenido?.cabecera || null;
+}
+
+async function getConclusionSiEsCierreDeBloque(diaNumero) {
+  if (!DIAS_CIERRE_BLOQUE.includes(diaNumero)) return null;
+  const contenido = await ContenidoDiario.findOne({ dia_numero: diaNumero }).select('conclusion').lean();
+  return contenido?.conclusion || null;
 }
 
 /**
@@ -168,6 +164,9 @@ exports.setupTest = async ({ respuestas, usuarioId }) => {
   const tienda = await Tienda.findById(usuario.tienda_id);
   if (!tienda) {
     throw new AppError(404, 'Tienda no encontrada');
+  }
+  if (tienda.activo === false) {
+    throw new AppError(403, 'No es posible iniciar el plan: la tienda asociada ya no está activa');
   }
 
   const existe = await PlanProgreso.findOne({ usuario_id: usuarioId });
@@ -307,11 +306,13 @@ exports.getTestInicial = async (usuarioId) => {
 exports.getToday = async (usuarioId) => {
   let plan = await PlanProgreso
     .findOne({ usuario_id: usuarioId, estado: 'activo' })
-    .select('dia_actual ultima_fecha_actividad progreso_diario');
+    .select('dia_actual ultima_fecha_actividad progreso_diario')
+    .lean();
   if (!plan) {
     plan = await PlanProgreso
       .findOne({ usuario_id: usuarioId, estado: 'completado' })
-      .select('dia_actual ultima_fecha_actividad progreso_diario');
+      .select('dia_actual ultima_fecha_actividad progreso_diario')
+      .lean();
     if (plan) {
       return {
         dia_actual: plan.dia_actual,
@@ -334,7 +335,7 @@ exports.getToday = async (usuarioId) => {
     };
   }
 
-  const contenido = await ContenidoDiario.findOne({ dia_numero: plan.dia_actual });
+  const contenido = await ContenidoDiario.findOne({ dia_numero: plan.dia_actual }).lean();
   if (!contenido) {
     throw new AppError(404, 'Contenido no disponible para este día');
   }
@@ -347,6 +348,7 @@ exports.getToday = async (usuarioId) => {
   return {
     dia_actual: plan.dia_actual,
     cabecera: await getCabeceraSiEsInicioDeBloque(plan.dia_actual),
+    conclusion: await getConclusionSiEsCierreDeBloque(plan.dia_actual),
     contenido_especial: contenidoEspecial,
     leccion: mapContenidoALeccion(contenido)
   };
@@ -358,11 +360,13 @@ exports.getToday = async (usuarioId) => {
 exports.getProfile = async (usuarioId) => {
   let plan = await PlanProgreso
     .findOne({ usuario_id: usuarioId, estado: 'activo' })
-    .select('dia_actual racha_dias racha_maxima estado fecha_inicio ultima_fecha_actividad progreso_diario');
+    .select('dia_actual racha_dias racha_maxima estado fecha_inicio ultima_fecha_actividad progreso_diario')
+    .lean();
   if (!plan) {
     plan = await PlanProgreso
       .findOne({ usuario_id: usuarioId, estado: 'completado' })
-      .select('dia_actual racha_dias racha_maxima estado fecha_inicio ultima_fecha_actividad progreso_diario');
+      .select('dia_actual racha_dias racha_maxima estado fecha_inicio ultima_fecha_actividad progreso_diario')
+      .lean();
   }
   if (!plan) {
     throw new AppError(404, 'No hay un plan activo');
@@ -386,7 +390,9 @@ exports.getProfile = async (usuarioId) => {
 exports.completeDay = async (usuarioId, respuestaUsuario) => {
   const plan = await PlanProgreso
     .findOne({ usuario_id: usuarioId, estado: 'activo' })
-    .select('_id');
+    .select('_id tienda_id')
+    .populate('tienda_id', 'nombre_tienda')
+    .lean();
   if (!plan) {
     throw new AppError(404, 'No hay un plan activo');
   }
@@ -397,7 +403,7 @@ exports.completeDay = async (usuarioId, respuestaUsuario) => {
     Usuario.findById(usuarioId).select('nombre email').lean()
       .then(usuario => {
         if (!usuario) return;
-        const { asunto, html } = hito(usuario.nombre, hito_alcanzado);
+        const { asunto, html } = hito(usuario.nombre, hito_alcanzado, plan.tienda_id?.nombre_tienda);
         return enviarCorreo({
           usuario_id: usuarioId,
           destinatario: usuario.email,
@@ -416,6 +422,7 @@ exports.completeDay = async (usuarioId, respuestaUsuario) => {
     // sin basarnos en la variable 'plan' anterior que está en estado stale.
     dia_completado: planActualizado.dia_actual - 1,
     dia_actual: planActualizado.dia_actual,
+    conclusion: await getConclusionSiEsCierreDeBloque(planActualizado.dia_actual - 1),
     racha_dias: planActualizado.racha_dias,
     racha_maxima: planActualizado.racha_maxima,
     estado: planActualizado.estado,
@@ -429,7 +436,8 @@ exports.completeDay = async (usuarioId, respuestaUsuario) => {
 exports.advanceDay = async (usuarioId) => {
   const plan = await PlanProgreso
     .findOne({ usuario_id: usuarioId, estado: 'activo' })
-    .select('_id');
+    .select('_id')
+    .lean();
   if (!plan) throw new AppError(404, 'No hay un plan activo');
 
   const { plan: planActualizado, hito_alcanzado } = await marcarDiaCompletado(plan._id, undefined, true);
@@ -442,10 +450,96 @@ exports.advanceDay = async (usuarioId) => {
   return {
     dia_completado: planActualizado.dia_actual - 1,
     dia_actual: planActualizado.dia_actual,
+    conclusion: await getConclusionSiEsCierreDeBloque(planActualizado.dia_actual - 1),
     racha_dias: planActualizado.racha_dias,
     racha_maxima: planActualizado.racha_maxima,
     estado: planActualizado.estado,
     hito_alcanzado
+  };
+};
+
+/**
+ * Retrocede al día anterior deshaciendo el último día completado.
+ */
+exports.retreatDay = async (usuarioId) => {
+  const plan = await PlanProgreso
+    .findOne({ usuario_id: usuarioId, estado: { $in: ['activo', 'completado'] } })
+    .select('_id dia_actual racha_dias racha_maxima progreso_diario hitos_alcanzados estado')
+    .lean();
+  if (!plan) throw new AppError(404, 'No hay un plan activo');
+
+  const completados = plan.progreso_diario
+    .filter(d => d.completado)
+    .sort((a, b) => b.dia_numero - a.dia_numero);
+
+  if (completados.length === 0) {
+    throw new AppError(409, 'No hay días completados para retroceder');
+  }
+
+  const ultimo = completados[0];
+  const anterior = completados[1] || null;
+
+  const planActualizado = await PlanProgreso.findOneAndUpdate(
+    {
+      _id: plan._id,
+      progreso_diario: {
+        $elemMatch: { dia_numero: ultimo.dia_numero, completado: true }
+      }
+    },
+    [{
+      $set: {
+        progreso_diario: {
+          $map: {
+            input: '$progreso_diario',
+            as: 'dia',
+            in: {
+              $cond: {
+                if: { $eq: ['$$dia.dia_numero', ultimo.dia_numero] },
+                then: {
+                  $mergeObjects: ['$$dia', {
+                    completado: false,
+                    fecha_completado: null,
+                    respuesta_usuario: null
+                  }]
+                },
+                else: '$$dia'
+              }
+            }
+          }
+        },
+        ultima_fecha_actividad: new Date(0),
+        dia_actual: { $max: [{ $subtract: ['$dia_actual', 1] }, 1] },
+        racha_dias: { $max: [{ $subtract: ['$racha_dias', 1] }, 0] },
+        estado: {
+          $cond: {
+            if: { $eq: ['$estado', 'completado'] },
+            then: 'activo',
+            else: '$estado'
+          }
+        }
+      }
+    }],
+    { new: true }
+  );
+
+  if (!planActualizado) {
+    throw new AppError(409, 'No se pudo retroceder el día');
+  }
+
+  // Remove hito milestone if current racha was a milestone
+  if ([7, 14, 21, 28].includes(plan.racha_dias)) {
+    await PlanProgreso.updateOne(
+      { _id: plan._id },
+      { $pull: { hitos_alcanzados: plan.racha_dias } }
+    );
+  }
+
+  return {
+    dia_retrocedido: ultimo.dia_numero,
+    dia_actual: planActualizado.dia_actual,
+    racha_dias: planActualizado.racha_dias,
+    racha_maxima: planActualizado.racha_maxima,
+    estado: planActualizado.estado
   };
 };
 
@@ -480,12 +574,12 @@ exports.getDays = async (usuarioId, soloCompletados = false) => {
   // el Map se queda con el último. No rompe pero puede ser confuso.
   const especialesPorTipo = new Map(especiales.map(e => [e.tipo, e]));
 
-  const diasMapeados = await Promise.all(dias.map(async d => ({
+  const diasMapeados = dias.map(d => ({
     dia_numero: d.dia_numero,
     completado: d.completado,
     fecha_completado: d.fecha_completado,
     respuesta_usuario: d.respuesta_usuario || null,
-    cabecera: await getCabeceraSiEsInicioDeBloque(d.dia_numero),
+    cabecera: contenidoMap.get(d.dia_numero)?.cabecera ?? null,
     contenido_especial: (() => {
       const tipo = CONTENIDO_ESPECIAL_POR_DIA[d.dia_numero];
       if (!tipo || d.completado) return null;
@@ -496,7 +590,7 @@ exports.getDays = async (usuarioId, soloCompletados = false) => {
       if (!c) return null;
       return mapContenidoALeccion(c);
     })()
-  })));
+  }));
 
   return { dias: diasMapeados };
 };

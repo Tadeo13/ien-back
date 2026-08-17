@@ -1,12 +1,10 @@
 const Codigo = require('../../models/Codigo');
+const Producto = require('../../models/Producto');
 const AppError = require('../../utils/AppError');
 const { tryCatch } = require('../../middlewares/errorHandler');
+const { toResponse } = require('../../utils/toResponse');
 
-function codigoEnScope(codigo, tiendasPermitidas) {
-  if (!tiendasPermitidas) return true;
-  return tiendasPermitidas.some((t) => t.toString() === codigo.tienda_id.toString());
-}
-
+const { enScope } = require('../../utils/scope');
 /**
  * GET /admin/codigos
  */
@@ -16,9 +14,10 @@ exports.listar = tryCatch(async (req, res) => {
     filtro.tienda_id = { $in: req.tiendasPermitidas };
   }
   const codigos = await Codigo.find(filtro)
-    .populate('tienda_id', 'nombre_tienda ciudad')
+    .select('codigo producto_id tienda_id activo fecha_creacion fecha_activacion')
+    .populate('tienda_id', 'nombre_tienda ciudad activo')
     .populate('producto_id', 'nombre');
-  res.json(codigos);
+  res.json(codigos.map(toResponse));
 });
 
 /**
@@ -31,38 +30,43 @@ exports.crear = tryCatch(async (req, res) => {
   }
 
   if (req.tiendasPermitidas !== null) {
-    const enScope = req.tiendasPermitidas.some((t) => t.toString() === tienda_id.toString());
-    if (!enScope) throw new AppError(403, 'No puedes crear códigos para esa tienda');
+    if (!enScope(tienda_id, req.tiendasPermitidas)) throw new AppError(403, 'No puedes crear códigos para esa tienda');
+  }
+
+  const producto = await Producto.findById(producto_id).select('tienda_id').lean();
+  if (!producto) throw new AppError(400, 'Producto no encontrado');
+  if (producto.tienda_id.toString() !== tienda_id) {
+    throw new AppError(400, 'El producto no pertenece a la tienda indicada');
   }
 
   const doc = await Codigo.create({ codigo, producto_id, tienda_id, activo: true });
-  res.status(201).json(doc);
+  res.status(201).json(toResponse(doc));
 });
 
 /**
  * PATCH /admin/codigos/:id/activar
  */
 exports.activar = tryCatch(async (req, res) => {
-  const doc = await Codigo.findById(req.params.id);
+  const doc = await Codigo.findById(req.params.id).select('tienda_id activo codigo');
   if (!doc) throw new AppError(404, 'Código no encontrado');
-  if (!codigoEnScope(doc, req.tiendasPermitidas)) {
+  if (!enScope(doc.tienda_id, req.tiendasPermitidas)) {
     throw new AppError(403, 'Sin acceso a este código');
   }
   doc.activo = true;
   await doc.save();
-  res.json({ mensaje: 'Código activado', codigo: doc });
+  res.json({ mensaje: 'Código activado', codigo: toResponse(doc) });
 });
 
 /**
  * PATCH /admin/codigos/:id/desactivar
  */
 exports.desactivar = tryCatch(async (req, res) => {
-  const doc = await Codigo.findById(req.params.id);
+  const doc = await Codigo.findById(req.params.id).select('tienda_id activo codigo');
   if (!doc) throw new AppError(404, 'Código no encontrado');
-  if (!codigoEnScope(doc, req.tiendasPermitidas)) {
+  if (!enScope(doc.tienda_id, req.tiendasPermitidas)) {
     throw new AppError(403, 'Sin acceso a este código');
   }
   doc.activo = false;
   await doc.save();
-  res.json({ mensaje: 'Código desactivado', codigo: doc });
+  res.json({ mensaje: 'Código desactivado', codigo: toResponse(doc) });
 });

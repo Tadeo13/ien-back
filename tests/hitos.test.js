@@ -1,7 +1,7 @@
 const { detectarHito } = require('../src/modules/plan/plan.service');
 
 describe('detectarHito', () => {
-  // --- hitos que SÍ existen en HITOS_RACHA = [7, 14, 21] ---
+  // --- hitos que SÍ existen en HITOS_RACHA = [7, 14, 21, 28] ---
 
   test('racha_dias = 7 que no está en hitos_alcanzados devuelve 7', () => {
     expect(detectarHito(7, [])).toBe(7);
@@ -13,6 +13,10 @@ describe('detectarHito', () => {
 
   test('racha_dias = 21 que no está en hitos_alcanzados devuelve 21', () => {
     expect(detectarHito(21, [7, 14])).toBe(21);
+  });
+
+  test('racha_dias = 28 que no está en hitos_alcanzados devuelve 28', () => {
+    expect(detectarHito(28, [7, 14, 21])).toBe(28);
   });
 
   // --- deduplicación: hito ya alcanzado devuelve null ---
@@ -27,6 +31,10 @@ describe('detectarHito', () => {
 
   test('racha_dias = 21 ya alcanzado devuelve null', () => {
     expect(detectarHito(21, [7, 14, 21])).toBeNull();
+  });
+
+  test('racha_dias = 28 ya alcanzado devuelve null', () => {
+    expect(detectarHito(28, [7, 14, 21, 28])).toBeNull();
   });
 
   // --- valores que NO son hito en el array nuevo ---

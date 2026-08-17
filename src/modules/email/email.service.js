@@ -24,8 +24,13 @@ async function enviarCorreo({ usuario_id, destinatario, asunto, html, tipo_corre
     return { success: false, error: 'RESEND_API_KEY no configurada' };
   }
   try {
+    if (!process.env.EMAIL_FROM) {
+        console.error('[CRITICAL] EMAIL_FROM sin configurar — no se puede enviar correo');
+        await registrarHistorial({ usuario_id, destinatario, tipo_correo, estado: 'fallido', meta: { error: 'EMAIL_FROM no configurado' } });
+        return { success: false, error: 'EMAIL_FROM no configurado' };
+    }
     const resend = new Resend(process.env.RESEND_API_KEY);
-    const from = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+    const from = process.env.EMAIL_FROM;
     const { data, error } = await resend.emails.send({ from, to: destinatario, subject: asunto, html });
     if (error) {
       console.error('[emailService] Error de Resend:', error.message);
@@ -49,6 +54,20 @@ async function yaSeEnvio(usuario_id, tipo_correo) {
     console.error('[yaSeEnvio] Error consultando HistorialCorreo:', err.message);
     throw err;
   }
+}
+
+async function yaSeEnviaronBatch(usuarioIds, tipo_correo, filtrarPorHoy = false) {
+  const query = {
+    usuario_id: { $in: usuarioIds },
+    tipo_correo,
+    estado: 'enviado'
+  };
+  if (filtrarPorHoy) {
+    const { getInicioDeDiaDeHoy } = require('../../utils/fechas');
+    query.fecha_envio = { $gte: getInicioDeDiaDeHoy() };
+  }
+  const enviados = await HistorialCorreo.find(query).select('usuario_id').lean();
+  return new Set(enviados.map(e => e.usuario_id.toString()));
 }
 
 async function enviarEnLote(usuarios, { tipo_correo, renderFn, skipFn }) {
@@ -77,4 +96,4 @@ async function enviarEnLote(usuarios, { tipo_correo, renderFn, skipFn }) {
   return { enviados, fallidos, saltados, total: usuarios.length };
 }
 
-module.exports = { enviarCorreo, yaSeEnvio, enviarEnLote };
+module.exports = { enviarCorreo, yaSeEnvio, yaSeEnviaronBatch, enviarEnLote };

@@ -51,6 +51,15 @@ describe('Codigos - admin_general', () => {
     expect(res.status).toBe(400);
   });
 
+  test('POST /api/admin/codigos - producto/tieda inconsistentes', async () => {
+    const res = await request(app)
+      .post('/api/admin/codigos')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ codigo: 'MAL-001', producto_id: data.producto1Id, tienda_id: data.tienda2Id });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('El producto no pertenece a la tienda indicada');
+  });
+
   test('PATCH /api/admin/codigos/:id/activar - activate', async () => {
     const Codigo = mongoose.model('Codigo');
     const cod = await Codigo.findOne({ codigo: data.codigo1 });

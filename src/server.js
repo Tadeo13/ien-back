@@ -6,7 +6,11 @@ const app = require('./app');
 const { PORT = 3000, MONGO_URI } = process.env;
 
 process.on('unhandledRejection', (err) => {
-  console.error('Unhandled Rejection:', err);
+  if (process.env.NODE_ENV !== 'production') {
+    console.error('Unhandled Rejection:', err);
+  } else {
+    console.error('Unhandled Rejection:', err.message);
+  }
 });
 
 if (!MONGO_URI) {
@@ -21,7 +25,7 @@ mongoose
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
       console.log(`API Base URL: http://localhost:${PORT}`);
-      console.log(`Swagger documentation: http://localhost:${PORT}/api-docs`);
+      console.log(`Swagger documentation: ${process.env.BACKEND_URL || `http://localhost:${PORT}`}/api-docs`);
     });
   })
   .catch((err) => {
