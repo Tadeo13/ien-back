@@ -13,7 +13,7 @@ const productoRoutes = require('./modules/productos/producto.routes');
 const codigoRoutes = require('./modules/codigos/codigo.routes');
 
 const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./config/swagger');
+const { getSwaggerSpec } = require('./config/swagger');
 const { errorHandler } = require('./middlewares/errorHandler');
 
 const app = express();
@@ -58,7 +58,12 @@ const swaggerAuth = (req, res, next) => {
   next();
 };
 
-app.use('/api-docs', swaggerAuth, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get('/api-docs/swagger.json', swaggerAuth, (req, res) => {
+  const baseUrl = `${req.protocol}://${req.get('host')}`;
+  res.json(getSwaggerSpec(baseUrl));
+});
+
+app.use('/api-docs', swaggerAuth, swaggerUi.serve, swaggerUi.setup(null, { swaggerUrl: '/api-docs/swagger.json' }));
 
 // Routes
 app.use('/api/auth', authRoutes);
