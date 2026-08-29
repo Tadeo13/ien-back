@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 require('../src/models');
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/ien';
-const CRON_API_KEY = 'm4h_RNGqd-1ELFMqJ_m6yaa0EqzXmHreDJQkKoHwUHI';
+const CRON_API_KEY = process.env.CRON_API_KEY;
 const TEST_EMAIL = 'tadeofrr13@gmail.com';
 
 const Tienda = mongoose.model('Tienda');

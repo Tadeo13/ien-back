@@ -1,5 +1,7 @@
 const { Router } = require('express');
 const authMiddleware = require('../../middlewares/authMiddleware');
+const adminMiddleware = require('../../middlewares/adminMiddleware');
+const { requireRol } = require('../../middlewares/roleMiddleware');
 const { setupTest, getTestInicial, today, profile, days, completeDay, advanceDay, retreatDay, autocompleteTest, getTestPreguntas, getBienvenida } = require('./plan.controller');
 
 const router = Router();
@@ -466,7 +468,7 @@ router.post('/complete-day', completeDay);
  *       404:
  *         description: No hay plan activo
  */
-router.post('/testing/advance', advanceDay);
+router.post('/testing/advance', adminMiddleware, requireRol('admin_general', 'admin_negocio'), advanceDay);
 
 /**
  * @swagger
@@ -499,7 +501,7 @@ router.post('/testing/advance', advanceDay);
  *       409:
  *         description: No hay días completados para retroceder
  */
-router.post('/testing/retreat', retreatDay);
+router.post('/testing/retreat', adminMiddleware, requireRol('admin_general', 'admin_negocio'), retreatDay);
 
 /**
  * @swagger
@@ -550,6 +552,6 @@ router.post('/testing/retreat', retreatDay);
  *       409:
  *         description: El usuario ya tiene un plan
  */
-router.post('/testing/autocomplete-test', autocompleteTest);
+router.post('/testing/autocomplete-test', adminMiddleware, requireRol('admin_general', 'admin_negocio'), autocompleteTest);
 
 module.exports = router;
