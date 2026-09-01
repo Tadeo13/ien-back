@@ -8,6 +8,7 @@ const RefreshToken = require('../../models/RefreshToken');
 const PasswordResetToken = require('../../models/PasswordResetToken');
 const Producto = require('../../models/Producto');
 const AppError = require('../../utils/AppError');
+const { isValidEmail, isValidPasswordLength } = require('../../utils/validators');
 const { enviarCorreo } = require('../email/email.service');
 const { bienvenida, recuperacionContrasena } = require('../email/templates');
 
@@ -48,8 +49,16 @@ exports.validateCode = async (codigo_activacion) => {
 };
 
 exports.register = async ({ nombre, email, password, codigo_activacion, hora_recordatorio, minuto_recordatorio }) => {
-  if (typeof email !== 'string' || typeof password !== 'string' || typeof codigo_activacion !== 'string') {
+  if (!nombre || !email || !password || !codigo_activacion || typeof email !== 'string' || typeof password !== 'string' || typeof codigo_activacion !== 'string') {
     throw new AppError(400, 'Todos los campos son requeridos');
+  }
+
+  if (!isValidEmail(email)) {
+    throw new AppError(400, 'Email inválido');
+  }
+
+  if (!isValidPasswordLength(password, 8)) {
+    throw new AppError(400, 'La contraseña debe tener al menos 8 caracteres');
   }
 
   const codDoc = await Codigo.findOne({ codigo: codigo_activacion, activo: true });
@@ -114,8 +123,12 @@ exports.register = async ({ nombre, email, password, codigo_activacion, hora_rec
 };
 
 exports.login = async ({ email, password }) => {
-  if (typeof email !== 'string' || typeof password !== 'string') {
+  if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
     throw new AppError(400, 'Email y contraseña requeridos');
+  }
+
+  if (!isValidEmail(email)) {
+    throw new AppError(400, 'Email inválido');
   }
 
   const usuario = await Usuario.findOne({ email }).lean();
@@ -168,8 +181,12 @@ exports.logout = async (refreshTokenPlano) => {
 };
 
 exports.forgotPassword = async (email) => {
-  if (typeof email !== 'string') {
+  if (!email || typeof email !== 'string') {
     throw new AppError(400, 'Email requerido');
+  }
+
+  if (!isValidEmail(email)) {
+    throw new AppError(400, 'Email inválido');
   }
 
   const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
@@ -223,8 +240,12 @@ exports.verifyResetToken = async (token) => {
 };
 
 exports.resetPassword = async (token, nuevaPassword) => {
-  if (typeof token !== 'string' || typeof nuevaPassword !== 'string') {
+  if (!token || !nuevaPassword || typeof token !== 'string' || typeof nuevaPassword !== 'string') {
     throw new AppError(400, 'Token y nueva contraseña requeridos');
+  }
+
+  if (!isValidPasswordLength(nuevaPassword, 8)) {
+    throw new AppError(400, 'La contraseña debe tener al menos 8 caracteres');
   }
 
   const token_hash = crypto.createHash('sha256').update(token).digest('hex');
@@ -255,8 +276,12 @@ exports.resetPassword = async (token, nuevaPassword) => {
 };
 
 exports.changePassword = async (userId, currentPassword, nuevaPassword) => {
-  if (typeof currentPassword !== 'string' || typeof nuevaPassword !== 'string') {
+  if (!currentPassword || !nuevaPassword || typeof currentPassword !== 'string' || typeof nuevaPassword !== 'string') {
     throw new AppError(400, 'Contraseña actual y nueva contraseña requeridas');
+  }
+
+  if (!isValidPasswordLength(nuevaPassword, 8)) {
+    throw new AppError(400, 'La contraseña debe tener al menos 8 caracteres');
   }
 
   const usuario = await Usuario.findById(userId);

@@ -6,6 +6,7 @@ const PlanProgreso = require('../../models/PlanProgreso');
 const TestPregunta = require('../../models/TestPregunta');
 const ContenidoDiario = require('../../models/ContenidoDiario');
 const AppError = require('../../utils/AppError');
+const { isValidEmail, isValidPasswordLength } = require('../../utils/validators');
 const { getInicioDeDiaDeAyer, getInicioDeDiaDeHoy, getFechaHaceDias, getInicioDeDiaDeAnteayer } = require('../../utils/fechas');
 const { enScope } = require('../../utils/scope');
 const { mapearCamposRespuesta } = require('../../utils/camposRespuesta');
@@ -281,6 +282,14 @@ exports.crearAdminNegocio = async ({ nombre, email, password, tiendas_administra
     throw new AppError(400, 'nombre, email y password son requeridos');
   }
 
+  if (!isValidEmail(email)) {
+    throw new AppError(400, 'Email inválido');
+  }
+
+  if (!isValidPasswordLength(password, 8)) {
+    throw new AppError(400, 'La contraseña debe tener al menos 8 caracteres');
+  }
+
   if (!tiendas_administradas || !Array.isArray(tiendas_administradas) || tiendas_administradas.length === 0) {
     throw new AppError(400, 'Debe asignar al menos una tienda');
   }
@@ -314,6 +323,14 @@ exports.crearAdminNegocio = async ({ nombre, email, password, tiendas_administra
 exports.crearModeradorTienda = async ({ nombre, email, password, tienda_id }, creador) => {
   if (!nombre || !email || !password || !tienda_id) {
     throw new AppError(400, 'nombre, email, password y tienda_id son requeridos');
+  }
+
+  if (!isValidEmail(email)) {
+    throw new AppError(400, 'Email inválido');
+  }
+
+  if (!isValidPasswordLength(password, 8)) {
+    throw new AppError(400, 'La contraseña debe tener al menos 8 caracteres');
   }
 
   if (creador.rol === 'admin_negocio') {
@@ -379,6 +396,7 @@ exports.actualizarAdminNegocio = async (usuarioId, { nombre, email, tiendas_admi
   if (!usuario) throw new AppError(404, 'Administrador de negocio no encontrado');
 
   if (email && email !== usuario.email) {
+    if (!isValidEmail(email)) throw new AppError(400, 'Email inválido');
     const existe = await Usuario.findOne({ email });
     if (existe) throw new AppError(409, 'El email ya está registrado');
   }
@@ -462,6 +480,7 @@ exports.actualizarModeradorTienda = async (usuarioId, { nombre, email, tienda_id
   }
 
   if (email && email !== usuario.email) {
+    if (!isValidEmail(email)) throw new AppError(400, 'Email inválido');
     const existe = await Usuario.findOne({ email });
     if (existe) throw new AppError(409, 'El email ya está registrado');
   }

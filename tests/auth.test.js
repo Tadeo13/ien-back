@@ -105,6 +105,32 @@ describe('Auth - register', () => {
       });
     expect(res.status).toBe(404);
   });
+
+  test('POST /api/auth/register - invalid email format', async () => {
+    const res = await request(app)
+      .post('/api/auth/register')
+      .send({
+        nombre: 'User',
+        email: 'asdf',
+        password: 'pass1234',
+        codigo_activacion: data.codigo1
+      });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Email inválido');
+  });
+
+  test('POST /api/auth/register - short password', async () => {
+    const res = await request(app)
+      .post('/api/auth/register')
+      .send({
+        nombre: 'User',
+        email: 'valid@test.com',
+        password: 'a',
+        codigo_activacion: data.codigo1
+      });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('La contraseña debe tener al menos 8 caracteres');
+  });
 });
 
 describe('Auth - login', () => {

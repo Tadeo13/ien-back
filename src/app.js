@@ -44,7 +44,12 @@ const swaggerAuth = (req, res, next) => {
   const user = process.env.SWAGGER_USER;
   const pass = process.env.SWAGGER_PASS;
 
-  if (!user || !pass) return next();
+  if (!user || !pass) {
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(404).json({ error: 'Ruta no encontrada' });
+    }
+    return next();
+  }
 
   const auth = (req.headers.authorization || '');
   if (!auth.startsWith('Basic ')) {

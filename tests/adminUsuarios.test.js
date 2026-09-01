@@ -55,6 +55,34 @@ describe('Admin - CRUD admin-negocio', () => {
     expect(res.status).toBe(400);
   });
 
+  test('POST /api/admin/usuarios/admin-negocio - invalid email', async () => {
+    const res = await request(app)
+      .post('/api/admin/usuarios/admin-negocio')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        nombre: 'Admin Test',
+        email: 'invalid-email',
+        password: 'adminpassword123',
+        tiendas_administradas: [data.tienda1Id]
+      });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Email inválido');
+  });
+
+  test('POST /api/admin/usuarios/admin-negocio - short password', async () => {
+    const res = await request(app)
+      .post('/api/admin/usuarios/admin-negocio')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        nombre: 'Admin Test',
+        email: 'valid-admin@test.com',
+        password: 'short',
+        tiendas_administradas: [data.tienda1Id]
+      });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('La contraseña debe tener al menos 8 caracteres');
+  });
+
   test('GET /api/admin/usuarios/admin-negocio/:id - get one', async () => {
     const res = await request(app)
       .get(`/api/admin/usuarios/admin-negocio/${data.adminNegocio._id}`)
@@ -140,6 +168,34 @@ describe('Admin - CRUD moderador-tienda', () => {
     expect(res.status).toBe(400);
   });
 
+  test('POST /api/admin/usuarios/moderador-tienda - invalid email', async () => {
+    const res = await request(app)
+      .post('/api/admin/usuarios/moderador-tienda')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        nombre: 'Mod Test',
+        email: 'invalid-email',
+        password: 'modpassword123',
+        tienda_id: data.tienda1Id
+      });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Email inválido');
+  });
+
+  test('POST /api/admin/usuarios/moderador-tienda - short password', async () => {
+    const res = await request(app)
+      .post('/api/admin/usuarios/moderador-tienda')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        nombre: 'Mod Test',
+        email: 'valid-mod@test.com',
+        password: 'short',
+        tienda_id: data.tienda1Id
+      });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('La contraseña debe tener al menos 8 caracteres');
+  });
+
   test('GET /api/admin/usuarios/moderador-tienda/:id - get one', async () => {
     const res = await request(app)
       .get(`/api/admin/usuarios/moderador-tienda/${data.moderador._id}`)
@@ -147,6 +203,7 @@ describe('Admin - CRUD moderador-tienda', () => {
     expect(res.status).toBe(200);
     expect(res.body.email).toBe(data.moderador.email);
   });
+
 
   test('PUT /api/admin/usuarios/moderador-tienda/:id - update', async () => {
     const res = await request(app)
