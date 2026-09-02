@@ -10,7 +10,7 @@ const isTest = process.env.NODE_ENV === 'test';
 
 const authLimiter = isTest ? noop : rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Demasiados intentos, intentá de nuevo en 15 minutos' }
