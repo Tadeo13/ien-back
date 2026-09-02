@@ -3,6 +3,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const Tienda = require('./models/Tienda');
+const Grupo = require('./models/Grupo');
 const Usuario = require('./models/Usuario');
 const ContenidoDiario = require('./models/ContenidoDiario');
 const TestPregunta = require('./models/TestPregunta');
@@ -1228,6 +1229,7 @@ async function seed() {
     console.log('Colecciones de contenido limpiadas (--only-content)');
   } else {
     await Promise.all([
+      Grupo.deleteMany({}),
       Tienda.deleteMany({}),
       Usuario.deleteMany({}),
       ContenidoDiario.deleteMany({}),
@@ -1240,59 +1242,72 @@ async function seed() {
     ]);
     console.log('Colecciones limpiadas');
 
-  // 1. Tiendas
+  // 1. Grupos y Tiendas
+  //   G1 comparte catálogo entre CardioSmille y The Vitamin Shoppe
+  //   G2 es la tienda independiente Lic. Gladys
+  const grupos = await Grupo.insertMany([
+    { nombre: 'Grupo CardioSmille & Vitamin Shoppe' },
+    { nombre: 'Grupo Lic. Gladys' }
+  ]);
+  console.log(`${grupos.length} grupos creados`);
+  const gCardioVitamin = grupos[0];
+  const gGladys = grupos[1];
+
   const tiendas = await Tienda.insertMany([
-    { nombre_tienda: 'CardioSmille', ciudad: 'Asunción, Paraguay' },
-    { nombre_tienda: 'The Vitamin Shoppe', ciudad: 'Asunción, Paraguay' },
-    { nombre_tienda: 'Lic. Gladys', ciudad: 'Asunción, Paraguay' }
+    { nombre_tienda: 'CardioSmille', ciudad: 'Asunción, Paraguay', grupo_id: gCardioVitamin._id },
+    { nombre_tienda: 'The Vitamin Shoppe', ciudad: 'Asunción, Paraguay', grupo_id: gCardioVitamin._id },
+    { nombre_tienda: 'Lic. Gladys', ciudad: 'Asunción, Paraguay', grupo_id: gGladys._id }
   ]);
   console.log(`${tiendas.length} tiendas creadas`);
   const tCardio = tiendas[0];
   const tVitamin = tiendas[1];
   const tGladys = tiendas[2];
 
-  // 2. Productos
+  // 2. Productos: el mismo producto físico es UN solo documento compartido
+  //    por todas las tiendas del grupo (Catálogo compartido por grupo)
   const productos = await Producto.insertMany([
     {
-      nombre: 'Programa 30 días Cardiosmile — CardioSmille',
+      nombre: 'Programa 30 días Cardiosmile',
       descripcion: 'Plan cardiovascular completo',
-      tienda_id: tCardio._id
+      grupo_id: gCardioVitamin._id
     },
     {
-      nombre: 'Programa 30 días Cardiosmile — The Vitamin Shoppe',
-      descripcion: 'Plan cardiovascular completo',
-      tienda_id: tVitamin._id
-    },
-    {
-      nombre: 'Programa 30 días Cardiosmile — Lic. Gladys',
-      descripcion: 'Plan cardiovascular completo',
-      tienda_id: tGladys._id
-    },
-    {
-      nombre: 'Programa Especial Ashwagandha — CardioSmille',
+      nombre: 'Programa Especial Ashwagandha',
       descripcion: 'Plan de autogestión y reducción de estrés',
-      tienda_id: tCardio._id
+      grupo_id: gCardioVitamin._id
     },
     {
-      nombre: 'Programa Especial Ashwagandha — The Vitamin Shoppe',
+      nombre: 'Programa 30 días Cardiosmile',
+      descripcion: 'Plan cardiovascular completo',
+      grupo_id: gGladys._id
+    },
+    {
+      nombre: 'Programa Especial Ashwagandha',
       descripcion: 'Plan de autogestión y reducción de estrés',
-      tienda_id: tVitamin._id
+      grupo_id: gGladys._id
     }
   ]);
-  console.log(`${productos.length} productos creados`);
-  const prodCardio1 = productos[0];
-  const prodCardio2 = productos[1];
-  const prodCardio3 = productos[2];
-  const prodAshwa1 = productos[3];
-  const prodAshwa2 = productos[4];
+  console.log(`${productos.length} productos creados (catálogo compartido por grupo)`);
+  const programaCV = productos[0];
+  const ashwaCV = productos[1];
+  const programaGladys = productos[2];
+  const ashwaGladys = productos[3];
 
-  // 3. Códigos
+  // Aliases del catálogo efectivos por tienda (producto compartido: mismo _id en Cardio y Vitamin)
+  const prodCardio1 = programaCV;
+  const prodCardio2 = programaCV;
+  const prodCardio3 = programaGladys;
+  const prodAshwa1 = ashwaCV;
+  const prodAshwa2 = ashwaCV;
+
+  // 3. Códigos: producto y tienda deben pertenecer al mismo grupo
   const codigos = await Codigo.insertMany([
     { codigo: 'IEN-001', producto_id: prodCardio1._id, tienda_id: tCardio._id, activo: true },
     { codigo: 'IEN-002', producto_id: prodCardio2._id, tienda_id: tVitamin._id, activo: true },
     { codigo: 'IEN-003', producto_id: prodCardio3._id, tienda_id: tGladys._id, activo: true },
     { codigo: 'IEN-004', producto_id: prodAshwa1._id, tienda_id: tCardio._id, activo: true },
-    { codigo: 'IEN-005', producto_id: prodAshwa2._id, tienda_id: tVitamin._id, activo: true }
+    { codigo: 'IEN-005', producto_id: prodAshwa2._id, tienda_id: tVitamin._id, activo: true },
+    { codigo: 'IEN-006', producto_id: ashwaGladys._id, tienda_id: tGladys._id, activo: true }
   ]);
   console.log(`${codigos.length} códigos de activación creados`);
 
@@ -1312,9 +1327,9 @@ async function seed() {
     email: 'admin_negocio@ien.test',
     password_hash,
     rol: 'admin_negocio',
-    tiendas_administradas: [tCardio._id, tVitamin._id]
+    grupo_id: gCardioVitamin._id
   });
-  console.log('Admin Negocio creado: admin_negocio@ien.test / admin123');
+  console.log('Admin Negocio creado: admin_negocio@ien.test / admin123 (grupo: Cardio+Vitamin)');
 
   await Usuario.create({
     nombre: 'Moderador CardioSmille',
@@ -1340,7 +1355,7 @@ async function seed() {
     { nombre: 'Carla Duarte',   email: 'carla.duarte@demo.com',   tienda: tGladys,  producto: prodCardio3, codigo: 'IEN-003' },
     { nombre: 'José Riveros',   email: 'jose.riveros@demo.com',   tienda: tCardio,  producto: prodAshwa1,  codigo: 'IEN-004' },
     { nombre: 'Natalia Ruiz',   email: 'natalia.ruiz@demo.com',   tienda: tVitamin, producto: prodCardio2, codigo: 'IEN-002' },
-    { nombre: 'Ricardo Vera',   email: 'ricardo.vera@demo.com',   tienda: tGladys,  producto: prodAshwa2,  codigo: 'IEN-005' },
+    { nombre: 'Ricardo Vera',     email: 'ricardo.vera@demo.com',   tienda: tGladys,  producto: ashwaGladys, codigo: 'IEN-006' },
     { nombre: 'Sofía Cáceres',  email: 'sofia.caceres@demo.com',  tienda: tCardio,  producto: prodCardio1, codigo: 'IEN-001' },
     { nombre: 'Miguel Ayala',   email: 'miguel.ayala@demo.com',   tienda: tVitamin, producto: prodCardio2, codigo: 'IEN-002' },
     { nombre: 'Raquel Insfrán', email: 'raquel.insfran@demo.com', tienda: tGladys,  producto: prodCardio3, codigo: 'IEN-003' }
@@ -1677,7 +1692,8 @@ async function seed() {
   console.log(`${CONTENIDOS_ESPECIALES.length} contenidos especiales creados`);
 
   // Verificación de conteos
-  const [countPreguntas, countEspeciales, countProductos, countCodigos, countPlanes, countUsuarios, countHistorial] = await Promise.all([
+  const [countGrupos, countPreguntas, countEspeciales, countProductos, countCodigos, countPlanes, countUsuarios, countHistorial] = await Promise.all([
+    Grupo.countDocuments(),
     TestPregunta.countDocuments(),
     ContenidoEspecial.countDocuments(),
     Producto.countDocuments(),
@@ -1687,6 +1703,7 @@ async function seed() {
     HistorialCorreo.countDocuments()
   ]);
   console.log('\n--- Verificación de conteos ---');
+  console.log(`Grupo = ${countGrupos}`);
   console.log(`Usuarios = ${countUsuarios}`);
   console.log(`TestPregunta = ${countPreguntas}`);
   console.log(`ContenidoEspecial = ${countEspeciales}`);
