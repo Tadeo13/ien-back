@@ -1,7 +1,7 @@
   const { Router } = require('express');
   const rateLimit = require('express-rate-limit');
 const apiKeyMiddleware = require('../../middlewares/apiKeyMiddleware');
-const { resetStreaks, sendReminders, sendActivationNudge, sendRecovery, runDaily } = require('./job.controller');
+const { resetStreaks, sendReminders, sendActivationNudge, sendRecovery, runDaily, abandonPlans, restartPlans } = require('./job.controller');
 
   const router = Router();
 
@@ -122,20 +122,74 @@ router.post('/send-recovery', sendRecovery);
 
 /**
  * @swagger
- * /api/jobs/run-daily:
+ * /api/jobs/abandon-plans:
  *   post:
- *     summary: Ejecutar las tareas diarias nocturnas (reset streaks, activation nudges, recovery emails)
+ *     summary: Marcar como abandonados los planes sin actividad por 30+ días y notificar
  *     tags: [Jobs]
  *     security:
  *       - apiKeyAuth: []
  *     responses:
  *       200:
- *         description: Resultado combinado de las 3 tareas
+ *         description: Planes abandonados y correos enviados
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 abandonados:
+ *                   type: number
+ *                 notificados:
+ *                   type: number
+ *       401:
+ *         description: API key inválida
+ */
+router.post('/abandon-plans', abandonPlans);
+
+/**
+ * @swagger
+ * /api/jobs/restart-plans:
+ *   post:
+ *     summary: Reiniciar (reset parcial) planes sin actividad por 7+ días (día 1, racha 0) y notificar
+ *     tags: [Jobs]
+ *     security:
+ *       - apiKeyAuth: []
+ *     responses:
+ *       200:
+ *         description: Planes reiniciados y correos enviados
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 reiniciados:
+ *                   type: number
+ *                 notificados:
+ *                   type: number
+ *       401:
+ *         description: API key inválida
+ */
+router.post('/restart-plans', restartPlans);
+
+/**
+ * @swagger
+ * /api/jobs/run-daily:
+ *   post:
+ *     summary: Ejecutar las tareas diarias nocturnas (abandonar, reiniciar, reset streaks, activation nudges, recovery emails)
+ *     tags: [Jobs]
+ *     security:
+ *       - apiKeyAuth: []
+ *     responses:
+ *       200:
+ *         description: Resultado combinado de las 5 tareas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 abandon:
+ *                   type: object
+ *                 restart:
+ *                   type: object
  *                 reset:
  *                   type: object
  *                 nudges:

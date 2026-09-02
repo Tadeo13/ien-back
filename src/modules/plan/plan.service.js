@@ -54,12 +54,35 @@ function mapContenidoALeccion(contenido) {
   };
 }
 
+/**
+ * Si el usuario tiene un plan abandonado, lo reactiva con un reset completo:
+ * estado activo, Día 1, rachas en 0, hitos limpios y progreso diario regenerado.
+ * Devuelve el plan reactivado o null si no hay ninguno abandonado.
+ */
+async function reactivarSiAbandonado(usuarioId) {
+  const plan = await PlanProgreso.findOne({ usuario_id: usuarioId, estado: 'abandonado' });
+  if (!plan) return null;
+  plan.estado = 'activo';
+  plan.dia_actual = 1;
+  plan.racha_dias = 0;
+  plan.racha_maxima = 0;
+  plan.hitos_alcanzados = [];
+  plan.racha_rota_en = null;
+  plan.ultima_fecha_actividad = new Date();
+  plan.progreso_diario = Array.from({ length: 30 }, (_, i) => ({
+    dia_numero: i + 1,
+    completado: false,
+    fecha_completado: null,
+    respuesta_usuario: null
+  }));
+  await plan.save();
+  return plan;
+}
+
 async function getCabeceraSiEsInicioDeBloque(diaNumero) {
   const contenido = await ContenidoDiario.findOne({ dia_numero: diaNumero }).select('cabecera').lean();
   return contenido?.cabecera || null;
-}
-
-async function getConclusionSiEsCierreDeBloque(diaNumero) {
+}async function getConclusionSiEsCierreDeBloque(diaNumero) {
   if (!DIAS_CIERRE_BLOQUE.includes(diaNumero)) return null;
   const contenido = await ContenidoDiario.findOne({ dia_numero: diaNumero }).select('conclusion').lean();
   return contenido?.conclusion || null;
@@ -322,7 +345,12 @@ exports.getToday = async (usuarioId) => {
         leccion: null
       };
     }
-    throw new AppError(404, 'No hay un plan activo');
+    // Si el plan estaba abandonado, se reactiva con reset completo al volver.
+    plan = await reactivarSiAbandonado(usuarioId);
+    if (!plan) {
+      throw new AppError(404, 'No hay un plan activo');
+    }
+    plan = plan.toObject();
   }
 
   const ahora = new Date();
@@ -369,7 +397,13 @@ exports.getProfile = async (usuarioId) => {
       .lean();
   }
   if (!plan) {
-    throw new AppError(404, 'No hay un plan activo');
+    // Si el plan estaba abandonado, se reactiva con reset completo al volver.
+    const reactivado = await reactivarSiAbandonado(usuarioId);
+    if (reactivado) {
+      plan = reactivado.toObject();
+    } else {
+      throw new AppError(404, 'No hay un plan activo');
+    }
   }
 
   return {
@@ -648,3 +682,4 @@ exports.getBienvenida = async () => {
 // Exportado para testing unitario
 exports.yaCompletoActividadHoy = yaCompletoActividadHoy;
 exports.detectarHito = detectarHito;
+exports.reactivarSiAbandonado = reactivarSiAbandonado;
