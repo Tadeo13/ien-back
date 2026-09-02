@@ -41,7 +41,7 @@ describe('Admin - CRUD admin-negocio', () => {
         nombre: 'Nuevo Admin',
         email: 'nuevo-admin@test.com',
         password: 'admin123',
-        tiendas_administradas: [data.tienda1Id]
+        grupo_id: data.grupo1Id
       });
     expect(res.status).toBe(201);
     expect(res.body.rol).toBe('admin_negocio');
@@ -63,7 +63,7 @@ describe('Admin - CRUD admin-negocio', () => {
         nombre: 'Admin Test',
         email: 'invalid-email',
         password: 'adminpassword123',
-        tiendas_administradas: [data.tienda1Id]
+        grupo_id: data.grupo1Id
       });
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('Email inválido');
@@ -77,7 +77,7 @@ describe('Admin - CRUD admin-negocio', () => {
         nombre: 'Admin Test',
         email: 'valid-admin@test.com',
         password: 'short',
-        tiendas_administradas: [data.tienda1Id]
+        grupo_id: data.grupo1Id
       });
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('La contraseña debe tener al menos 8 caracteres');
@@ -126,7 +126,7 @@ describe('Admin - admin_negocio cannot manage other admins', () => {
     const res = await request(app)
       .post('/api/admin/usuarios/admin-negocio')
       .set('Authorization', `Bearer ${token}`)
-      .send({ nombre: 'X', email: 'x@test.com', password: 'pass1234', tiendas_administradas: [data.tienda1Id] });
+      .send({ nombre: 'X', email: 'x@test.com', password: 'pass1234', grupo_id: data.grupo1Id });
     expect(res.status).toBe(403);
   });
 });
