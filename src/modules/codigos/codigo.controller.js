@@ -44,7 +44,15 @@ exports.crear = tryCatch(async (req, res) => {
     throw new AppError(400, 'El producto no pertenece al grupo de la tienda indicada');
   }
 
-  const doc = await Codigo.create({ codigo, producto_id, tienda_id, activo: true });
+  let doc;
+  try {
+    doc = await Codigo.create({ codigo, producto_id, tienda_id, activo: true });
+  } catch (err) {
+    if (err.code === 11000) {
+      throw new AppError(409, 'El código ya existe');
+    }
+    throw err;
+  }
   res.status(201).json(toResponse(doc));
 });
 
