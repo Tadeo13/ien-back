@@ -119,7 +119,7 @@ exports.register = async ({ nombre, email, password, codigo_activacion, hora_rec
     })
     .catch(err => console.error('[register] Error en correo de bienvenida:', err.message));
 
-  return { access_token, refresh_token, usuario: { id: usuario._id, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol, tiendas_administradas: usuario.tiendas_administradas || [] } };
+  return { access_token, refresh_token, usuario: { id: usuario._id, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol, grupo_id: usuario.grupo_id ?? null } };
 };
 
 exports.login = async ({ email, password }) => {
@@ -143,7 +143,7 @@ exports.login = async ({ email, password }) => {
 
   const access_token = generarAccessToken(usuario);
   const refresh_token = await generarRefreshToken(usuario._id);
-  return { access_token, refresh_token, usuario: { id: usuario._id, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol, tiendas_administradas: usuario.tiendas_administradas || [] } };
+  return { access_token, refresh_token, usuario: { id: usuario._id, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol, grupo_id: usuario.grupo_id ?? null } };
 };
 
 exports.refreshToken = async (refreshTokenPlano) => {

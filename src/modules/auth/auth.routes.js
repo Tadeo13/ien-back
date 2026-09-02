@@ -294,17 +294,15 @@ router.post('/logout', authLimiter, logout);
  *                       type: string
  *                     descripcion:
  *                       type: string
- *                 tiendas_administradas:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       _id:
- *                         type: string
- *                       nombre_tienda:
- *                         type: string
- *                       ciudad:
- *                         type: string
+ *                 grupo:
+ *                   type: object
+ *                   nullable: true
+ *                   description: Grupo del admin_negocio (null si no aplica)
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     nombre:
+ *                       type: string
  *       401:
  *         description: Token no provisto o inválido
  *       404:
