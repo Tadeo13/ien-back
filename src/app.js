@@ -9,6 +9,7 @@ const planRoutes = require('./modules/plan/plan.routes');
 const adminRoutes = require('./modules/admin/admin.routes');
 const jobRoutes = require('./modules/jobs/job.routes');
 const sucursalRoutes = require('./modules/tiendas/tienda.routes');
+const grupoRoutes = require('./modules/grupos/grupo.routes');
 const productoRoutes = require('./modules/productos/producto.routes');
 const codigoRoutes = require('./modules/codigos/codigo.routes');
 
@@ -75,6 +76,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/plan', planRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/admin/sucursales', sucursalRoutes);
+app.use('/api/admin/grupos', grupoRoutes);
 app.use('/api/admin/productos', productoRoutes);
 app.use('/api/admin/codigos', codigoRoutes);
 app.use('/api/admin', adminRoutes);
