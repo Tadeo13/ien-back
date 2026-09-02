@@ -18,7 +18,10 @@ exports.listar = tryCatch(async (req, res) => {
   if (!incluirInactivas) {
     filtro.activo = true;
   }
-  const tiendas = await Tienda.find(filtro).select('nombre_tienda ciudad activo').lean();
+  const tiendas = await Tienda.find(filtro)
+    .select('nombre_tienda ciudad activo grupo_id')
+    .populate('grupo_id', 'nombre')
+    .lean();
   res.json(tiendas.map(toResponse));
 });
 
