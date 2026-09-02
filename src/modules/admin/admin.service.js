@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const Usuario = require('../../models/Usuario');
 const Tienda = require('../../models/Tienda');
+const Grupo = require('../../models/Grupo');
 const PlanProgreso = require('../../models/PlanProgreso');
 const TestPregunta = require('../../models/TestPregunta');
 const ContenidoDiario = require('../../models/ContenidoDiario');
@@ -277,7 +278,7 @@ exports.listarPacientes = async (pagina, limite, tiendasPermitidas) => {
 
 // ─── Crear usuarios ───────────────────────────────────────────────────────────
 
-exports.crearAdminNegocio = async ({ nombre, email, password, tiendas_administradas }) => {
+exports.crearAdminNegocio = async ({ nombre, email, password, grupo_id }) => {
   if (!nombre || !email || !password) {
     throw new AppError(400, 'nombre, email y password son requeridos');
   }
@@ -290,16 +291,16 @@ exports.crearAdminNegocio = async ({ nombre, email, password, tiendas_administra
     throw new AppError(400, 'La contraseña debe tener al menos 8 caracteres');
   }
 
-  if (!tiendas_administradas || !Array.isArray(tiendas_administradas) || tiendas_administradas.length === 0) {
-    throw new AppError(400, 'Debe asignar al menos una tienda');
+  if (!grupo_id) {
+    throw new AppError(400, 'Debe asignar un grupo');
   }
 
   const existe = await Usuario.findOne({ email });
   if (existe) throw new AppError(409, 'El email ya está registrado');
 
-  const tiendasExistentes = await Tienda.find({ _id: { $in: tiendas_administradas }, activo: true }).lean();
-  if (tiendasExistentes.length !== tiendas_administradas.length) {
-    throw new AppError(400, 'Una o más tiendas no existen');
+  const grupoExiste = await Grupo.findById(grupo_id).lean();
+  if (!grupoExiste) {
+    throw new AppError(400, 'El grupo indicado no existe');
   }
 
   const password_hash = await bcrypt.hash(password, 10);
@@ -308,15 +309,22 @@ exports.crearAdminNegocio = async ({ nombre, email, password, tiendas_administra
     email,
     password_hash,
     rol: 'admin_negocio',
-    tiendas_administradas
+    grupo_id
   });
+
+  // Informativo: tiendas que quedan bajo el alcance del nuevo admin (no se guarda en el usuario)
+  const tiendasDelGrupo = await Tienda.find({ grupo_id: usuario.grupo_id })
+    .select('nombre_tienda ciudad')
+    .lean();
 
   return {
     id: usuario._id,
     nombre: usuario.nombre,
     email: usuario.email,
     rol: usuario.rol,
-    tiendas_administradas: usuario.tiendas_administradas
+    grupo_id: usuario.grupo_id,
+    grupo_nombre: grupoExiste.nombre,
+    tiendas_del_grupo: tiendasDelGrupo.map(t => ({ nombre_tienda: t.nombre_tienda, ciudad: t.ciudad }))
   };
 };
 
@@ -334,10 +342,9 @@ exports.crearModeradorTienda = async ({ nombre, email, password, tienda_id }, cr
   }
 
   if (creador.rol === 'admin_negocio') {
-    const estaEnScope = (creador.tiendas_administradas || [])
-      .some((t) => t.toString() === tienda_id.toString());
-    if (!estaEnScope) {
-      throw new AppError(403, 'La tienda no está dentro de tu scope');
+    const tiendaDelGrupo = await Tienda.findOne({ _id: tienda_id, activo: true, grupo_id: creador.grupo_id }).lean();
+    if (!tiendaDelGrupo) {
+      throw new AppError(403, 'La tienda no está dentro de tu grupo');
     }
   }
 
@@ -369,8 +376,8 @@ exports.crearModeradorTienda = async ({ nombre, email, password, tienda_id }, cr
 
 exports.listarAdminsNegocio = async () => {
   return Usuario.find({ rol: 'admin_negocio' })
-    .select('nombre email tiendas_administradas fecha_registro')
-    .populate('tiendas_administradas', 'nombre_tienda ciudad')
+    .select('nombre email grupo_id fecha_registro')
+    .populate('grupo_id', 'nombre')
     .sort({ fecha_registro: -1 })
     .lean();
 };
@@ -380,14 +387,14 @@ exports.getAdminNegocio = async (usuarioId) => {
     throw new AppError(400, 'ID de usuario inválido');
   }
   const usuario = await Usuario.findOne({ _id: usuarioId, rol: 'admin_negocio' })
-    .select('nombre email tiendas_administradas fecha_registro')
-    .populate('tiendas_administradas', 'nombre_tienda ciudad')
+    .select('nombre email grupo_id fecha_registro')
+    .populate('grupo_id', 'nombre')
     .lean();
   if (!usuario) throw new AppError(404, 'Administrador de negocio no encontrado');
   return usuario;
 };
 
-exports.actualizarAdminNegocio = async (usuarioId, { nombre, email, tiendas_administradas }) => {
+exports.actualizarAdminNegocio = async (usuarioId, { nombre, email, grupo_id }) => {
   if (!mongoose.Types.ObjectId.isValid(usuarioId)) {
     throw new AppError(400, 'ID de usuario inválido');
   }
@@ -401,24 +408,21 @@ exports.actualizarAdminNegocio = async (usuarioId, { nombre, email, tiendas_admi
     if (existe) throw new AppError(409, 'El email ya está registrado');
   }
 
-  if (tiendas_administradas !== undefined) {
-    if (!Array.isArray(tiendas_administradas) || tiendas_administradas.length === 0) {
-      throw new AppError(400, 'Debe asignar al menos una tienda');
-    }
-    const tiendasExistentes = await Tienda.find({ _id: { $in: tiendas_administradas }, activo: true }).lean();
-    if (tiendasExistentes.length !== tiendas_administradas.length) {
-      throw new AppError(400, 'Una o más tiendas no existen');
+  if (grupo_id !== undefined && grupo_id !== null) {
+    const grupoExiste = await Grupo.findById(grupo_id).select('_id').lean();
+    if (!grupoExiste) {
+      throw new AppError(400, 'El grupo indicado no existe');
     }
   }
 
   const updates = {};
   if (nombre) updates.nombre = nombre;
   if (email) updates.email = email;
-  if (tiendas_administradas) updates.tiendas_administradas = tiendas_administradas;
+  if (grupo_id !== undefined) updates.grupo_id = grupo_id;
 
   const actualizado = await Usuario.findByIdAndUpdate(usuarioId, updates, { new: true })
-    .select('nombre email tiendas_administradas fecha_registro')
-    .populate('tiendas_administradas', 'nombre_tienda ciudad')
+    .select('nombre email grupo_id fecha_registro')
+    .populate('grupo_id', 'nombre')
     .lean();
 
   return actualizado;

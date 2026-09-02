@@ -411,7 +411,7 @@ router.get('/usuarios/admin-negocio', listarAdminsNegocio);
  *               - nombre
  *               - email
  *               - password
- *               - tiendas_administradas
+ *               - grupo_id
  *             properties:
  *               nombre:
  *                 type: string
@@ -421,11 +421,9 @@ router.get('/usuarios/admin-negocio', listarAdminsNegocio);
  *               password:
  *                 type: string
  *                 minLength: 6
- *               tiendas_administradas:
- *                 type: array
- *                 items:
- *                   type: string
- *                 description: IDs de las tiendas que administrará
+ *               grupo_id:
+ *                 type: string
+ *                 description: ID del grupo cuyo catálogo administrará (todas sus tiendas)
  *     responses:
  *       201:
  *         description: Admin de negocio creado
@@ -443,12 +441,15 @@ router.get('/usuarios/admin-negocio', listarAdminsNegocio);
  *                 rol:
  *                   type: string
  *                   example: admin_negocio
- *                 tiendas_administradas:
+ *                 grupo_id:
+ *                   type: string
+ *                 grupo_nombre:
+ *                   type: string
+ *                 tiendas_del_grupo:
  *                   type: array
- *                   items:
- *                     type: string
+ *                   description: Informativo - alcance efectivo del admin
  *       400:
- *         description: Datos inválidos o tiendas inexistentes
+ *         description: Datos inválidos o grupo inexistente
  *       403:
  *         description: Solo admin_general
  *       409:
@@ -503,13 +504,14 @@ router.get('/usuarios/admin-negocio/:usuarioId', getAdminNegocio);
  *                 type: string
  *               email:
  *                 type: string
- *               tiendas_administradas:
- *                 type: array
- *                 items:
- *                   type: string
+ *               grupo_id:
+ *                 type: string
+ *                 description: Reasignar al admin a otro grupo (opcional)
  *     responses:
  *       200:
  *         description: Administrador actualizado
+ *       400:
+ *         description: El grupo indicado no existe
  *       404:
  *         description: Administrador no encontrado
  */
