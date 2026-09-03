@@ -92,12 +92,12 @@ async function findUsuariosSinActivar() {
 }
 
 async function findUsuariosParaRecuperar() {
-  const hace7Dias = getFechaHaceDias(7);
+  const hace3Dias = getFechaHaceDias(3);
   return PlanProgreso.aggregate([
     {
       $match: {
         estado: 'activo',
-        ultima_fecha_actividad: { $lte: hace7Dias },
+        ultima_fecha_actividad: { $lte: hace3Dias },
         $expr: {
           $eq: [
             { $arrayElemAt: ['$progreso_diario.completado', { $subtract: ['$dia_actual', 1] }] },
