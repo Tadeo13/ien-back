@@ -118,7 +118,7 @@ function signoff(tienda) {
   return `
   <p style="margin:0;font-family:${FONT.inter};font-size:15px;color:${C.text};line-height:1.7;">
     Con cariño,<br/>
-    <span style="font-weight:500;">Equipo IEN${tienda ? ' \u00B7 ' + escapeHtml(tienda) : ''}</span>
+    <span style="font-weight:500;">${tienda ? escapeHtml(tienda) + ' \u00B7 ' : ''}Equipo de Iridium</span>
   </p>`;
 }
 
