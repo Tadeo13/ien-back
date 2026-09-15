@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const rateLimit = require('express-rate-limit');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 const { validateCode, register, login, refresh, logout, profile, forgotPassword, verifyResetToken, resetPassword, changePassword } = require('./auth.controller');
 const authMiddleware = require('../../middlewares/authMiddleware');
 
@@ -14,6 +14,28 @@ const authLimiter = isTest ? noop : rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Demasiados intentos, intentá de nuevo en 5 minutos' }
+});
+
+const loginLimiter = isTest ? noop : rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiados intentos, intentá de nuevo en 15 minutos' }
+});
+
+const loginEmailLimiter = isTest ? noop : rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    return email || ipKeyGenerator(req);
+  },
+  message: { error: 'Demasiados intentos, intentá de nuevo en 15 minutos' }
 });
 
 const resetLimiter = isTest ? noop : rateLimit({
@@ -180,7 +202,7 @@ router.post('/register', authLimiter, register);
  *       400:
  *         description: Faltan campos requeridos
  */
-router.post('/login', authLimiter, login);
+router.post('/login', loginLimiter, loginEmailLimiter, login);
 
 /**
  * @swagger

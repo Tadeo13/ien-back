@@ -1,6 +1,5 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 const { connect, disconnect, clearAll } = require('./helpers/db');
 const { seed } = require('./helpers/seed');
 const { generateToken, createUsuario } = require('./helpers/auth');
@@ -154,5 +153,49 @@ describe('Pacientes - admin_negocio (scoped)', () => {
       .get(`/api/admin/pacientes/${data.usuario._id}/perfil`)
       .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
+  });
+});
+
+describe('Pacientes - IDOR: admin de tienda A no lee paciente de tienda B', () => {
+  let data, tokenA, pacienteB;
+
+  beforeEach(async () => {
+    data = await seed();
+    tokenA = generateToken(data.adminNegocio);
+    pacienteB = await createUsuario({
+      nombre: 'Paciente Tienda B',
+      email: `paciente-b-${data.uid}@test.com`,
+      tienda_id: data.tiendas[1]._id,
+      producto_id: data.productos[1]._id,
+      codigo_activacion: data.codigo2
+    });
+  });
+
+  const endpoints = ['perfil', 'progreso', 'actividades', 'test-inicial'];
+
+  test.each(endpoints)('GET /api/admin/pacientes/:id/%s - 404 sin datos ajenos', async (recurso) => {
+    const res = await request(app)
+      .get(`/api/admin/pacientes/${pacienteB._id}/${recurso}`)
+      .set('Authorization', `Bearer ${tokenA}`);
+
+    expect([403, 404]).toContain(res.status);
+    expect(res.status).not.toBe(200);
+    expect(res.body.email).toBeUndefined();
+    expect(res.body.nombre).not.toBe(pacienteB.nombre);
+    expect(res.body.test_inicial).toBeUndefined();
+    expect(res.body.dias).toBeUndefined();
+    expect(res.body.progreso_diario).toBeUndefined();
+  });
+
+  test('GET /api/admin/pacientes/:id/perfil - paciente sin tienda_id no es visible para admin scoped', async () => {
+    const huérfano = await createUsuario({
+      nombre: 'Paciente sin tienda',
+      email: `huerfano-${data.uid}@test.com`
+    });
+    const res = await request(app)
+      .get(`/api/admin/pacientes/${huérfano._id}/perfil`)
+      .set('Authorization', `Bearer ${tokenA}`);
+    expect(res.status).toBe(404);
+    expect(res.body.email).toBeUndefined();
   });
 });

@@ -151,6 +151,7 @@ describe('Auth - login', () => {
       .post('/api/auth/login')
       .send({ email: data.adminGeneral.email, password: 'wrong' });
     expect(res.status).toBe(401);
+    expect(res.body.error).toBe('Credenciales inválidas');
   });
 
   test('POST /api/auth/login - non-existent user', async () => {
@@ -158,6 +159,18 @@ describe('Auth - login', () => {
       .post('/api/auth/login')
       .send({ email: 'noexiste@test.com', password: 'pass' });
     expect(res.status).toBe(401);
+    expect(res.body.error).toBe('Credenciales inválidas');
+  });
+
+  test('POST /api/auth/login - same error for missing user and wrong password', async () => {
+    const wrongPassword = await request(app)
+      .post('/api/auth/login')
+      .send({ email: data.adminGeneral.email, password: 'wrong' });
+    const missingUser = await request(app)
+      .post('/api/auth/login')
+      .send({ email: 'noexiste@test.com', password: 'pass' });
+    expect(wrongPassword.status).toBe(missingUser.status);
+    expect(wrongPassword.body.error).toBe(missingUser.body.error);
   });
 
   test('POST /api/auth/login - missing fields', async () => {

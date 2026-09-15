@@ -28,14 +28,15 @@ async function obtenerPacienteConScope(usuarioId, tiendasPermitidas) {
     throw new AppError(400, 'ID de usuario inválido');
   }
 
-  const usuario = await Usuario.findById(usuarioId)
+  const usuario = await Usuario.findOne({ _id: usuarioId, rol: 'usuario' })
     .select('-password_hash')
-    .populate('tienda_id', 'nombre_tienda ciudad');
+    .populate('tienda_id', 'nombre_tienda ciudad activo');
 
   if (!usuario) throw new AppError(404, 'Paciente no encontrado');
 
-  if (tiendasPermitidas !== null && usuario.tienda_id) {
-    if (!enScope(usuario.tienda_id._id, tiendasPermitidas)) throw new AppError(404, 'Paciente no encontrado');
+  const tiendaId = usuario.tienda_id?._id ?? usuario.tienda_id;
+  if (!enScope(tiendaId, tiendasPermitidas)) {
+    throw new AppError(404, 'Paciente no encontrado');
   }
 
   if (usuario.tienda_id?.activo === false) {
@@ -477,8 +478,9 @@ exports.getModeradorTienda = async (usuarioId, tiendasPermitidas) => {
     .lean();
   if (!usuario) throw new AppError(404, 'Moderador de tienda no encontrado');
 
-  if (tiendasPermitidas !== null && usuario.tienda_moderada) {
-    if (!enScope(usuario.tienda_moderada._id, tiendasPermitidas)) throw new AppError(404, 'Moderador de tienda no encontrado');
+  const tiendaId = usuario.tienda_moderada?._id ?? usuario.tienda_moderada;
+  if (!enScope(tiendaId, tiendasPermitidas)) {
+    throw new AppError(404, 'Moderador de tienda no encontrado');
   }
 
   return usuario;
@@ -492,8 +494,8 @@ exports.actualizarModeradorTienda = async (usuarioId, { nombre, email, tienda_id
   const usuario = await Usuario.findOne({ _id: usuarioId, rol: 'moderador_tienda' });
   if (!usuario) throw new AppError(404, 'Moderador de tienda no encontrado');
 
-  if (tiendasPermitidas !== null && usuario.tienda_moderada) {
-    if (!enScope(usuario.tienda_moderada, tiendasPermitidas)) throw new AppError(404, 'Moderador de tienda no encontrado');
+  if (!enScope(usuario.tienda_moderada, tiendasPermitidas)) {
+    throw new AppError(404, 'Moderador de tienda no encontrado');
   }
 
   if (email && email !== usuario.email) {
@@ -531,8 +533,8 @@ exports.eliminarModeradorTienda = async (usuarioId, tiendasPermitidas) => {
   const usuario = await Usuario.findOne({ _id: usuarioId, rol: 'moderador_tienda' });
   if (!usuario) throw new AppError(404, 'Moderador de tienda no encontrado');
 
-  if (tiendasPermitidas !== null && usuario.tienda_moderada) {
-    if (!enScope(usuario.tienda_moderada, tiendasPermitidas)) throw new AppError(404, 'Moderador de tienda no encontrado');
+  if (!enScope(usuario.tienda_moderada, tiendasPermitidas)) {
+    throw new AppError(404, 'Moderador de tienda no encontrado');
   }
 
   await Usuario.findByIdAndDelete(usuarioId);

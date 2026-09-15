@@ -1,7 +1,7 @@
 const request = require('supertest');
 const { connect, disconnect, clearAll } = require('./helpers/db');
 const { seed } = require('./helpers/seed');
-const { generateToken } = require('./helpers/auth');
+const { generateToken, createModerador } = require('./helpers/auth');
 let app;
 
 beforeAll(async () => {
@@ -219,6 +219,23 @@ describe('Admin - CRUD moderador-tienda', () => {
       .delete(`/api/admin/usuarios/moderador-tienda/${data.moderador._id}`)
       .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
+  });
+});
+
+describe('Admin - IDOR moderador de otra tienda', () => {
+  test('GET /api/admin/usuarios/moderador-tienda/:id - admin de grupo A no ve moderador de tienda B', async () => {
+    const data = await seed();
+    const tokenA = generateToken(data.adminNegocio);
+    const moderadorB = await createModerador(data.tiendas[1]._id, {
+      nombre: 'Mod B',
+      email: `mod-b-${data.uid}@test.com`
+    });
+
+    const res = await request(app)
+      .get(`/api/admin/usuarios/moderador-tienda/${moderadorB._id}`)
+      .set('Authorization', `Bearer ${tokenA}`);
+    expect(res.status).toBe(404);
+    expect(res.body.email).toBeUndefined();
   });
 });
 
