@@ -9,35 +9,35 @@ const noop = (_req, _res, next) => next();
 const isTest = process.env.NODE_ENV === 'test';
 
 const authLimiter = isTest ? noop : rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
+  windowMs: 5 * 60 * 1000,
+  max: 15,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Demasiados intentos, intentá de nuevo en 15 minutos' }
+  message: { error: 'Demasiados intentos, intentá de nuevo en 5 minutos' }
 });
 
 const resetLimiter = isTest ? noop : rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 5 * 60 * 1000,
   max: 3,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Demasiadas solicitudes de recuperación, intentá de nuevo en 15 minutos' }
+  message: { error: 'Demasiadas solicitudes de recuperación, intentá de nuevo en 5 minutos' }
 });
 
 const verifyResetLimiter = isTest ? noop : rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 5 * 60 * 1000,
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Demasiadas consultas, intentá de nuevo en 15 minutos' }
+  message: { error: 'Demasiadas consultas, intentá de nuevo en 5 minutos' }
 });
 
 const resetPasswordLimiter = isTest ? noop : rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 5 * 60 * 1000,
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Demasiados intentos, intentá de nuevo en 15 minutos' }
+  message: { error: 'Demasiados intentos, intentá de nuevo en 5 minutos' }
 });
 
 /**
