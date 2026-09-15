@@ -300,7 +300,7 @@ router.get('/pacientes/:usuarioId/perfil', perfilPaciente);
  *       200:
  *         description: Plan de progreso del paciente
  *       404:
- *         description: Paciente no encontrado, fuera de scope o sin plan
+ *         description: Paciente no encontrado o fuera de scope
  */
 router.get('/pacientes/:usuarioId/progreso', progresoPaciente);
 
@@ -344,7 +344,7 @@ router.get('/pacientes/:usuarioId/test-inicial', testInicialPaciente);
  *       200:
  *         description: Días completados con contenido de lección
  *       404:
- *         description: Paciente no encontrado, fuera de scope o sin plan
+ *         description: Paciente no encontrado o fuera de scope
  */
 router.get('/pacientes/:usuarioId/actividades', actividadesPaciente);
 

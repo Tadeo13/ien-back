@@ -67,7 +67,20 @@ exports.getProgresoPaciente = async (usuarioId, tiendasPermitidas) => {
     .select('estado dia_actual racha_dias racha_maxima hitos_alcanzados fecha_inicio ultima_fecha_actividad test_inicial progreso_diario')
     .lean();
 
-  if (!plan) throw new AppError(404, 'El paciente no tiene plan de progreso');
+  if (!plan) {
+    return {
+      estado: 'sin_iniciar',
+      dia_actual: 0,
+      racha_dias: 0,
+      racha_maxima: 0,
+      hitos_alcanzados: [],
+      fecha_inicio: null,
+      ultima_fecha_actividad: null,
+      test_inicial: null,
+      progreso_diario: []
+    };
+  }
+
   return plan;
 };
 
@@ -113,7 +126,7 @@ exports.getActividadesPaciente = async (usuarioId, tiendasPermitidas) => {
     .select('progreso_diario')
     .lean();
 
-  if (!plan) throw new AppError(404, 'El paciente no tiene plan de progreso');
+  if (!plan) return { dias: [] };
 
   const diasCompletados = plan.progreso_diario.filter(d => d.completado);
   if (diasCompletados.length === 0) {
