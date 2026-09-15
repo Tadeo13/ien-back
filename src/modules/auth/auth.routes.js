@@ -17,16 +17,16 @@ const authLimiter = isTest ? noop : rateLimit({
 });
 
 const loginLimiter = isTest ? noop : rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 5 * 60 * 1000,
   max: 10,
   skipSuccessfulRequests: true,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Demasiados intentos, intentá de nuevo en 15 minutos' }
+  message: { error: 'Demasiados intentos, intentá de nuevo en 5 minutos' }
 });
 
 const loginEmailLimiter = isTest ? noop : rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 5 * 60 * 1000,
   max: 10,
   skipSuccessfulRequests: true,
   standardHeaders: true,
@@ -35,7 +35,7 @@ const loginEmailLimiter = isTest ? noop : rateLimit({
     const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
     return email || ipKeyGenerator(req);
   },
-  message: { error: 'Demasiados intentos, intentá de nuevo en 15 minutos' }
+  message: { error: 'Demasiados intentos, intentá de nuevo en 5 minutos' }
 });
 
 const resetLimiter = isTest ? noop : rateLimit({
