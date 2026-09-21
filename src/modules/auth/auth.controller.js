@@ -1,4 +1,4 @@
-const { validateCode, register, login, refreshToken, logout, forgotPassword, verifyResetToken, resetPassword, changePassword } = require('./auth.service');
+const { validateCode, register, login, refreshToken, logout, forgotPassword, verifyResetToken, resetPassword, changePassword, updateReminderSchedule, getReminderSchedulePY } = require('./auth.service');
 const { tryCatch } = require('../../middlewares/errorHandler');
 const AppError = require('../../utils/AppError');
 const Usuario = require('../../models/Usuario');
@@ -61,7 +61,7 @@ exports.profile = tryCatch(async (req, res) => {
     .populate('tienda_id')
     .populate('producto_id')
     .populate('grupo_id', 'nombre')
-    .select('nombre email rol fecha_registro tienda_id producto_id grupo_id');
+    .select('nombre email rol fecha_registro tienda_id producto_id grupo_id hora_recordatorio_utc minuto_recordatorio_utc');
 
   if (!usuario) {
     throw new AppError(404, 'Usuario no encontrado');
@@ -73,6 +73,7 @@ exports.profile = tryCatch(async (req, res) => {
     email: usuario.email,
     rol: usuario.rol,
     fecha_registro: usuario.fecha_registro,
+    ...getReminderSchedulePY(usuario),
     tienda: usuario.tienda_id ? {
       id: usuario.tienda_id._id,
       nombre_tienda: usuario.tienda_id.nombre_tienda,
@@ -159,5 +160,16 @@ exports.changePassword = tryCatch(async (req, res) => {
   }
 
   const result = await changePassword(req.usuario.id, current_password, nueva_password);
+  res.json(result);
+});
+
+exports.updateReminderSchedule = tryCatch(async (req, res) => {
+  const { hora_recordatorio, minuto_recordatorio } = req.body;
+
+  if (hora_recordatorio === undefined || minuto_recordatorio === undefined) {
+    throw new AppError(400, 'La hora y el minuto de recordatorio son requeridos');
+  }
+
+  const result = await updateReminderSchedule(req.usuario.id, hora_recordatorio, minuto_recordatorio);
   res.json(result);
 });

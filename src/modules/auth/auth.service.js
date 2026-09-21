@@ -14,6 +14,30 @@ const { bienvenida, recuperacionContrasena } = require('../email/templates');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+// Paraguay opera en UTC-3 (DST permanente desde 2024). La hora que elige el
+// usuario es hora local PY; para guardarla/compararla con el cron la pasamos a UTC.
+const PY_UTC_OFFSET = 3;
+
+function validarHoraRecordatorio(hora) {
+  if (typeof hora !== 'number' || !Number.isInteger(hora) || hora < 0 || hora > 23) {
+    throw new AppError(400, 'La hora de recordatorio debe ser un número entero entre 0 y 23 (hora PY)');
+  }
+}
+
+function validarMinutoRecordatorio(minuto) {
+  if (minuto !== 0 && minuto !== 30) {
+    throw new AppError(400, 'El minuto de recordatorio debe ser 0 o 30');
+  }
+}
+
+function horaPYaUTC(hora) {
+  return (hora + PY_UTC_OFFSET) % 24;
+}
+
+function horaUTCaPY(utc) {
+  return (utc - PY_UTC_OFFSET + 24) % 24;
+}
+
 function generarAccessToken(usuario) {
   return jwt.sign({ id: usuario._id }, JWT_SECRET, { expiresIn: '15m' });
 }
@@ -79,15 +103,11 @@ exports.register = async ({ nombre, email, password, codigo_activacion, hora_rec
   let hora_recordatorio_utc = undefined;
   let minuto_recordatorio_utc = undefined;
   if (hora_recordatorio !== undefined) {
-    if (typeof hora_recordatorio !== 'number' || !Number.isInteger(hora_recordatorio) || hora_recordatorio < 0 || hora_recordatorio > 23) {
-      throw new AppError(400, 'La hora de recordatorio debe ser un número entero entre 0 y 23 (hora PY)');
-    }
-    hora_recordatorio_utc = (hora_recordatorio + 3) % 24;
+    validarHoraRecordatorio(hora_recordatorio);
+    hora_recordatorio_utc = horaPYaUTC(hora_recordatorio);
   }
   if (minuto_recordatorio !== undefined) {
-    if (minuto_recordatorio !== 0 && minuto_recordatorio !== 30) {
-      throw new AppError(400, 'El minuto de recordatorio debe ser 0 o 30');
-    }
+    validarMinutoRecordatorio(minuto_recordatorio);
     minuto_recordatorio_utc = minuto_recordatorio;
   }
 
@@ -121,6 +141,37 @@ exports.register = async ({ nombre, email, password, codigo_activacion, hora_rec
 
   return { access_token, refresh_token, usuario: { id: usuario._id, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol, grupo_id: usuario.grupo_id ?? null } };
 };
+
+exports.updateReminderSchedule = async (usuarioId, hora_recordatorio, minuto_recordatorio) => {
+  if (hora_recordatorio === undefined || minuto_recordatorio === undefined) {
+    throw new AppError(400, 'La hora y el minuto de recordatorio son requeridos');
+  }
+
+  validarHoraRecordatorio(hora_recordatorio);
+  validarMinutoRecordatorio(minuto_recordatorio);
+
+  const usuario = await Usuario.findByIdAndUpdate(
+    usuarioId,
+    {
+      $set: {
+        hora_recordatorio_utc: horaPYaUTC(hora_recordatorio),
+        minuto_recordatorio_utc: minuto_recordatorio
+      }
+    },
+    { new: true }
+  ).lean();
+
+  if (!usuario) {
+    throw new AppError(404, 'Usuario no encontrado');
+  }
+
+  return { hora_recordatorio, minuto_recordatorio };
+};
+
+exports.getReminderSchedulePY = (usuario) => ({
+  hora_recordatorio: horaUTCaPY(usuario.hora_recordatorio_utc ?? 13),
+  minuto_recordatorio: usuario.minuto_recordatorio_utc ?? 0
+});
 
 exports.login = async ({ email, password }) => {
   if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {

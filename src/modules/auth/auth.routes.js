@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const crypto = require('crypto');
 const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
-const { validateCode, register, login, refresh, logout, profile, forgotPassword, verifyResetToken, resetPassword, changePassword } = require('./auth.controller');
+const { validateCode, register, login, refresh, logout, profile, forgotPassword, verifyResetToken, resetPassword, changePassword, updateReminderSchedule } = require('./auth.controller');
 const authMiddleware = require('../../middlewares/authMiddleware');
 
 const router = Router();
@@ -141,6 +141,15 @@ router.post('/validate-code', authLimiter, validateCode);
  *                 type: string
  *               codigo_activacion:
  *                 type: string
+ *               hora_recordatorio:
+ *                 type: integer
+ *                 minimum: 0
+ *                 maximum: 23
+ *                 description: Hora local (Paraguay) en formato 24h para el recordatorio diario (opcional, default 10)
+ *               minuto_recordatorio:
+ *                 type: integer
+ *                 enum: [0, 30]
+ *                 description: Minuto del recordatorio (opcional, default 0)
  *     responses:
  *       201:
  *         description: Usuario creado
@@ -311,6 +320,12 @@ router.post('/logout', authLimiter, logout);
  *                 fecha_registro:
  *                   type: string
  *                   format: date-time
+ *                 hora_recordatorio:
+ *                   type: integer
+ *                   description: Hora local (Paraguay) del recordatorio diario
+ *                 minuto_recordatorio:
+ *                   type: integer
+ *                   description: Minuto del recordatorio diario (0 o 30)
  *                 tienda:
  *                   type: object
  *                   nullable: true
@@ -473,5 +488,48 @@ router.post('/reset-password', resetPasswordLimiter, resetPassword);
  *         description: Contraseña actual incorrecta
  */
 router.post('/change-password', authMiddleware, resetPasswordLimiter, changePassword);
+
+/**
+ * @swagger
+ * /api/auth/reminder-schedule:
+ *   post:
+ *     summary: Actualizar el horario del recordatorio diario (hora local PY)
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [hora_recordatorio, minuto_recordatorio]
+ *             properties:
+ *               hora_recordatorio:
+ *                 type: integer
+ *                 minimum: 0
+ *                 maximum: 23
+ *                 description: Hora local (Paraguay) en formato 24h
+ *               minuto_recordatorio:
+ *                 type: integer
+ *                 enum: [0, 30]
+ *     responses:
+ *       200:
+ *         description: Horario actualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 hora_recordatorio:
+ *                   type: integer
+ *                 minuto_recordatorio:
+ *                   type: integer
+ *       400:
+ *         description: Hora o minuto inválidos
+ *       401:
+ *         description: Token no provisto o inválido
+ */
+router.post('/reminder-schedule', authMiddleware, authLimiter, updateReminderSchedule);
 
 module.exports = router;
