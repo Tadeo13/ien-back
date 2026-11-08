@@ -6,6 +6,7 @@ const TestPregunta = require('../../models/TestPregunta');
 const ContenidoEspecial = require('../../models/ContenidoEspecial');
 const { enviarCorreo } = require('../email/email.service');
 const { hito } = require('../email/templates');
+const { archivarYReiniciar, filtroPlanSinCambios } = require('./reinicios.service');
 
 const AppError = require('../../utils/AppError');
 const { esMismoDiaCalendarioUTC } = require('../../utils/fechas');
@@ -60,23 +61,21 @@ function mapContenidoALeccion(contenido) {
  * Devuelve el plan reactivado o null si no hay ninguno abandonado.
  */
 async function reactivarSiAbandonado(usuarioId) {
-  const plan = await PlanProgreso.findOne({ usuario_id: usuarioId, estado: 'abandonado' });
-  if (!plan) return null;
-  plan.estado = 'activo';
-  plan.dia_actual = 1;
-  plan.racha_dias = 0;
-  plan.racha_maxima = 0;
-  plan.hitos_alcanzados = [];
-  plan.racha_rota_en = null;
-  plan.ultima_fecha_actividad = new Date();
-  plan.progreso_diario = Array.from({ length: 30 }, (_, i) => ({
-    dia_numero: i + 1,
-    completado: false,
-    fecha_completado: null,
-    respuesta_usuario: null
-  }));
-  await plan.save();
-  return plan;
+  const plan = await PlanProgreso.findOne({ usuario_id: usuarioId, estado: 'abandonado' }).lean();
+  if (plan) {
+    const ahora = new Date();
+    const reactivado = await archivarYReiniciar(plan, 'reactivacion', ahora, {
+      estado: 'activo',
+      racha_maxima: 0,
+      hitos_alcanzados: [],
+      racha_rota_en: null,
+      ultima_fecha_actividad: ahora
+    });
+    if (reactivado) return reactivado;
+  }
+
+  // Perfil y lectura pueden intentar reactivar el mismo plan en paralelo.
+  return PlanProgreso.findOne({ usuario_id: usuarioId, estado: 'activo' });
 }
 
 async function getCabeceraSiEsInicioDeBloque(diaNumero) {
@@ -90,25 +89,19 @@ async function getCabeceraSiEsInicioDeBloque(diaNumero) {
 
 /**
  * Marca el dia_actual del plan como completado de forma atomica:
- * - actualiza el elemento correcto de progreso_diario via operador posicional $
- * - incrementa racha_dias y avanza dia_actual con $inc
- * - actualiza racha_maxima con $max (nunca retrocede)
- * - refresca ultima_fecha_actividad
+ * La escritura exige que el plan siga igual al que leyó la solicitud.
  * Devuelve { plan, hito_alcanzado } donde hito_alcanzado es el hito de racha
  * alcanzado en este completado, o null si no se alcanzó ninguno nuevo.
  */
-async function marcarDiaCompletado(planId, respuestaUsuario, skipValidation = false) {
-  const plan = await PlanProgreso.findById(planId)
-    .select('dia_actual ultima_fecha_actividad progreso_diario estado racha_dias racha_maxima hitos_alcanzados')
-    .lean();
-  if (!plan) throw new AppError(404, 'Plan no encontrado');
-
+async function marcarDiaCompletado(plan, respuestaUsuario) {
   const ahora = new Date();
 
   // LIMITACIÓN CONOCIDA: Comparación de día calendario en UTC.
-  if (!skipValidation && yaCompletoActividadHoy(plan, ahora)) {
+  if (yaCompletoActividadHoy(plan, ahora)) {
     throw new AppError(409, 'Ya completaste la actividad de hoy');
   }
+
+  const hito_alcanzado = detectarHito(plan.racha_dias + 1, plan.hitos_alcanzados);
 
   // Actualización atómica con pipeline de agregación (MongoDB 4.2+).
   // Stage 1: marca el día via $map/$cond/$mergeObjects, actualiza fechas, incrementa racha/dia.
@@ -116,7 +109,8 @@ async function marcarDiaCompletado(planId, respuestaUsuario, skipValidation = fa
   // Todo en una sola operación atómica — no hay ventana entre $inc y $max.
   const planActualizado = await PlanProgreso.findOneAndUpdate(
     {
-      _id: planId,
+      ...filtroPlanSinCambios(plan),
+      racha_dias: plan.racha_dias,
       progreso_diario: {
         $elemMatch: {
           dia_numero: plan.dia_actual,
@@ -137,7 +131,7 @@ async function marcarDiaCompletado(planId, respuestaUsuario, skipValidation = fa
                   // SEG-02: respuestaUsuario se envuelve en $literal para que MongoDB
                   // lo almacene como dato literal y nunca lo evalúe como expresión
                   // de agregación ($field, $$ROOT, $function, ...).
-                  then: { $mergeObjects: ['$$dia', { completado: true, fecha_completado: ahora, respuesta_usuario: { $literal: respuestaUsuario || null } }] },
+                  then: { $mergeObjects: ['$$dia', { completado: true, fecha_completado: ahora, respuesta_usuario: { $literal: respuestaUsuario ?? null } }] },
                   else: '$$dia'
                 }
               }
@@ -145,12 +139,17 @@ async function marcarDiaCompletado(planId, respuestaUsuario, skipValidation = fa
           },
           ultima_fecha_actividad: ahora,
           racha_dias: { $add: ['$racha_dias', 1] },
-          dia_actual: { $add: ['$dia_actual', 1] }
+          dia_actual: { $add: ['$dia_actual', 1] },
+          __v: { $add: [{ $ifNull: ['$__v', 0] }, 1] }
         }
       },
       {
         $set: {
-          racha_maxima: { $max: ['$racha_maxima', '$racha_dias'] }
+          racha_maxima: { $max: ['$racha_maxima', '$racha_dias'] },
+          estado: { $cond: [{ $gt: ['$dia_actual', 30] }, 'completado', '$estado'] },
+          ...(hito_alcanzado !== null && {
+            hitos_alcanzados: { $concatArrays: [{ $ifNull: ['$hitos_alcanzados', []] }, [hito_alcanzado]] }
+          })
         }
       }
     ],
@@ -158,21 +157,7 @@ async function marcarDiaCompletado(planId, respuestaUsuario, skipValidation = fa
   );
 
   if (!planActualizado) {
-    throw new AppError(409, 'Ya completaste la actividad de hoy');
-  }
-
-  // Si ya se superó el día 30, cerramos el plan como completado
-  if (planActualizado.dia_actual > 30 && planActualizado.estado === 'activo') {
-    planActualizado.estado = 'completado';
-    await planActualizado.save();
-  }
-
-  const hito_alcanzado = detectarHito(planActualizado.racha_dias, plan.hitos_alcanzados);
-  if (hito_alcanzado !== null) {
-    await PlanProgreso.updateOne(
-      { _id: planId },
-      { $addToSet: { hitos_alcanzados: hito_alcanzado } }
-    );
+    throw new AppError(409, 'La actividad cambió. Actualizá la vista antes de continuar');
   }
 
   return { plan: planActualizado, hito_alcanzado };
@@ -427,14 +412,14 @@ exports.getProfile = async (usuarioId) => {
 exports.completeDay = async (usuarioId, respuestaUsuario) => {
   const plan = await PlanProgreso
     .findOne({ usuario_id: usuarioId, estado: 'activo' })
-    .select('_id tienda_id')
+    .select('tienda_id estado dia_actual ultima_fecha_actividad progreso_diario racha_dias hitos_alcanzados __v')
     .populate('tienda_id', 'nombre_tienda')
     .lean();
   if (!plan) {
     throw new AppError(404, 'No hay un plan activo');
   }
 
-  const { plan: planActualizado, hito_alcanzado } = await marcarDiaCompletado(plan._id, respuestaUsuario);
+  const { plan: planActualizado, hito_alcanzado } = await marcarDiaCompletado(plan, respuestaUsuario);
 
   if (hito_alcanzado !== null) {
     Usuario.findById(usuarioId).select('nombre email').lean()
@@ -467,117 +452,9 @@ exports.completeDay = async (usuarioId, respuestaUsuario) => {
   };
 };
 
-/**
- * Avanza al siguiente día sin validar actividad completada hoy (dev-only).
- */
-exports.advanceDay = async (usuarioId) => {
-  const plan = await PlanProgreso
-    .findOne({ usuario_id: usuarioId, estado: 'activo' })
-    .select('_id')
-    .lean();
-  if (!plan) throw new AppError(404, 'No hay un plan activo');
-
-  const { plan: planActualizado, hito_alcanzado } = await marcarDiaCompletado(plan._id, undefined, true);
-
-  await PlanProgreso.updateOne(
-    { _id: plan._id },
-    { $set: { ultima_fecha_actividad: new Date(0) } }
-  );
-
-  return {
-    dia_completado: planActualizado.dia_actual - 1,
-    dia_actual: planActualizado.dia_actual,
-    conclusion: await getConclusionSiEsCierreDeBloque(planActualizado.dia_actual - 1),
-    racha_dias: planActualizado.racha_dias,
-    racha_maxima: planActualizado.racha_maxima,
-    estado: planActualizado.estado,
-    hito_alcanzado
-  };
-};
-
-/**
- * Retrocede al día anterior deshaciendo el último día completado.
- */
-exports.retreatDay = async (usuarioId) => {
-  const plan = await PlanProgreso
-    .findOne({ usuario_id: usuarioId, estado: { $in: ['activo', 'completado'] } })
-    .select('_id dia_actual racha_dias racha_maxima progreso_diario hitos_alcanzados estado')
-    .lean();
-  if (!plan) throw new AppError(404, 'No hay un plan activo');
-
-  const completados = plan.progreso_diario
-    .filter(d => d.completado)
-    .sort((a, b) => b.dia_numero - a.dia_numero);
-
-  if (completados.length === 0) {
-    throw new AppError(409, 'No hay días completados para retroceder');
-  }
-
-  const ultimo = completados[0];
-  const anterior = completados[1] || null;
-
-  const planActualizado = await PlanProgreso.findOneAndUpdate(
-    {
-      _id: plan._id,
-      progreso_diario: {
-        $elemMatch: { dia_numero: ultimo.dia_numero, completado: true }
-      }
-    },
-    [{
-      $set: {
-        progreso_diario: {
-          $map: {
-            input: '$progreso_diario',
-            as: 'dia',
-            in: {
-              $cond: {
-                if: { $eq: ['$$dia.dia_numero', ultimo.dia_numero] },
-                then: {
-                  $mergeObjects: ['$$dia', {
-                    completado: false,
-                    fecha_completado: null,
-                    respuesta_usuario: null
-                  }]
-                },
-                else: '$$dia'
-              }
-            }
-          }
-        },
-        ultima_fecha_actividad: new Date(0),
-        dia_actual: { $max: [{ $subtract: ['$dia_actual', 1] }, 1] },
-        racha_dias: { $max: [{ $subtract: ['$racha_dias', 1] }, 0] },
-        estado: {
-          $cond: {
-            if: { $eq: ['$estado', 'completado'] },
-            then: 'activo',
-            else: '$estado'
-          }
-        }
-      }
-    }],
-    { new: true }
-  );
-
-  if (!planActualizado) {
-    throw new AppError(409, 'No se pudo retroceder el día');
-  }
-
-  // Remove hito milestone if current racha was a milestone
-  if ([7, 14, 21, 28].includes(plan.racha_dias)) {
-    await PlanProgreso.updateOne(
-      { _id: plan._id },
-      { $pull: { hitos_alcanzados: plan.racha_dias } }
-    );
-  }
-
-  return {
-    dia_retrocedido: ultimo.dia_numero,
-    dia_actual: planActualizado.dia_actual,
-    racha_dias: planActualizado.racha_dias,
-    racha_maxima: planActualizado.racha_maxima,
-    estado: planActualizado.estado
-  };
+// Se conservan las rutas para los clientes existentes, pero se protegen los planes reales.
+exports.advanceDay = exports.retreatDay = async () => {
+  throw new AppError(410, 'Los controles de prueba están deshabilitados para proteger el progreso');
 };
 
 /**

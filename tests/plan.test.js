@@ -216,54 +216,24 @@ describe('Plan - testing endpoints', () => {
     expect(mal.body.error).toMatch(/inventada/);
   });
 
-  test('POST /api/plan/testing/advance - success', async () => {
-    const respuestas = Array.from({ length: data.totalPreguntas }, (_, i) => ({
-      numero: i + 1, score: 3
-    }));
-    await request(app)
-      .post('/api/plan/setup-test')
+  test.each(['advance', 'retreat'])('testing/%s no altera un plan real ni para un administrador', async (action) => {
+    const setup = await request(app)
+      .post('/api/plan/testing/autocomplete-test')
+      .set('Authorization', `Bearer ${token}`);
+    expect(setup.status).toBe(201);
+    const respuesta = [{ id: 'reflexion', tipo: 'texto', valor: 'Conservar esta respuesta' }];
+    const completion = await request(app)
+      .post('/api/plan/complete-day')
       .set('Authorization', `Bearer ${token}`)
-      .send({ respuestas });
+      .send({ respuesta_usuario: respuesta });
+    expect(completion.status).toBe(200);
 
+    const PlanProgreso = mongoose.model('PlanProgreso');
+    const anterior = await PlanProgreso.findById(setup.body.plan_id).lean();
     const res = await request(app)
-      .post('/api/plan/testing/advance')
+      .post(`/api/plan/testing/${action}`)
       .set('Authorization', `Bearer ${token}`);
-    expect(res.status).toBe(200);
-  });
-
-  test('POST /api/plan/testing/retreat - success', async () => {
-    const respuestas = Array.from({ length: data.totalPreguntas }, (_, i) => ({
-      numero: i + 1, score: 3
-    }));
-    await request(app)
-      .post('/api/plan/setup-test')
-      .set('Authorization', `Bearer ${token}`)
-      .send({ respuestas });
-
-    await request(app)
-      .post('/api/plan/testing/advance')
-      .set('Authorization', `Bearer ${token}`);
-
-    const res = await request(app)
-      .post('/api/plan/testing/retreat')
-      .set('Authorization', `Bearer ${token}`);
-    expect(res.status).toBe(200);
-    expect(res.body.dia_retrocedido).toBeDefined();
-    expect(res.body.dia_actual).toBeDefined();
-  });
-
-  test('POST /api/plan/testing/retreat - 409 sin días completados', async () => {
-    const respuestas = Array.from({ length: data.totalPreguntas }, (_, i) => ({
-      numero: i + 1, score: 3
-    }));
-    await request(app)
-      .post('/api/plan/setup-test')
-      .set('Authorization', `Bearer ${token}`)
-      .send({ respuestas });
-
-    const res = await request(app)
-      .post('/api/plan/testing/retreat')
-      .set('Authorization', `Bearer ${token}`);
-    expect(res.status).toBe(409);
+    expect(res.status).toBe(410);
+    expect(await PlanProgreso.findById(setup.body.plan_id).lean()).toEqual(anterior);
   });
 });

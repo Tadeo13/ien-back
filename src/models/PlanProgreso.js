@@ -28,6 +28,20 @@ const diaProgresoSchema = new Schema({
   respuesta_usuario: { type: Schema.Types.Mixed, default: null }
 }, { _id: false });
 
+const reinicioSchema = new Schema({
+  fecha: Date,
+  motivo: String,
+  estado: String,
+  fecha_inicio: Date,
+  ultima_fecha_actividad: Date,
+  dia_actual: Number,
+  racha_dias: Number,
+  racha_maxima: Number,
+  racha_rota_en: Date,
+  hitos_alcanzados: [Number],
+  progreso_diario: [diaProgresoSchema]
+}, { _id: false });
+
 const planProgresoSchema = new Schema({
   usuario_id: { type: Schema.Types.ObjectId, ref: 'Usuario', required: true },
   tienda_id: { type: Schema.Types.ObjectId, ref: 'Tienda', required: true },
@@ -41,6 +55,7 @@ const planProgresoSchema = new Schema({
   ultima_fecha_actividad: { type: Date, default: Date.now },
   estado: { type: String, enum: ['activo', 'completado', 'abandonado'], default: 'activo' },
   test_inicial: testInicialSchema,
+  historial_reinicios: { type: [reinicioSchema], select: false, default: undefined },
   progreso_diario: {
     type: [diaProgresoSchema],
     default: () => Array.from({ length: 30 }, (_, i) => ({

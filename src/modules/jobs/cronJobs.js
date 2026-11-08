@@ -1,6 +1,16 @@
 const PlanProgreso = require('../../models/PlanProgreso');
 const Usuario = require('../../models/Usuario');
 const { getInicioDeDiaDeAyer, getFechaHaceDias } = require('../../utils/fechas');
+const { filtroPlanSinCambios } = require('../plan/reinicios.service');
+
+const actividadValida = {
+  $and: [
+    { $eq: [{ $type: '$ultima_fecha_actividad' }, 'date'] },
+    { $eq: [{ $type: '$fecha_inicio' }, 'date'] },
+    { $gt: ['$ultima_fecha_actividad', new Date(0)] },
+    { $gte: ['$ultima_fecha_actividad', '$fecha_inicio'] }
+  ]
+};
 
 async function findUsuariosRezagados(horaUtcActual, minutoUtcActual) {
   return PlanProgreso.aggregate([
@@ -56,28 +66,34 @@ async function findUsuariosRezagados(horaUtcActual, minutoUtcActual) {
  */
 async function demoledorDeRachas() {
   const inicioDeDiaDeAyer = getInicioDeDiaDeAyer();
+  const ahora = new Date();
   const filtro = {
     estado: 'activo',
     ultima_fecha_actividad: { $lt: inicioDeDiaDeAyer },
-    racha_dias: { $gt: 0 }
+    racha_dias: { $gt: 0 },
+    $expr: actividadValida
   };
 
   const planesAfectados = await PlanProgreso
     .find(filtro)
-    .select('usuario_id racha_dias')
+    .select('usuario_id racha_dias estado dia_actual ultima_fecha_actividad __v')
     .lean();
 
-  const resultado = await PlanProgreso.updateMany(filtro, {
-    $set: { racha_dias: 0, racha_rota_en: new Date() }
-  });
+  const usuarios_afectados = [];
+  for (const plan of planesAfectados) {
+    const resultado = await PlanProgreso.updateOne(filtroPlanSinCambios(plan), {
+      $set: { racha_dias: 0, racha_rota_en: ahora },
+      $inc: { __v: 1 }
+    });
+    if (resultado.modifiedCount) {
+      usuarios_afectados.push({ usuario_id: plan.usuario_id, racha_rota: plan.racha_dias });
+    }
+  }
 
   return {
-    matchedCount: resultado.matchedCount,
-    modifiedCount: resultado.modifiedCount,
-    usuarios_afectados: planesAfectados.map(p => ({
-      usuario_id: p.usuario_id,
-      racha_rota: p.racha_dias
-    }))
+    matchedCount: usuarios_afectados.length,
+    modifiedCount: usuarios_afectados.length,
+    usuarios_afectados
   };
 }
 
@@ -122,13 +138,16 @@ async function findUsuariosParaRecuperar() {
 async function findPlanesParaAbandonar() {
   const hace30Dias = getFechaHaceDias(30);
   return PlanProgreso.aggregate([
-    { $match: { estado: 'activo', ultima_fecha_actividad: { $lte: hace30Dias } } },
+    { $match: { estado: 'activo', ultima_fecha_actividad: { $lte: hace30Dias }, $expr: actividadValida } },
     { $lookup: { from: 'usuarios', localField: 'usuario_id', foreignField: '_id', as: 'usuario' } },
     { $unwind: '$usuario' },
     {
       $project: {
         _id: 0,
         plan_id: '$_id',
+        estado: 1,
+        ultima_fecha_actividad: 1,
+        __v: 1,
         usuario_id: 1,
         dia_actual: 1,
         racha_dias: 1,
@@ -140,18 +159,20 @@ async function findPlanesParaAbandonar() {
 }
 
 /**
- * Planes activos sin actividad por 7+ días que ya avanzaron más allá del día 1
- * → candidatos a reinicio (reset parcial). No toca ultima_fecha_actividad para
- * no alterar el reloj de 30 días del abandono.
+ * Planes activos con 7 a menos de 30 días de inactividad que avanzaron más
+ * allá del día 1. A partir de 30 días corresponde abandono.
  */
-async function findPlanesParaReiniciar() {
-  const hace7Dias = getFechaHaceDias(7);
+async function findPlanesParaReiniciar(ahora = new Date()) {
+  const diaMs = 86400000;
+  const hace7Dias = new Date(ahora.getTime() - 7 * diaMs);
+  const hace30Dias = new Date(ahora.getTime() - 30 * diaMs);
   return PlanProgreso.aggregate([
     {
       $match: {
         estado: 'activo',
-        ultima_fecha_actividad: { $lte: hace7Dias },
-        dia_actual: { $gt: 1 }
+        ultima_fecha_actividad: { $gt: hace30Dias, $lte: hace7Dias },
+        dia_actual: { $gt: 1 },
+        $expr: actividadValida
       }
     },
     { $lookup: { from: 'usuarios', localField: 'usuario_id', foreignField: '_id', as: 'usuario' } },
@@ -160,6 +181,9 @@ async function findPlanesParaReiniciar() {
       $project: {
         _id: 0,
         plan_id: '$_id',
+        estado: 1,
+        ultima_fecha_actividad: 1,
+        __v: 1,
         usuario_id: 1,
         dia_actual: 1,
         racha_dias: 1,

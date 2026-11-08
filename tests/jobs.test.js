@@ -2,6 +2,7 @@ const request = require('supertest');
 const mongoose = require('mongoose');
 const { connect, disconnect, clearAll } = require('./helpers/db');
 const { seed } = require('./helpers/seed');
+const { generateToken } = require('./helpers/auth');
 const PlanProgreso = require('../src/models/PlanProgreso');
 const Usuario = require('../src/models/Usuario');
 const HistorialCorreo = require('../src/models/HistorialCorreo');
@@ -80,7 +81,10 @@ describe('demoledorDeRachas - racha_rota_en', () => {
       tienda_id: new mongoose.Types.ObjectId(),
       codigo_utilizado: 'TEST-001',
       estado: 'activo',
+      dia_actual: 2,
       racha_dias: 5,
+      progreso_diario: [{ dia_numero: 1, completado: true, respuesta_usuario: { texto: 'Respuesta previa' } }],
+      fecha_inicio: hace3Dias,
       ultima_fecha_actividad: hace3Dias
     });
 
@@ -90,6 +94,8 @@ describe('demoledorDeRachas - racha_rota_en', () => {
     const plan = await PlanProgreso.findOne({ usuario_id: uid }).lean();
     expect(plan.racha_dias).toBe(0);
     expect(plan.racha_rota_en).toBeInstanceOf(Date);
+    expect(plan.dia_actual).toBe(2);
+    expect(plan.progreso_diario[0].respuesta_usuario).toEqual({ texto: 'Respuesta previa' });
   });
 
   test('no toca racha_rota_en si racha_dias ya es 0', async () => {
@@ -246,6 +252,7 @@ describe('findPlanesParaAbandonar - 30 días de inactividad', () => {
       tienda_id: new mongoose.Types.ObjectId(),
       codigo_utilizado: 'TEST-ABN',
       estado: 'activo',
+      fecha_inicio: new Date(Date.now() - (dias + 1) * 86400000),
       ultima_fecha_actividad: new Date(Date.now() - dias * 24 * 60 * 60 * 1000),
       ...extra
     });
@@ -281,6 +288,7 @@ describe('abandonarPlanesYNotificar', () => {
       tienda_id: new mongoose.Types.ObjectId(),
       codigo_utilizado: 'TEST-ABN2',
       estado: 'activo',
+      fecha_inicio: new Date(Date.now() - 32 * 86400000),
       ultima_fecha_actividad: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000)
     });
 
@@ -308,6 +316,7 @@ describe('reiniciarPlanesYNotificar - reset parcial', () => {
       racha_dias: 4,
       racha_maxima: 14,
       hitos_alcanzados: [7, 14],
+      fecha_inicio: fechaVieja,
       ultima_fecha_actividad: fechaVieja
     });
 
@@ -332,6 +341,7 @@ describe('reiniciarPlanesYNotificar - reset parcial', () => {
       codigo_utilizado: 'TEST-RST2',
       estado: 'activo',
       dia_actual: 1,
+      fecha_inicio: new Date(Date.now() - 9 * 86400000),
       ultima_fecha_actividad: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000)
     });
 
@@ -343,10 +353,10 @@ describe('reiniciarPlanesYNotificar - reset parcial', () => {
 describe('reactivarSiAbandonado - reset completo al volver', () => {
   beforeEach(async () => { await seed(); });
 
-  test('reincia al día 1 con rachas e hitos en 0 y ultima_fecha_actividad hoy', async () => {
+  test('dos lecturas concurrentes reactivan el plan una vez y conservan sus respuestas', async () => {
     const { reactivarSiAbandonado } = require('../src/modules/plan/plan.service');
     const uid = new mongoose.Types.ObjectId();
-    await PlanProgreso.create({
+    const anterior = await PlanProgreso.create({
       usuario_id: uid,
       tienda_id: new mongoose.Types.ObjectId(),
       codigo_utilizado: 'TEST-REA',
@@ -355,29 +365,39 @@ describe('reactivarSiAbandonado - reset completo al volver', () => {
       racha_dias: 3,
       racha_maxima: 28,
       hitos_alcanzados: [7, 14, 21],
+      progreso_diario: [{ dia_numero: 1, completado: true, respuesta_usuario: { texto: 'Conservar' } }],
       ultima_fecha_actividad: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000)
     });
 
-    const plan = await reactivarSiAbandonado(uid);
+    const [plan, otraLectura] = await Promise.all([reactivarSiAbandonado(uid), reactivarSiAbandonado(uid)]);
+    expect(otraLectura._id).toEqual(plan._id);
     expect(plan.estado).toBe('activo');
     expect(plan.dia_actual).toBe(1);
     expect(plan.racha_dias).toBe(0);
     expect(plan.racha_maxima).toBe(0);
     expect(plan.hitos_alcanzados).toEqual([]);
     expect(plan.progreso_diario.filter(d => d.completado).length).toBe(0);
+    const guardado = await PlanProgreso.findById(plan._id).select('+historial_reinicios').lean();
+    expect(guardado.historial_reinicios).toEqual([expect.objectContaining({
+      motivo: 'reactivacion', estado: 'abandonado', dia_actual: 20,
+      progreso_diario: anterior.toObject().progreso_diario
+    })]);
   });
 
-  test('devuelve null si no hay plan abandonado', async () => {
+  test('devuelve el plan activo sin reiniciarlo si ya está activo', async () => {
     const { reactivarSiAbandonado } = require('../src/modules/plan/plan.service');
     const uid = new mongoose.Types.ObjectId();
     await PlanProgreso.create({
       usuario_id: uid,
       tienda_id: new mongoose.Types.ObjectId(),
       codigo_utilizado: 'TEST-REA2',
-      estado: 'activo'
+      estado: 'activo',
+      dia_actual: 3
     });
     const plan = await reactivarSiAbandonado(uid);
-    expect(plan).toBeNull();
+    expect(plan.dia_actual).toBe(3);
+    const guardado = await PlanProgreso.findById(plan._id).select('+historial_reinicios').lean();
+    expect(guardado.historial_reinicios).toBeUndefined();
   });
 });
 
@@ -401,6 +421,7 @@ describe('run-daily - abandono antes que reinicio (AUD-04)', () => {
       dia_actual: 5,
       racha_dias: 4,
       progreso_diario: progreso,
+      fecha_inicio: new Date(Date.now() - (dias + 5) * 86400000),
       ultima_fecha_actividad: new Date(Date.now() - dias * 86400000),
       ...extra
     });
@@ -441,27 +462,102 @@ describe('run-daily - abandono antes que reinicio (AUD-04)', () => {
     const plan = await PlanProgreso.findOne({ usuario_id: uid }).lean();
     expect(plan.estado).toBe('activo');
     expect(plan.dia_actual).toBe(1);
+    expect(plan.historial_reinicios).toBeUndefined();
+    const archivado = await PlanProgreso.findById(plan._id).select('+historial_reinicios').lean();
+    expect(archivado.historial_reinicios).toEqual([expect.objectContaining({
+      motivo: 'inactividad', fecha: expect.any(Date), dia_actual: 5, racha_dias: 4,
+      progreso_diario: expect.arrayContaining([expect.objectContaining({
+        dia_numero: 1, completado: true, respuesta_usuario: { reflexion: 'respuesta del día 1' }
+      })])
+    })]);
     const tipos = (await HistorialCorreo.find({ usuario_id: uid }).lean()).map(h => h.tipo_correo);
     expect(tipos).toContain('plan_reiniciado');
     expect(tipos).not.toContain('plan_abandonado');
+
+    const auth = `Bearer ${generateToken({ _id: uid })}`;
+    const [perfil, lectura] = await Promise.all([
+      request(app).get('/api/plan/profile').set('Authorization', auth),
+      request(app).get('/api/plan/today').set('Authorization', auth)
+    ]);
+    expect(perfil.status).toBe(200);
+    expect(perfil.body).toMatchObject({ estado: 'activo', dia_actual: 1, dias_completados: 0 });
+    expect(lectura.status).toBe(200);
+    expect(lectura.body.leccion).toBeTruthy();
+    const respuesta = [{ id: 'reflexion', tipo: 'texto', valor: 'Respuesta del nuevo recorrido' }];
+    const completado = await request(app).post('/api/plan/complete-day').set('Authorization', auth)
+      .send({ respuesta_usuario: respuesta });
+    expect(completado.status).toBe(200);
+    expect(completado.body).toMatchObject({ dia_completado: 1, dia_actual: 2 });
+    const actualizado = await PlanProgreso.findById(plan._id).select('+historial_reinicios').lean();
+    expect(actualizado.progreso_diario[0].respuesta_usuario).toEqual(respuesta);
+    expect(actualizado.historial_reinicios).toEqual(archivado.historial_reinicios);
   });
 
-  test('reiniciarPlanesYNotificar no avisa si el update no reinició el plan', async () => {
+  test('una actividad guardada después de seleccionar al candidato cancela el reinicio y el aviso', async () => {
     const uid = await crearPlanInactivo(8);
-    // Simula la carrera: el plan es candidato, pero cuando llega el updateOne
-    // otro proceso ya lo cambió (modifiedCount 0).
-    const spy = jest.spyOn(PlanProgreso, 'updateOne').mockResolvedValueOnce({ acknowledged: true, matchedCount: 0, modifiedCount: 0 });
+    const { completeDay } = require('../src/modules/plan/plan.service');
+    const update = PlanProgreso.findOneAndUpdate.bind(PlanProgreso);
+    const spy = jest.spyOn(PlanProgreso, 'findOneAndUpdate').mockImplementationOnce(async (...args) => {
+      await completeDay(uid, [{ id: 'reflexion', tipo: 'texto', valor: 'Actividad recién guardada' }]);
+      return update(...args);
+    });
     try {
       const res = await reiniciarPlanesYNotificar();
-      expect(spy).toHaveBeenCalledTimes(1);
       expect(res.total_candidatos).toBe(1);
       expect(res.reiniciados).toBe(0);
       expect(res.notificados).toBe(0);
+      const plan = await PlanProgreso.findOne({ usuario_id: uid }).select('+historial_reinicios').lean();
+      expect(plan.dia_actual).toBe(6);
+      expect(plan.progreso_diario[4].respuesta_usuario[0].valor).toBe('Actividad recién guardada');
+      expect(plan.historial_reinicios).toBeUndefined();
       const tipos = (await HistorialCorreo.find({ usuario_id: uid }).lean()).map(h => h.tipo_correo);
       expect(tipos).not.toContain('plan_reiniciado');
     } finally {
       spy.mockRestore();
     }
+  });
+
+  test('dos corridas concurrentes registran un solo reinicio', async () => {
+    const uid = await crearPlanInactivo(8);
+    const resultados = await Promise.all([reiniciarPlanesYNotificar(), reiniciarPlanesYNotificar()]);
+    expect(resultados.reduce((total, r) => total + r.reiniciados, 0)).toBe(1);
+    const plan = await PlanProgreso.findOne({ usuario_id: uid }).select('+historial_reinicios').lean();
+    expect(plan.historial_reinicios).toHaveLength(1);
+  });
+
+  test('si el reinicio gana la carrera, un guardado ya en curso no modifica el día 1', async () => {
+    const uid = await crearPlanInactivo(8);
+    const update = PlanProgreso.findOneAndUpdate.bind(PlanProgreso);
+    const spy = jest.spyOn(PlanProgreso, 'findOneAndUpdate').mockImplementationOnce(async (...args) => {
+      expect((await reiniciarPlanesYNotificar()).reiniciados).toBe(1);
+      return update(...args);
+    });
+    try {
+      const auth = `Bearer ${generateToken({ _id: uid })}`;
+      const res = await request(app).post('/api/plan/complete-day').set('Authorization', auth)
+        .send({ respuesta_usuario: [{ id: 'reflexion', tipo: 'texto', valor: 'Respuesta en curso' }] });
+      expect(res.status).toBe(409);
+      const plan = await PlanProgreso.findOne({ usuario_id: uid }).select('+historial_reinicios').lean();
+      expect(plan.dia_actual).toBe(1);
+      expect(plan.progreso_diario[0].respuesta_usuario).toBeNull();
+      expect(plan.historial_reinicios).toHaveLength(1);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  test('el mantenimiento ignora fechas de actividad anómalas', async () => {
+    const uids = await Promise.all([
+      crearPlanInactivo(8, { ultima_fecha_actividad: new Date(0), fecha_inicio: new Date(0) }),
+      crearPlanInactivo(8, { fecha_inicio: new Date() }),
+      crearPlanInactivo(8, { ultima_fecha_actividad: null }),
+      crearPlanInactivo(8, { ultima_fecha_actividad: new Date(Date.now() + 86400000) })
+    ]);
+    expect((await abandonarPlanesYNotificar()).abandonados).toBe(0);
+    expect((await reiniciarPlanesYNotificar()).reiniciados).toBe(0);
+    expect((await demoledorDeRachas()).modifiedCount).toBe(0);
+    const planes = await PlanProgreso.find({ usuario_id: { $in: uids } }).lean();
+    expect(planes.every(plan => plan.dia_actual === 5 && plan.racha_dias === 4 && plan.estado === 'activo')).toBe(true);
   });
 });
 

@@ -1,5 +1,6 @@
 const { demoledorDeRachas, findUsuariosRezagados, findUsuariosSinActivar, findUsuariosParaRecuperar, findPlanesParaAbandonar, findPlanesParaReiniciar } = require('./cronJobs');
 const PlanProgreso = require('../../models/PlanProgreso');
+const { archivarYReiniciar, filtroPlanSinCambios } = require('../plan/reinicios.service');
 const Usuario = require('../../models/Usuario');
 const { enviarCorreo, enviarEnLote, yaSeEnvio, yaSeEnviaronBatch } = require('../email/email.service');
 const { recordatorioDiario, rachaRota, urgenciaActivacion, recuperacionInactividad, planReiniciado, planAbandonado } = require('../email/templates');
@@ -71,22 +72,28 @@ async function abandonarPlanesYNotificar() {
   const candidatos = await findPlanesParaAbandonar();
   if (candidatos.length === 0) return { abandonados: 0, notificados: 0, fallidos: 0 };
 
-  const planIds = candidatos.map(c => c.plan_id);
-  const res = await PlanProgreso.updateMany(
-    { _id: { $in: planIds }, estado: 'activo' },
-    { $set: { estado: 'abandonado' } }
-  );
+  const abandonados = [];
+  for (const candidato of candidatos) {
+    const resultado = await PlanProgreso.updateOne(filtroPlanSinCambios(candidato), {
+      $set: { estado: 'abandonado' },
+      $inc: { __v: 1 }
+    });
+    if (resultado.modifiedCount) abandonados.push(candidato);
+  }
+  if (!abandonados.length) {
+    return { abandonados: 0, notificados: 0, fallidos: 0, total_candidatos: candidatos.length };
+  }
 
-  const ids = candidatos.map(c => (c.usuario_id || c._id).toString());
+  const ids = abandonados.map(c => (c.usuario_id || c._id).toString());
   const yaEnviados = await yaSeEnviaronBatch(ids, 'plan_abandonado');
-  const { enviados, fallidos } = await enviarEnLote(candidatos, {
+  const { enviados, fallidos } = await enviarEnLote(abandonados, {
     tipo_correo: 'plan_abandonado',
     renderFn: (u) => ({ ...planAbandonado(u.nombre), meta: { dia_actual: u.dia_actual } }),
     skipFn: (u) => yaEnviados.has((u.usuario_id || u._id).toString())
   });
 
   return {
-    abandonados: res.modifiedCount,
+    abandonados: abandonados.length,
     notificados: enviados,
     fallidos,
     total_candidatos: candidatos.length
@@ -101,7 +108,8 @@ async function abandonarPlanesYNotificar() {
  * Notifica por correo a cada usuario.
  */
 async function reiniciarPlanesYNotificar() {
-  const candidatos = await findPlanesParaReiniciar();
+  const ahora = new Date();
+  const candidatos = await findPlanesParaReiniciar(ahora);
   if (candidatos.length === 0) return { reiniciados: 0, notificados: 0, fallidos: 0 };
 
   // AUD-04: solo se notifica a quien efectivamente se le reinició el plan.
@@ -109,22 +117,8 @@ async function reiniciarPlanesYNotificar() {
   // modificara nada (por ejemplo, porque el plan ya había sido abandonado).
   const reiniciadosEfectivos = [];
   for (const c of candidatos) {
-    const r = await PlanProgreso.updateOne(
-      { _id: c.plan_id, estado: 'activo' },
-      {
-        $set: {
-          dia_actual: 1,
-          racha_dias: 0,
-          progreso_diario: Array.from({ length: 30 }, (_, i) => ({
-            dia_numero: i + 1,
-            completado: false,
-            fecha_completado: null,
-            respuesta_usuario: null
-          }))
-        }
-      }
-    );
-    if (r.modifiedCount > 0) reiniciadosEfectivos.push(c);
+    const plan = await archivarYReiniciar(c, 'inactividad', ahora);
+    if (plan) reiniciadosEfectivos.push(c);
   }
   const reiniciados = reiniciadosEfectivos.length;
   if (reiniciados === 0) {
