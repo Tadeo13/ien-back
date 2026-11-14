@@ -101,7 +101,10 @@ async function marcarDiaCompletado(plan, respuestaUsuario) {
     throw new AppError(409, 'Ya completaste la actividad de hoy');
   }
 
-  const hito_alcanzado = detectarHito(plan.racha_dias + 1, plan.hitos_alcanzados);
+  const ayer = new Date(Date.UTC(ahora.getUTCFullYear(), ahora.getUTCMonth(), ahora.getUTCDate() - 1));
+  const continuidad = plan.ultima_fecha_actividad && esMismoDiaCalendarioUTC(plan.ultima_fecha_actividad, ayer);
+  const nuevaRacha = continuidad ? plan.racha_dias + 1 : 1;
+  const hito_alcanzado = detectarHito(nuevaRacha, plan.hitos_alcanzados);
 
   // Actualización atómica con pipeline de agregación (MongoDB 4.2+).
   // Stage 1: marca el día via $map/$cond/$mergeObjects, actualiza fechas, incrementa racha/dia.
@@ -138,7 +141,7 @@ async function marcarDiaCompletado(plan, respuestaUsuario) {
             }
           },
           ultima_fecha_actividad: ahora,
-          racha_dias: { $add: ['$racha_dias', 1] },
+          racha_dias: nuevaRacha,
           dia_actual: { $add: ['$dia_actual', 1] },
           __v: { $add: [{ $ifNull: ['$__v', 0] }, 1] }
         }
@@ -419,6 +422,7 @@ exports.completeDay = async (usuarioId, respuestaUsuario) => {
     throw new AppError(404, 'No hay un plan activo');
   }
 
+  const conclusion = await getConclusionSiEsCierreDeBloque(plan.dia_actual);
   const { plan: planActualizado, hito_alcanzado } = await marcarDiaCompletado(plan, respuestaUsuario);
 
   if (hito_alcanzado !== null) {
@@ -444,7 +448,7 @@ exports.completeDay = async (usuarioId, respuestaUsuario) => {
     // sin basarnos en la variable 'plan' anterior que está en estado stale.
     dia_completado: planActualizado.dia_actual - 1,
     dia_actual: planActualizado.dia_actual,
-    conclusion: await getConclusionSiEsCierreDeBloque(planActualizado.dia_actual - 1),
+    conclusion,
     racha_dias: planActualizado.racha_dias,
     racha_maxima: planActualizado.racha_maxima,
     estado: planActualizado.estado,

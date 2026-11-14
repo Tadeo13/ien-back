@@ -116,13 +116,19 @@ async function reiniciarPlanesYNotificar() {
   // Antes se enviaba el correo a todos los candidatos, aunque el updateOne no
   // modificara nada (por ejemplo, porque el plan ya había sido abandonado).
   const reiniciadosEfectivos = [];
+  const errores = [];
   for (const c of candidatos) {
-    const plan = await archivarYReiniciar(c, 'inactividad', ahora);
-    if (plan) reiniciadosEfectivos.push(c);
+    try {
+      const plan = await archivarYReiniciar(c, 'inactividad', ahora);
+      if (plan) reiniciadosEfectivos.push(c);
+    } catch (error) {
+      errores.push(String(c.plan_id));
+      console.error('[reiniciarPlanes] No se pudo archivar el plan', String(c.plan_id), error.message);
+    }
   }
   const reiniciados = reiniciadosEfectivos.length;
   if (reiniciados === 0) {
-    return { reiniciados: 0, notificados: 0, fallidos: 0, total_candidatos: candidatos.length };
+    return { reiniciados: 0, notificados: 0, fallidos: 0, errores, total_candidatos: candidatos.length };
   }
 
   const ids = reiniciadosEfectivos.map(c => (c.usuario_id || c._id).toString());
@@ -137,6 +143,7 @@ async function reiniciarPlanesYNotificar() {
     reiniciados,
     notificados: enviados,
     fallidos,
+    errores,
     total_candidatos: candidatos.length
   };
 }

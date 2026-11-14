@@ -13,10 +13,12 @@ const actividadValida = {
 };
 
 async function findUsuariosRezagados(horaUtcActual, minutoUtcActual) {
+  const inicioHoy = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()));
   return PlanProgreso.aggregate([
     {
       $match: {
         estado: 'activo',
+        progreso_diario: { $not: { $elemMatch: { completado: true, fecha_completado: { $gte: inicioHoy } } } },
         $expr: {
           $eq: [
             { $arrayElemAt: ['$progreso_diario.completado', { $subtract: ['$dia_actual', 1] }] },

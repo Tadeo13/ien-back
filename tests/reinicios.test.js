@@ -96,7 +96,7 @@ test.each(['activo', 'abandonado'])('si MongoDB rechaza el archivo, el plan %s c
   await PlanProgreso.collection.updateOne({ _id: id }, { $set: { historial_reinicios: 'registro inválido' } });
   const antes = await PlanProgreso.collection.findOne({ _id: id });
   if (estado === 'activo') {
-    await expect(reiniciarPlanesYNotificar()).rejects.toThrow(/concatArrays/i);
+    expect((await reiniciarPlanesYNotificar()).errores).toEqual([String(id)]);
   } else {
     const res = await request(app).get('/api/plan/profile').set('Authorization', auth);
     expect(res.status).toBe(500);
@@ -131,9 +131,9 @@ test('cuatro envíos concurrentes del frontend en el día 30 guardan una respues
   const ganador = resultados.findIndex(res => res.status === 200);
   expect(resultados.filter(res => res.status === 200)).toHaveLength(1);
   expect(resultados.every(res => [200, 404, 409].includes(res.status))).toBe(true);
-  expect(resultados[ganador].body).toMatchObject({ dia_completado: 30, estado: 'completado', hito_alcanzado: 7 });
+  expect(resultados[ganador].body).toMatchObject({ dia_completado: 30, estado: 'completado', hito_alcanzado: null });
   const plan = await leerPlan(id);
-  expect(plan).toMatchObject({ dia_actual: 31, estado: 'completado', hitos_alcanzados: [7] });
+  expect(plan).toMatchObject({ dia_actual: 31, estado: 'completado', hitos_alcanzados: [] });
   expect(plan.progreso_diario[29].respuesta_usuario).toEqual(respuestas[ganador]);
   expect(plan.progreso_diario[0].respuesta_usuario).toEqual(respuestaAnterior);
   expect((await reiniciarPlanesYNotificar()).reiniciados).toBe(0);
